@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: pickq
+
+  # DB 설정
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/final?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+    username: final
+    password: final
+
+  jpa:
+    hibernate:
+      # DB 자동 수정
+      ddl-auto: update
+    # JPA가 실행하는 SQL들을 콘솔로 보여줌
+    show-sql: true
+    properties:
+      hibernate:
+        # SQL 자동 정렬
+        format_sql: true
+
+  # 이미지 용량 설정
+  servlet:
+    multipart:
+      # 이미지 하나당 100MB
+      max-file-size: 100MB
+      # 이미지 전체당 512MB
+      max-request-size: 512MB
+
+server:
+  port: 8080
+
+  servlet:
+    encoding:
+      charset: UTF-8
+      # UTF-8 강제화
+      force: true
+    # 로그인 세션 1시간
+    session:
+      timeout: 60m
+
+  error:
+    whitelabel:
+      enabled: false
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
