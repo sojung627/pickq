@@ -1,59 +1,80 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const [memId, setMemId] = useState('');
-  const [memPwd, setMemPwd] = useState('');
-  const [saveId, setSaveId] = useState(false);
-  const [showPwd, setShowPwd] = useState(false);
-  const [remainingSeconds, setRemainingSeconds] = useState(0);
-  const [loginMsg, setLoginMsg] = useState(''); // 서버에서 올 메시지 (예시)
-  const [errorMsg, setErrorMsg] = useState(''); // 에러 메시지 (예시)
+    const [memPwd, setMemPwd] = useState('');
+    const [saveId, setSaveId] = useState(false);
+    const [showPwd, setShowPwd] = useState(false);
+    const [remainingSeconds, setRemainingSeconds] = useState(0);
+    const [loginMsg, setLoginMsg] = useState('');
+    const [errorMsg, setErrorMsg] = useState('');
+    const navigate = useNavigate();
 
-  // 1. 초기 로드 시 아이디 저장 불러오기 및 네이버 로그인 SDK 초기화
-  useEffect(() => {
-    const savedId = localStorage.getItem("savedId");
-    if (savedId) {
-      setMemId(savedId);
-      setSaveId(true);
-    }
+    // 1. 초기 로드 및 네이버 SDK
+    useEffect(() => {
+      const savedId = localStorage.getItem("savedId");
+      if (savedId) {
+        setMemId(savedId);
+        setSaveId(true);
+      }
 
-    // 네이버 SDK 초기화 (HTML에 적혀있던 정보 그대로 반영)
-    if (window.naver) {
-      const naverLogin = new window.naver.LoginWithNaverId({
-        clientId: "2Rk518jWd9bxOQoKuUnD",
-        callbackUrl: "http://172.30.1.94:8080/members/naverCallback",
-        isPopup: false,
-        loginButton: { color: "green", type: 3, height: 60 }
-      });
-      naverLogin.init();
-    }
-  }, []);
+      if (window.naver) {
+        const naverLogin = new window.naver.LoginWithNaverId({
+          clientId: "2Rk518jWd9bxOQoKuUnD",
+          callbackUrl: "http://172.30.1.94:8080/members/naverCallback",
+          isPopup: false,
+          loginButton: { color: "green", type: 3, height: 60 }
+        });
+        naverLogin.init();
+      }
+    }, []);
 
-  // 2. 로그인 제한 타이머 (실시간 카운트다운)
-  useEffect(() => {
-    let interval;
-    if (remainingSeconds > 0) {
-      interval = setInterval(() => {
-        setRemainingSeconds((prev) => prev - 1);
-      }, 1000);
-    } else if (remainingSeconds === 0 && interval) {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [remainingSeconds]);
+    // 2. 타이머
+    useEffect(() => {
+      let interval;
+      if (remainingSeconds > 0) {
+        interval = setInterval(() => {
+          setRemainingSeconds((prev) => prev - 1);
+        }, 1000);
+      } else if (remainingSeconds === 0 && interval) {
+        clearInterval(interval);
+      }
+      return () => clearInterval(interval);
+    }, [remainingSeconds]);
 
-  // 3. 아이디 저장 체크 핸들러
-  const handleLoginSubmit = (e) => {
-    if (saveId) {
-      localStorage.setItem("savedId", memId);
-    } else {
-      localStorage.removeItem("savedId");
-    }
-    // 실제 폼 제출 로직은 필요에 따라 추가
-  };
+    // 3. 로그인 제출
+    const handleLoginSubmit = (e) => {
+      e.preventDefault();
 
-  // 4. 유효성 검사 (아이디, 비밀번호 입력 여부)
-  const isValid = memId.trim() !== "" && memPwd.trim() !== "" && remainingSeconds === 0;
+      if (saveId) {
+        localStorage.setItem("savedId", memId);
+      } else {
+        localStorage.removeItem("savedId");
+      }
+
+      const formData = new URLSearchParams();
+      formData.append('memId', memId);
+      formData.append('memPwd', memPwd);
+
+      axios.post("http://localhost:8080/members/login", formData)
+        .then(res => {
+          console.log("서버 대답:", res.data);
+          if (res.data.status === "success") {
+            navigate("/");
+          } else {
+            setErrorMsg(res.data.message);
+          }
+        })
+        .catch(err => {
+          console.error("통신 에러", err);
+          setErrorMsg("서버와 연결 불가");
+        });
+    };
+
+    // 4. 유효성 검사
+    const isValid = memId.trim() !== "" && memPwd.trim() !== "" && remainingSeconds === 0;
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-10 bg-white">
@@ -151,13 +172,9 @@ export default function Login() {
 
               {/* 로그인 버튼 */}
               <div className="mt-5 flex justify-center">
-                <button
-                  type="submit"
-                  name="loginBtn"
-                  disabled={!isValid}
+                <button type="submit" name="loginBtn" disabled={!isValid}
                   style={{ opacity: isValid ? 1 : 0.5, cursor: isValid ? 'pointer' : 'not-allowed' }}
-                  className="w-full bg-[#7CBD00] text-white font-semibold py-2.5 rounded-lg text-sm hover:bg-[#6BAD00] transition-colors"
-                >
+                  className="w-full bg-[#7CBD00] text-white font-semibold py-2.5 rounded-lg text-sm hover:bg-[#6BAD00] transition-colors">
                   로그인
                 </button>
               </div>
