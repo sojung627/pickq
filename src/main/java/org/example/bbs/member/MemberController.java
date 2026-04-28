@@ -24,12 +24,13 @@ public class MemberController {
 
     // 2. 회원가입 처리
     @PostMapping("/signUp")
-    public String register(@RequestParam Map<String, String> params) {
-        // 쩡이가 React에서 보낸 formData가 params에 싹 다 들어올 거야
-        System.out.println("가입 요청 아이디: " + params.get("memId"));
-        System.out.println("가입 요청 이름: " + params.get("memName"));
+    public String signUpProcess(@RequestBody MemberEntity member) {
+        // @RequestBody를 붙여야 React에서 보낸 JSON 데이터를 Entity로 찰떡같이 받아!
+        System.out.println("회원가입 시도 아이디: " + member.getMemId());
+        System.out.println("회원가입 시도 이름: " + member.getMemName());
 
-        // 서비스 레이어 호출해서 DB 저장 로직 짜면 끝!
+        // 여기서 서비스 호출해서 DB 저장하면 끝!
+
         return "success";
     }
 
@@ -72,10 +73,4 @@ public class MemberController {
         return "naver_success";
     }
 
-    // 회원가입 / 비밀번호 찾기 등 추가 경로
-    @PostMapping("/signUp")
-    public String signUpProcess(MemberEntity member) {
-        // MemberEntity 구조 그대로 파라미터 받기 가능
-        return "register_ok";
-    }
 }

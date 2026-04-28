@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Header from "./components/fragments/Header";
@@ -7,6 +8,7 @@ import Login from "./components/members/Login";
 import Register from "./components/members/SignUp";
 
 function App() {
+
   return (
     <Router>
       <div className="app-container">

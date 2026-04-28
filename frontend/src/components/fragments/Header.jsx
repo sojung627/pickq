@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Header() {
   const navLinkStyle = {
@@ -24,6 +25,8 @@ export default function Header() {
 
           {/* 로고 (3칸) */}
           <div style={{ gridColumn: "span 3", display: "flex", alignItems: "center" }}>
+            {/* 2. 여기에 Link 태그 추가! */}
+            <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
               <img
                 src="/images/pickq_logo.png"
                 alt="PickQ 로고"
@@ -31,7 +34,9 @@ export default function Header() {
                   height: "100px",
                   width: "auto",
                   cursor: "pointer"
-                }} />
+                }}
+              />
+            </Link>
           </div>
 
           {/* 메뉴 (6칸) */}
