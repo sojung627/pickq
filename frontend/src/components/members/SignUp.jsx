@@ -1,0 +1,211 @@
+import React, { useState, useEffect } from 'react';
+
+export default function SignUp() {
+  const [formData, setFormData] = useState({
+    memName: '', memTel: '', memEmail: '', emailDomain: '',
+    memId: '', memPwd: '', memPwdCheck: '', agree: false
+  });
+  const [idMsg, setIdMsg] = useState({ text: '', isError: false });
+  const [pwdMsg, setPwdMsg] = useState({ text: '', isError: false });
+  const [isIdDuplicate, setIsIdDuplicate] = useState(true);
+  const [showPwd, setShowPwd] = useState(false);
+
+  // 1. 네이버 SDK 초기화
+  useEffect(() => {
+    if (window.naver) {
+      const naverLogin = new window.naver.LoginWithNaverId({
+        clientId: "2Rk518jWd9bxOQoKuUnD",
+        callbackUrl: "http://172.30.1.94:8080/members/naverCallback",
+        isPopup: false,
+        loginButton: { color: "green", type: 3, height: 60 }
+      });
+      naverLogin.init();
+    }
+  }, []);
+
+  // 2. 전화번호 포맷팅
+  const formatTel = (val) => {
+    const value = val.replace(/[^0-9]/g, "");
+    if (value.length <= 3) return value;
+    if (value.length <= 7) return `${value.slice(0, 3)}-${value.slice(3)}`;
+    return `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
+  };
+
+  // 3. 아이디 중복 체크
+  const checkId = async () => {
+    const idReg = /^[A-Za-z0-9]{5,}$/;
+    if (!idReg.test(formData.memId)) {
+      setIdMsg({ text: "✘ 영문 + 숫자 5글자 이상으로 입력해주세요.", isError: true });
+      setIsIdDuplicate(true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/members/check_id?memId=${encodeURIComponent(formData.memId)}`);
+      const data = await res.text();
+      if (data.trim() === "ok") {
+        setIdMsg({ text: "✔ 사용 가능한 아이디입니다.", isError: false });
+        setIsIdDuplicate(false);
+      } else {
+        setIdMsg({ text: "✘ 이미 사용 중인 아이디입니다.", isError: true });
+        setIsIdDuplicate(true);
+      }
+    } catch (err) {
+      setIdMsg({ text: "✘ 중복 확인 중 오류 발생", isError: true });
+    }
+  };
+
+  // 4. 입력 핸들러
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    let finalValue = type === 'checkbox' ? checked : value;
+
+    if (name === 'memTel') finalValue = formatTel(value);
+    if (name === 'memId') setIsIdDuplicate(true); // 아이디 바뀌면 중복체크 다시하게
+
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
+  };
+
+  // 5. 유효성 검사
+  const isPwdOk = /^[A-Za-z0-9]{5,}$/.test(formData.memPwd) && formData.memPwd === formData.memPwdCheck;
+  const isValid = formData.memName && formData.memTel.length >= 12 && formData.memEmail &&
+                  formData.emailDomain && formData.agree && !isIdDuplicate && isPwdOk;
+
+  return (
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-10 bg-white">
+      <div className="w-full max-w-2xl">
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-3">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#7CBD00]">
+              <i className="bi bi-lightning-fill text-white text-3xl"></i>
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold text-[#222222] mb-1">회원가입</h1>
+          <p className="text-sm text-[#767676]">스포츠 용품 역경매의 새로운 경험을 시작하세요</p>
+        </div>
+
+        <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.03)]">
+          <div className="px-6 pt-5 pb-2 border-b border-gray-100">
+            <h2 className="text-base sm:text-lg font-semibold text-[#222222]">회원 정보 입력</h2>
+            <p className="mt-1 text-xs sm:text-sm text-[#767676]">모든 항목을 정확히 입력해주세요</p>
+          </div>
+
+          <div className="px-6 py-5">
+            <form action="/members/signUp" method="post" className="space-y-4">
+              <input type="hidden" name="memIp" value="127.0.0.1" />
+              <input type="hidden" name="memRoleIdx" value="1" />
+              <input type="hidden" name="memGradeIdx" value="1" />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-[#222222] mb-1">이름</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a7a7a7]">👤</span>
+                    <input type="text" name="memName" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="홍길동" onChange={handleChange} />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#222222] mb-1">전화번호</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a7a7a7]">📞</span>
+                    <input type="text" name="memTel" value={formData.memTel} maxLength="13" className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="010-1234-5678" onChange={handleChange} />
+                  </div>
+                </div>
+              </div>
+
+              {/* [수정 부분]: grid 대신 flex-row를 사용하여 화면 크기와 상관없이 가로 한 줄 유지, @ 기호 제거 */}
+              <div>
+                <label className="block text-sm font-medium text-[#222222] mb-1">이메일</label>
+                <div className="flex flex-row gap-2">
+                  <input
+                    type="text"
+                    name="memEmail"
+                    className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none"
+                    placeholder="yourEmail"
+                    onChange={handleChange}
+                  />
+                  <input
+                    type="text"
+                    name="emailDomain"
+                    value={formData.emailDomain}
+                    className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none"
+                    placeholder="@email.com"
+                    onChange={handleChange}
+                  />
+                  <select
+                    className="flex-1 min-w-0 px-2 py-2 border border-gray-200 rounded-lg text-sm bg-white outline-none cursor-pointer"
+                    onChange={(e) => {
+                      const domain = e.target.value === 'naver' ? '@naver.com' : e.target.value === 'google' ? '@gmail.com' : '';
+                      setFormData(prev => ({ ...prev, emailDomain: domain }));
+                    }}
+                  >
+                    <option value="custom">직접입력</option>
+                    <option value="naver">네이버</option>
+                    <option value="google">구글</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#222222] mb-1">아이디</label>
+                <div className="flex gap-2 items-start">
+                  <input
+                    type="text"
+                    name="memId"
+                    className="flex-[2] px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none"
+                    placeholder="your ID"
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    className="flex-[1] py-2 rounded-lg bg-amber-400 text-sm font-bold text-white hover:bg-amber-500"
+                    onClick={checkId}
+                  >
+                    중복확인
+                  </button>
+                </div>
+                <span className={`block text-[11px] mt-1 ${idMsg.isError ? 'text-red-500' : 'text-gray-500'}`}>
+                  {idMsg.text}
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#222222] mb-1">비밀번호</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a7a7a7]"><i className="bi bi-lock"></i></span>
+                  <input type={showPwd ? "text" : "password"} name="memPwd" className="flex-[1] w-full pl-9 pr-10 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="••••••••" onChange={handleChange} />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer text-sm" onClick={() => setShowPwd(!showPwd)}>
+                    <i className={showPwd ? "bi bi-eye-slash" : "bi bi-eye"}></i>
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#222222] mb-1">비밀번호 확인</label>
+                <input type={showPwd ? "text" : "password"} name="memPwdCheck" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="••••••••" onChange={handleChange} />
+              </div>
+
+              <div className="pt-3 border-t border-gray-100">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" name="agree" className="mt-[3px] rounded border-gray-300" onChange={handleChange} />
+                  <span className="text-xs sm:text-sm text-[#767676]">
+                    <span className="font-bold text-[#222222]">이용약관</span> 및 <span className="font-bold text-[#222222]">개인정보 처리방침</span>에 동의합니다.
+                  </span>
+                </label>
+              </div>
+
+              <button type="submit" disabled={!isValid} style={{ opacity: isValid ? 1 : 0.5, cursor: isValid ? 'pointer' : 'not-allowed' }} className="w-full py-2.5 rounded-lg bg-[#7CBD00] text-white text-sm font-bold hover:bg-[#6BAD00] transition-opacity">
+                ✔️ 회원가입 완료
+              </button>
+
+              <div className="mt-4">
+                <p className="text-xs text-gray-500 mb-2 text-center">네이버 아이디가 있으신가요?</p>
+                <div id="naverIdLogin" className="flex justify-center"></div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

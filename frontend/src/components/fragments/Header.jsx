@@ -28,7 +28,7 @@ export default function Header() {
                 src="/images/pickq_logo.png"
                 alt="PickQ 로고"
                 style={{
-                  height: "60px",
+                  height: "100px",
                   width: "auto",
                   cursor: "pointer"
                 }} />
@@ -44,17 +44,15 @@ export default function Header() {
 
           {/* 우측 액션 (3칸) */}
           <div style={{ gridColumn: "span 3", display: "flex", justifyContent: "flex-end", gap: "12px", alignItems: "center" }}>
-            <button style={{ background: "none", border: "none", fontSize: "16px", color: "#222", cursor: "pointer" }}>로그인</button>
-            <button style={{
-              backgroundColor: "#7CBD00",
-              color: "#fff",
-              border: "none",
-              padding: "8px 16px",
-              borderRadius: "4px",
-              fontSize: "16px",
-              fontWeight: "600",
-              cursor: "pointer"
-            }}>회원가입</button>
+            <button onClick={() => window.location.href = '/members/login'}
+            style={{ background: "none", border: "none", fontSize: "16px", color: "#222", cursor: "pointer" }}>
+                로그인
+            </button>
+            <button onClick={() => window.location.href = '/members/signUp'}
+            style={{ backgroundColor: "#7CBD00", color: "#fff", border: "none", padding: "8px 16px",
+            borderRadius: "4px", fontSize: "16px", fontWeight: "600", cursor: "pointer" }}>
+              회원가입
+          </button>
           </div>
 
         </div>
