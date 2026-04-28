@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
@@ -48,29 +47,21 @@ export default function Login() {
     const handleLoginSubmit = (e) => {
       e.preventDefault();
 
-      if (saveId) {
-        localStorage.setItem("savedId", memId);
-      } else {
-        localStorage.removeItem("savedId");
-      }
+      const params = new URLSearchParams();
+      params.append('memId', memId);
+      params.append('memPwd', memPwd);
 
-      const formData = new URLSearchParams();
-      formData.append('memId', memId);
-      formData.append('memPwd', memPwd);
-
-      axios.post("http://localhost:8080/members/login", formData)
-        .then(res => {
-          console.log("서버 대답:", res.data);
-          if (res.data.status === "success") {
-            navigate("/");
-          } else {
-            setErrorMsg(res.data.message);
-          }
-        })
-        .catch(err => {
-          console.error("통신 에러", err);
-          setErrorMsg("서버와 연결 불가");
-        });
+      fetch("http://localhost:8080/members/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") navigate("/");
+        else setErrorMsg(data.message);
+      })
+      .catch(() => setErrorMsg("서버 연결 불가"));
     };
 
     // 4. 유효성 검사

@@ -1,5 +1,7 @@
 package org.example.bbs.member;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -8,7 +10,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/members")
-@CrossOrigin(origins = "http://localhost:5173") // 프론트 포트 5173 허용
+@CrossOrigin(origins = "http://localhost:5173")
+@RequiredArgsConstructor
 public class MemberController {
 
     // 회원가입 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -37,33 +40,33 @@ public class MemberController {
     // 로그인 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 로그인 처리
+    private final MemberService memberService;
+
     @PostMapping("/login")
     public Map<String, Object> loginProcess(@RequestParam("memId") String memId,
                                             @RequestParam("memPwd") String memPwd,
+                                            @RequestBody MemberEntity member,
                                             HttpServletRequest request) {
-
         Map<String, Object> response = new HashMap<>();
 
-        // DB 조회 로직이 들어갈 자리
+        MemberEntity loginMember = memberService.login(memId, memPwd);
 
-        // 로그인 값 체크
-        System.out.println("프론트(5173)에서 넘어온 아이디: " + memId);
-        System.out.println("프론트(5173)에서 넘어온 비번: " + memPwd);
-
-        // 세션에 저장
-        if ("admin".equals(memId)) { // 테스트용 조건
+        if (loginMember != null) {
             HttpSession session = request.getSession();
-            session.setAttribute("loginMember", memId);
-
+            session.setAttribute("loginMember", loginMember.getMemId());
             response.put("status", "success");
-            response.put("message", "로그인 성공");
+            response.put("message", "로그인 되었습니다.");
         } else {
             response.put("status", "fail");
-            response.put("message", "아이디 또는 비밀번호를 확인해주세요.");
+            response.put("message", "아이디 또는 비밀번호가 일치하지 않습니다.");
         }
+
+        System.out.println("로그인 시도 아이디: " + member.getMemId());
+        System.out.println("로그인 시도 이름: " + member.getMemName());
 
         return response;
     }
+
 
     // 수정할 확률 매우 높음
     // 네이버 로그인 콜백 (Login.jsx의 callbackUrl 대응)
