@@ -4,8 +4,13 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/fragments/Header";
 import Footer from "./components/fragments/Footer";
 import MainPage from "./components/fragments/MainPage";
-import Login from "./components/members/Login";
+
 import Register from "./components/members/SignUp";
+import Login from "./components/members/Login";
+
+import Faq from "./components/support/Faq";
+import Guide from "./components/support/Guide";
+import Inquiry from "./components/support/Inquiry";
 
 function App() {
 
@@ -18,6 +23,10 @@ function App() {
             <Route path="/" element={<MainPage />} />
             <Route path="/members/login" element={<Login />} />
             <Route path="/members/signUp" element={<Register />} />
+
+            <Route path="/support/guide" element={<Guide />} />
+            <Route path="/support/inquiry" element={<Inquiry />} />
+            <Route path="/support/faq" element={<Faq />} />
           </Routes>
         </main>
         <Footer />
