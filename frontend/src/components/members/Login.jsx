@@ -52,6 +52,7 @@ export default function Login() {
 
          fetch("http://localhost:8080/members/login", {
            method: "POST",
+           credentials: "include",
            headers: { "Content-Type": "application/json" },
            body: JSON.stringify(loginData),
            cache: "no-cache"
@@ -65,6 +66,7 @@ export default function Login() {
            // 백엔드에서 반환하는 status 값에 따른 처리
            if (data.status === "success") {
              navigate("/");
+             window.location.href = "/";
            } else {
              setErrorMsg(data.message);
            }

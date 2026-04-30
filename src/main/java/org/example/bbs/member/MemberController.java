@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/members")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequiredArgsConstructor
 public class MemberController {
 
@@ -42,6 +42,21 @@ public class MemberController {
     // 로그인 처리
     private final MemberService memberService;
 
+    // 로그인 유무에 따라 헤더 수정
+    @GetMapping("/auth/check")
+    public Map<String, Object> checkLogin(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        HttpSession session = request.getSession(false); // 세션 없으면 null
+
+        if (session != null && session.getAttribute("loginMember") != null) {
+            response.put("isLoggedIn", true);
+        } else {
+            response.put("isLoggedIn", false);
+        }
+        return response;
+    }
+
+    // 로그인 처리
     @PostMapping("/login")
     public Map<String, Object> loginProcess(@RequestBody LoginRequestDTO loginRequest, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
@@ -66,29 +81,7 @@ public class MemberController {
         return response;
     }
 
-//    @PostMapping("/login")
-//    public Map<String, Object> loginProcess(@RequestBody MemberEntity member, HttpServletRequest request) {
-//
-//        Map<String, Object> response = new HashMap<>();
-//
-//        MemberEntity loginMember = memberService.login(member.getMemId(), member.getMemPwd());
-//
-//        if (loginMember != null) {
-//            HttpSession session = request.getSession();
-//            session.setAttribute("loginMember", loginMember.getMemId());
-//            response.put("status", "success");
-//            response.put("message", "로그인 되었습니다.");
-//        } else {
-//            response.put("status", "fail");
-//            response.put("message", "아이디 또는 비밀번호가 일치하지 않습니다.");
-//        }
-//
-//        System.out.println("로그인 시도 아이디: " + member.getMemId());
-//        System.out.println("로그인 시도 이름: " + member.getMemName());
-//
-//        return response;
-//    }
-
+    // 로그인 API ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 수정할 확률 매우 높음
     // 네이버 로그인 콜백 (Login.jsx의 callbackUrl 대응)
@@ -96,6 +89,23 @@ public class MemberController {
     public String naverCallback(@RequestParam("code") String code, @RequestParam("state") String state) {
         // 네이버 인증 후 돌아오는 로직 처리 지점
         return "naver_success";
+    }
+
+
+    // 로그아웃 및 탈퇴 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+    @PostMapping("/logout")
+    public Map<String, Object> logout(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        HttpSession session = request.getSession(false);
+
+        if (session != null) {
+            session.invalidate(); // 세션 완전 삭제!
+        }
+
+        response.put("status", "success");
+        return response;
     }
 
 }
