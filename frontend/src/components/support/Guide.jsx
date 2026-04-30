@@ -1,4 +1,5 @@
 import React from 'react';
+import SupportLayout from './SupportLayout';
 
 const UsageGuide = () => {
   return (

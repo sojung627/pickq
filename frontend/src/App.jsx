@@ -11,6 +11,7 @@ import Login from "./components/members/Login";
 import Faq from "./components/support/Faq";
 import Guide from "./components/support/Guide";
 import Inquiry from "./components/support/Inquiry";
+import SupportLayout from "./components/support/SupportLayout";
 
 function App() {
 
@@ -24,9 +25,15 @@ function App() {
             <Route path="/members/login" element={<Login />} />
             <Route path="/members/signUp" element={<Register />} />
 
-            <Route path="/support/guide" element={<Guide />} />
-            <Route path="/support/inquiry" element={<Inquiry />} />
-            <Route path="/support/faq" element={<Faq />} />
+            <Route path="/support/guide" element={
+              <SupportLayout currentTab="guide"><Guide /></SupportLayout>
+            } />
+            <Route path="/support/faq" element={
+              <SupportLayout currentTab="faq"><Faq /></SupportLayout>
+            } />
+            <Route path="/support/inquiry" element={
+              <SupportLayout currentTab="inquiry"><Inquiry /></SupportLayout>
+            } />
           </Routes>
         </main>
         <Footer />

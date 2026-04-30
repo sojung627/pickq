@@ -8,6 +8,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/support")
 public class SupportController {
 
+    // 사이드 바
+    @GetMapping("/supportLayout")
+    public String supportLayout() {
+        return "support/supportLayout";
+    }
+
     // 이용안내 페이지
     @GetMapping("/guide")
     public String usageGuide() {

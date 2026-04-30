@@ -25,12 +25,6 @@ const SupportPage = () => {
       </div>
 
       <main className="max-w-4xl mx-auto pt-10 px-4">
-        {/* 헤더 섹션 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#222222]">고객지원</h1>
-          <p className="text-[#767676] mt-2">언제나 고객을 최우선으로 생각하겠습니다.</p>
-        </div>
-
         <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
           {/* 고객문의 타이틀 */}
           <div className="px-6 py-5 border-b border-gray-100 bg-white">
