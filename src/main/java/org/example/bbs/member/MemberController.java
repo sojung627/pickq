@@ -43,29 +43,51 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/login")
-    public Map<String, Object> loginProcess(@RequestParam("memId") String memId,
-                                            @RequestParam("memPwd") String memPwd,
-                                            @RequestBody MemberEntity member,
-                                            HttpServletRequest request) {
+    public Map<String, Object> loginProcess(@RequestBody LoginRequestDTO loginRequest, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
 
-        MemberEntity loginMember = memberService.login(memId, memPwd);
+        // loginRequest에서 아이디와 비번을 꺼내서 서비스에 전달!
+        MemberEntity loginMember = memberService.login(loginRequest.getMemId(), loginRequest.getMemPwd());
 
         if (loginMember != null) {
             HttpSession session = request.getSession();
             session.setAttribute("loginMember", loginMember.getMemId());
             response.put("status", "success");
             response.put("message", "로그인 되었습니다.");
+            // 확인용
+            System.out.println("로그인 성공 아이디: " + loginMember.getMemId());
+            System.out.println("로그인 성공 이름: " + loginMember.getMemName());
         } else {
             response.put("status", "fail");
             response.put("message", "아이디 또는 비밀번호가 일치하지 않습니다.");
+            // 확인용
+            System.out.println("로그인 실패 시도 아이디: " + loginRequest.getMemId());
         }
-
-        System.out.println("로그인 시도 아이디: " + member.getMemId());
-        System.out.println("로그인 시도 이름: " + member.getMemName());
-
         return response;
     }
+
+//    @PostMapping("/login")
+//    public Map<String, Object> loginProcess(@RequestBody MemberEntity member, HttpServletRequest request) {
+//
+//        Map<String, Object> response = new HashMap<>();
+//
+//        MemberEntity loginMember = memberService.login(member.getMemId(), member.getMemPwd());
+//
+//        if (loginMember != null) {
+//            HttpSession session = request.getSession();
+//            session.setAttribute("loginMember", loginMember.getMemId());
+//            response.put("status", "success");
+//            response.put("message", "로그인 되었습니다.");
+//        } else {
+//            response.put("status", "fail");
+//            response.put("message", "아이디 또는 비밀번호가 일치하지 않습니다.");
+//        }
+//
+//        System.out.println("로그인 시도 아이디: " + member.getMemId());
+//        System.out.println("로그인 시도 이름: " + member.getMemName());
+//
+//        return response;
+//    }
 
 
     // 수정할 확률 매우 높음

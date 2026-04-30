@@ -43,26 +43,37 @@ export default function Login() {
       return () => clearInterval(interval);
     }, [remainingSeconds]);
 
-    // 3. 로그인 제출
-    const handleLoginSubmit = (e) => {
-      e.preventDefault();
+       // 3. 로그인 제출
+       const handleLoginSubmit = (e) => {
+         e.preventDefault();
 
-      const params = new URLSearchParams();
-      params.append('memId', memId);
-      params.append('memPwd', memPwd);
+         // 변수명과 키값이 같으므로 { memId: memId } 대신 단축 표기 사용
+         const loginData = { memId, memPwd };
 
-      fetch("http://localhost:8080/members/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") navigate("/");
-        else setErrorMsg(data.message);
-      })
-      .catch(() => setErrorMsg("서버 연결 불가"));
-    };
+         fetch("http://localhost:8080/members/login", {
+           method: "POST",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify(loginData),
+           cache: "no-cache"
+         })
+         .then(res => {
+           // 400, 500 에러 등이 발생하면 여기서 catch로 던짐
+           if (!res.ok) throw new Error(`서버 응답 에러 (상태코드: ${res.status})`);
+           return res.json();
+         })
+         .then(data => {
+           // 백엔드에서 반환하는 status 값에 따른 처리
+           if (data.status === "success") {
+             navigate("/");
+           } else {
+             setErrorMsg(data.message);
+           }
+         })
+         .catch((err) => {
+           console.error("로그인 요청 실패:", err); // 브라우저 콘솔에서 상세 에러 확인용
+           setErrorMsg("로그인 처리 중 문제가 발생했습니다.");
+         });
+       };
 
     // 4. 유효성 검사
     const isValid = memId.trim() !== "" && memPwd.trim() !== "" && remainingSeconds === 0;
@@ -157,7 +168,7 @@ export default function Login() {
                   ⏳ 로그인 제한 중 ({remainingSeconds}초 남음)
                 </div>
               )}
-              {remainingSeconds === 0 && errorMsg.includes("제한") && (
+              {remainingSeconds === 0 && errorMsg?.includes("제한") && (
                 <div className="text-[12px] text-gray-500 mt-1">다시 로그인을 시도해주세요.</div>
               )}
 

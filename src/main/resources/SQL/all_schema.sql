@@ -313,7 +313,7 @@ CREATE TABLE review (
    4. 커뮤니티 (게시판 / 댓글)
    ========================================== */
 
--- 4-1) BOARD (게시글)
+-- 4-1 BOARD (게시글)
 CREATE TABLE board (
     board_idx        BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'PK',
     mem_idx          BIGINT        NOT NULL COMMENT 'FK → member.mem_idx',
@@ -650,7 +650,7 @@ VALUES (4, 'canceled', '취소');
 INSERT INTO bid_status (bid_status_idx, bid_status_code, bid_status_name)
 VALUES (5, 'deleted', '삭제됨');
 
--- 7-6) BOARD_TYPE 코드
+-- 7-6 BOARD_TYPE 코드
 INSERT INTO board_type (board_type_idx, board_type_code, board_type_name, board_can_comment, board_min_role)
 VALUES (1,  'soccer',    '축구',     'Y', 1);
 INSERT INTO board_type (board_type_idx, board_type_code, board_type_name, board_can_comment, board_min_role)
