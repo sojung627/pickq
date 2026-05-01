@@ -191,7 +191,7 @@ export default function SignUp() {
 
               <button type="submit" disabled={!isValid} style={{ opacity: isValid ? 1 : 0.5, cursor: isValid ? 'pointer' : 'not-allowed' }} className="w-full py-2.5 rounded-lg bg-[#7CBD00] text-white text-sm font-bold hover:bg-[#6BAD00] transition-opacity">
                 ✔️ 회원가입 완료
-              </button>
+              </button> 
 
               <div className="mt-4">
                 <p className="text-xs text-gray-500 mb-2 text-center">네이버 아이디가 있으신가요?</p>
