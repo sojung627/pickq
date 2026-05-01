@@ -15,7 +15,7 @@ import Guide from "./components/support/Guide";
 import Inquiry from "./components/support/Inquiry";
 import SupportLayout from "./components/support/SupportLayout";
 
-import Auctions from "./components/mypage/Auctions";
+import Auctions from "./components/auction/Auctions";
 
 function App() {
 

@@ -15,7 +15,7 @@ public class AuctionController {
 
     @GetMapping("/mypage/auctions")
     public ResponseEntity<List<AuctionDTO>> getMyAuctions(
-            @SessionAttribute(name = "loginMember") String memId) {
+            @SessionAttribute(name = "loginMember", required = false) String memId) {
 
         List<AuctionDTO> auctions = auctionService.findAuctionsByMemId(memId);
         return ResponseEntity.ok(auctions);
