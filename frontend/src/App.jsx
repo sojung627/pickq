@@ -15,6 +15,8 @@ import Guide from "./components/support/Guide";
 import Inquiry from "./components/support/Inquiry";
 import SupportLayout from "./components/support/SupportLayout";
 
+import Auctions from "./components/mypage/Auctions";
+
 function App() {
 
   return (
@@ -35,6 +37,8 @@ function App() {
               <SupportLayout currentTab="faq"><Faq /></SupportLayout>} />
             <Route path="/support/inquiry" element={
               <SupportLayout currentTab="inquiry"><Inquiry /></SupportLayout>} />
+
+            <Route path="/mypage/auctions" element={<Auctions />} />
           </Routes>
         </main>
         <Footer />

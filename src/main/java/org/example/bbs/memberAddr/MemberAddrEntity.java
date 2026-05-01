@@ -8,7 +8,7 @@ import org.example.bbs.member.MemberEntity;
 @Table(name = "member_addr")
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 public class MemberAddrEntity {
