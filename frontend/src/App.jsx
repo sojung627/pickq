@@ -5,6 +5,8 @@ import Header from "./components/fragments/Header";
 import Footer from "./components/fragments/Footer";
 import MainPage from "./components/fragments/MainPage";
 
+import MyPageLayout from "./components/layout/MyPageLayout";
+
 import Register from "./components/members/SignUp";
 import Login from "./components/members/Login";
 
@@ -22,18 +24,17 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<MainPage />} />
+            <Route path="/layout/MyPageLayout" element={<MyPageLayout />} />
+
             <Route path="/members/login" element={<Login />} />
             <Route path="/members/signUp" element={<Register />} />
 
             <Route path="/support/guide" element={
-              <SupportLayout currentTab="guide"><Guide /></SupportLayout>
-            } />
+              <SupportLayout currentTab="guide"><Guide /></SupportLayout>} />
             <Route path="/support/faq" element={
-              <SupportLayout currentTab="faq"><Faq /></SupportLayout>
-            } />
+              <SupportLayout currentTab="faq"><Faq /></SupportLayout>} />
             <Route path="/support/inquiry" element={
-              <SupportLayout currentTab="inquiry"><Inquiry /></SupportLayout>
-            } />
+              <SupportLayout currentTab="inquiry"><Inquiry /></SupportLayout>} />
           </Routes>
         </main>
         <Footer />
@@ -42,4 +43,4 @@ function App() {
   );
 }
 
-export default App; // 이거 안 써주면 main.jsx에서 못 읽어와!
+export default App;
