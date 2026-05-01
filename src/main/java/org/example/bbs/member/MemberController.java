@@ -16,24 +16,19 @@ public class MemberController {
 
     // 회원가입 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-    // 1. 아이디 중복 확인
+    private final MemberRepository memberRepository;
+
+    // 아이디 중복 확인 (DB 연결)
     @GetMapping("/check_id")
     public String checkId(@RequestParam("memId") String memId) {
-        // DB 조회 로직 (예시: "admin"이면 중복)
-        boolean isExist = "admin".equals(memId);
-
+        boolean isExist = memberRepository.findByMemId(memId).isPresent();
         return isExist ? "fail" : "ok";
     }
 
-    // 2. 회원가입 처리
+    // 회원가입 처리 (DB 저장)
     @PostMapping("/signUp")
     public String signUpProcess(@RequestBody MemberEntity member) {
-        // @RequestBody를 붙여야 React에서 보낸 JSON 데이터를 Entity로 찰떡같이 받아!
-        System.out.println("회원가입 시도 아이디: " + member.getMemId());
-        System.out.println("회원가입 시도 이름: " + member.getMemName());
-
-        // 여기서 서비스 호출해서 DB 저장하면 끝!
-
+        memberService.signUp(member);
         return "success";
     }
 

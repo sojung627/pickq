@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function SignUp() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     memName: '', memTel: '', memEmail: '', emailDomain: '',
-    memId: '', memPwd: '', memPwdCheck: '', agree: false
+    memId: '', memPwd: '', memPwdCheck: '', agree: false,
+    memIp: '127.0.0.1', memRoleIdx: 1, memGradeIdx: 1
   });
   const [idMsg, setIdMsg] = useState({ text: '', isError: false });
   const [pwdMsg, setPwdMsg] = useState({ text: '', isError: false });
   const [isIdDuplicate, setIsIdDuplicate] = useState(true);
   const [showPwd, setShowPwd] = useState(false);
 
-  // 1. 네이버 SDK 초기화
+  // 네이버 SDK 초기화
   useEffect(() => {
     if (window.naver) {
       const naverLogin = new window.naver.LoginWithNaverId({
@@ -23,7 +26,7 @@ export default function SignUp() {
     }
   }, []);
 
-  // 2. 전화번호 포맷팅
+  // 전화번호 포맷팅
   const formatTel = (val) => {
     const value = val.replace(/[^0-9]/g, "");
     if (value.length <= 3) return value;
@@ -31,7 +34,7 @@ export default function SignUp() {
     return `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
   };
 
-  // 3. 아이디 중복 체크
+  // 아이디 중복 체크
   const checkId = async () => {
     const idReg = /^[A-Za-z0-9]{5,}$/;
     if (!idReg.test(formData.memId)) {
@@ -39,9 +42,8 @@ export default function SignUp() {
       setIsIdDuplicate(true);
       return;
     }
-
     try {
-      const res = await fetch(`/members/check_id?memId=${encodeURIComponent(formData.memId)}`);
+      const res = await fetch(`http://localhost:8080/members/check_id?memId=${encodeURIComponent(formData.memId)}`);
       const data = await res.text();
       if (data.trim() === "ok") {
         setIdMsg({ text: "✔ 사용 가능한 아이디입니다.", isError: false });
@@ -55,21 +57,46 @@ export default function SignUp() {
     }
   };
 
-  // 4. 입력 핸들러
+  // 회원가입 제출
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { memPwdCheck, emailDomain, agree, ...rest } = formData;
+    const sendData = {
+      ...rest,
+      memEmail: formData.memEmail + formData.emailDomain
+    };
+    const res = await fetch("http://localhost:8080/members/signUp", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(sendData)
+    });
+    const data = await res.text();
+    if (data === "success") navigate("/members/login");
+  };
+
+  // 입력 핸들러
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     let finalValue = type === 'checkbox' ? checked : value;
-
     if (name === 'memTel') finalValue = formatTel(value);
-    if (name === 'memId') setIsIdDuplicate(true); // 아이디 바뀌면 중복체크 다시하게
-
+    if (name === 'memId') setIsIdDuplicate(true);
     setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
 
-  // 5. 유효성 검사
+  // 유효성 검사
   const isPwdOk = /^[A-Za-z0-9]{5,}$/.test(formData.memPwd) && formData.memPwd === formData.memPwdCheck;
   const isValid = formData.memName && formData.memTel.length >= 12 && formData.memEmail &&
                   formData.emailDomain && formData.agree && !isIdDuplicate && isPwdOk;
+
+  useEffect(() => {
+    if (!formData.memPwd) return;
+    if (formData.memPwd !== formData.memPwdCheck) {
+      setPwdMsg({ text: "✘ 비밀번호가 일치하지 않습니다.", isError: true });
+    } else {
+      setPwdMsg({ text: "✔ 비밀번호가 일치합니다.", isError: false });
+    }
+  }, [formData.memPwd, formData.memPwdCheck]);
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-10 bg-white">
@@ -91,10 +118,7 @@ export default function SignUp() {
           </div>
 
           <div className="px-6 py-5">
-            <form action="/members/signUp" method="post" className="space-y-4">
-              <input type="hidden" name="memIp" value="127.0.0.1" />
-              <input type="hidden" name="memRoleIdx" value="1" />
-              <input type="hidden" name="memGradeIdx" value="1" />
+            <form onSubmit={handleSubmit} className="space-y-4">
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -113,32 +137,16 @@ export default function SignUp() {
                 </div>
               </div>
 
-              {/* [수정 부분]: grid 대신 flex-row를 사용하여 화면 크기와 상관없이 가로 한 줄 유지, @ 기호 제거 */}
               <div>
                 <label className="block text-sm font-medium text-[#222222] mb-1">이메일</label>
                 <div className="flex flex-row gap-2">
-                  <input
-                    type="text"
-                    name="memEmail"
-                    className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none"
-                    placeholder="yourEmail"
-                    onChange={handleChange}
-                  />
-                  <input
-                    type="text"
-                    name="emailDomain"
-                    value={formData.emailDomain}
-                    className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none"
-                    placeholder="@email.com"
-                    onChange={handleChange}
-                  />
-                  <select
-                    className="flex-1 min-w-0 px-2 py-2 border border-gray-200 rounded-lg text-sm bg-white outline-none cursor-pointer"
+                  <input type="text" name="memEmail" className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="yourEmail" onChange={handleChange} />
+                  <input type="text" name="emailDomain" value={formData.emailDomain} className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="@email.com" onChange={handleChange} />
+                  <select className="flex-1 min-w-0 px-2 py-2 border border-gray-200 rounded-lg text-sm bg-white outline-none cursor-pointer"
                     onChange={(e) => {
                       const domain = e.target.value === 'naver' ? '@naver.com' : e.target.value === 'google' ? '@gmail.com' : '';
                       setFormData(prev => ({ ...prev, emailDomain: domain }));
-                    }}
-                  >
+                    }}>
                     <option value="custom">직접입력</option>
                     <option value="naver">네이버</option>
                     <option value="google">구글</option>
@@ -149,31 +157,17 @@ export default function SignUp() {
               <div>
                 <label className="block text-sm font-medium text-[#222222] mb-1">아이디</label>
                 <div className="flex gap-2 items-start">
-                  <input
-                    type="text"
-                    name="memId"
-                    className="flex-[2] px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none"
-                    placeholder="your ID"
-                    onChange={handleChange}
-                  />
-                  <button
-                    type="button"
-                    className="flex-[1] py-2 rounded-lg bg-amber-400 text-sm font-bold text-white hover:bg-amber-500"
-                    onClick={checkId}
-                  >
-                    중복확인
-                  </button>
+                  <input type="text" name="memId" className="flex-[2] px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="your ID" onChange={handleChange} />
+                  <button type="button" className="flex-[1] py-2 rounded-lg bg-amber-400 text-sm font-bold text-white hover:bg-amber-500" onClick={checkId}>중복확인</button>
                 </div>
-                <span className={`block text-[11px] mt-1 ${idMsg.isError ? 'text-red-500' : 'text-gray-500'}`}>
-                  {idMsg.text}
-                </span>
+                <span className={`block text-[11px] mt-1 ${idMsg.isError ? 'text-red-500' : 'text-gray-500'}`}>{idMsg.text}</span>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#222222] mb-1">비밀번호</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a7a7a7]"><i className="bi bi-lock"></i></span>
-                  <input type={showPwd ? "text" : "password"} name="memPwd" className="flex-[1] w-full pl-9 pr-10 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="••••••••" onChange={handleChange} />
+                  <input type={showPwd ? "text" : "password"} name="memPwd" className="w-full pl-9 pr-10 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="••••••••" onChange={handleChange} />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer text-sm" onClick={() => setShowPwd(!showPwd)}>
                     <i className={showPwd ? "bi bi-eye-slash" : "bi bi-eye"}></i>
                   </span>
@@ -183,6 +177,7 @@ export default function SignUp() {
               <div>
                 <label className="block text-sm font-medium text-[#222222] mb-1">비밀번호 확인</label>
                 <input type={showPwd ? "text" : "password"} name="memPwdCheck" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="••••••••" onChange={handleChange} />
+                <span className={`block text-[11px] mt-1 ${pwdMsg.isError ? 'text-red-500' : 'text-green-500'}`}>{pwdMsg.text}</span>
               </div>
 
               <div className="pt-3 border-t border-gray-100">
