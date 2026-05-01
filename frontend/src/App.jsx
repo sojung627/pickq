@@ -26,7 +26,6 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<MainPage />} />
-            <Route path="/layout/MyPageLayout" element={<MyPageLayout />} />
 
             <Route path="/members/login" element={<Login />} />
             <Route path="/members/signUp" element={<Register />} />
@@ -38,7 +37,9 @@ function App() {
             <Route path="/support/inquiry" element={
               <SupportLayout currentTab="inquiry"><Inquiry /></SupportLayout>} />
 
-            <Route path="/mypage/auctions" element={<Auctions />} />
+            <Route path="/mypage" element={<MyPageLayout />}>
+              <Route path="auctions" element={<Auctions />} />
+            </Route>
           </Routes>
         </main>
         <Footer />
