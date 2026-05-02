@@ -181,7 +181,7 @@ export default function Login() {
                   className="w-full bg-[#7CBD00] text-white font-semibold py-2.5 rounded-lg text-sm hover:bg-[#6BAD00] transition-colors">
                   로그인
                 </button>
-              </div> 
+              </div>
 
               {/* 구분선 */}
               <div className="relative my-4">
