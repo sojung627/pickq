@@ -1,7 +1,8 @@
-package org.example.bbs.entity;
+package org.example.bbs.review;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.bbs.bid.BidEntity;
 import org.example.bbs.member.MemberEntity; // MemberEntity 위치 확인 필요
 import java.time.LocalDateTime;
 

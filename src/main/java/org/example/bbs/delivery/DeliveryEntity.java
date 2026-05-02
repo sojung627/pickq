@@ -1,7 +1,10 @@
-package org.example.bbs.entity;
+package org.example.bbs.delivery;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.bbs.bid.BidEntity;
+import org.example.bbs.payment.PaymentEntity;
+
 import java.time.LocalDateTime;
 
 @Entity

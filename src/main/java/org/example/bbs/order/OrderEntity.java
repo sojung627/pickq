@@ -1,7 +1,8 @@
-package org.example.bbs.entity;
+package org.example.bbs.order;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.bbs.bid.BidEntity;
 import org.example.bbs.member.MemberEntity;
 import java.time.LocalDateTime;
 

@@ -1,4 +1,4 @@
-package org.example.bbs.entity;
+package org.example.bbs.bid;
 
 import jakarta.persistence.*;
 import lombok.*;
