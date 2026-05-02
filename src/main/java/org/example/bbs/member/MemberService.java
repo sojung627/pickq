@@ -34,7 +34,6 @@ public class MemberService {
     public MemberEntity login(String memId, String memPwd) {
         return memberRepository.findByMemId(memId)
                 .filter(m -> passwordEncoder.matches(memPwd, m.getMemPwd()))
-                .filter(m -> m.getMemPwd().equals(memPwd))
                 .orElse(null); // 탈퇴 여부는 Controller에서 체크
     }
 
