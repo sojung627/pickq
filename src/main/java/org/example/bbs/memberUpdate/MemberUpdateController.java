@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.example.bbs.member.MemberEntity;
+import jakarta.servlet.http.HttpSession;
+
 import java.util.Map;
 
 @RestController
@@ -13,7 +16,26 @@ import java.util.Map;
 public class MemberUpdateController {
 
     private final MemberUpdateService memberService;
+    private final MemberUpdateRepository memberUpdateRepository;
 
+    // 회원정보 불러오기
+    @GetMapping("/info")
+    public ResponseEntity<?> getMemberInfo(
+            @SessionAttribute(name = "loginMember") String memId) {
+        MemberEntity member = memberUpdateRepository.findByMemId(memId)
+                .orElseThrow(() -> new RuntimeException("회원 없음"));
+
+        return ResponseEntity.ok(Map.of(
+                "memId", member.getMemId(),
+                "memName", member.getMemName() != null ? member.getMemName() : "",
+                "memEmail", member.getMemEmail() != null ? member.getMemEmail() : "",
+                "memTel", member.getMemTel() != null ? member.getMemTel() : "",
+                "memBday", member.getMemBday() != null ? member.getMemBday().toString() : "",
+                "memLoginType", member.getMemLoginType() != null ? member.getMemLoginType() : "LOCAL"
+        ));
+    }
+
+    // 회원정보 수정
     @PostMapping("/info")
     public ResponseEntity<?> updateInfo(@RequestBody MemberUpdateDTO memberUpdateDTO) {
         boolean isUpdated = memberService.updateMemberInfo(memberUpdateDTO);

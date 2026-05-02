@@ -41,7 +41,7 @@ function App() {
 
             <Route path="/mypage" element={<MyPageLayout />}>
               <Route path="auctions" element={<Auctions />} />
-              <Route path="members" element={<MemberUpdate />} />
+              <Route path="info" element={<MemberUpdate />} />
             </Route>
           </Routes>
         </main>
