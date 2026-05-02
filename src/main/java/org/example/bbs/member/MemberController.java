@@ -10,7 +10,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/members")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequiredArgsConstructor
 public class MemberController {
 
@@ -38,6 +37,7 @@ public class MemberController {
     private final MemberService memberService;
 
     // 로그인 유무에 따라 헤더 수정
+    // 사실상 HomeController.java에 넣어도 되는 애임 -> 즉 로그인에서 에러뜨면 이 코드는 안봐도 됨
     @GetMapping("/auth/check")
     public Map<String, Object> checkLogin(HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
@@ -86,17 +86,13 @@ public class MemberController {
     // 수정할 확률 매우 높음
     // 네이버 로그인 콜백 (Login.jsx의 callbackUrl 대응)
     @GetMapping("/naverCallback")
-    public String naverCallback(@RequestParam("code") String code, @RequestParam("state") String state) {
-        // 네이버 인증 후 돌아오는 로직 처리 지점
-        return "naver_success";
+    public Map<String, Object> naverCallback(
+            @RequestParam("code") String code,
+            @RequestParam("state") String state) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        return response;
     }
-
-//    @GetMapping("/naverCallback")
-//    public Map<String, Object> naverCallback(...) {
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("status", "success");
-//        return response;
-//    }
 
 
     // 로그아웃 및 탈퇴 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
