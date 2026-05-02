@@ -8,14 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class MemberService {
+public class MemberUpdateService {
 
     private final MemberUpdateRepository memberUpdateRepository;
     private final PasswordEncoder passwordEncoder; // 암호화용
 
     @Transactional
     public boolean updateMemberInfo(MemberUpdateDTO dto) {
-        MemberEntity member = memberUpdateRepository.findById(dto.getMemId())
+        MemberEntity member = memberUpdateRepository.findByMemId(dto.getMemId())
                 .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
 
         // 1. 일반 정보 업데이트

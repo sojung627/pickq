@@ -35,9 +35,22 @@ const MemberUpdate = ({ memberVO, gradeName }) => {
   };
 
   // 업데이트 버튼 클릭 시 실행될 로직
-  const handleUpdate = () => {
-    console.log("업데이트 데이터 전송:", formData);
-    // 여기서 fetch 로직을 작성하면 돼!
+  const handleUpdate = async () => {
+      const res = await fetch("http://localhost:8080/mypage/info", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+              memId: formData.memId,
+              memName: formData.memName,
+              memEmail: formData.memEmail,
+              memTel: formData.memTel,
+              memBday: formData.memBday,
+              newPwd: formData.newPwd
+          })
+      });
+      const data = await res.json();
+      console.log(data.message);
   };
 
   // 4. 변경 감지 및 유효성 검사
