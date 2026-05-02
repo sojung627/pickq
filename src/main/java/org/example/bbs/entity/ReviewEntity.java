@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
         @UniqueConstraint(name = "ux_review_unique", columnNames = {"bid_idx"})
 })
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder

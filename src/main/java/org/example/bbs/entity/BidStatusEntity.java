@@ -6,6 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "bid_status")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder

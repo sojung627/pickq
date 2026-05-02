@@ -6,6 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "board_type")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder

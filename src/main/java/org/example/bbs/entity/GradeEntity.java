@@ -6,6 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "grade")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder

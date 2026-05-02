@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
         @UniqueConstraint(name = "ux_order_id", columnNames = {"order_id"})
 })
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
