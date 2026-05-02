@@ -91,6 +91,13 @@ public class MemberController {
         return "naver_success";
     }
 
+//    @GetMapping("/naverCallback")
+//    public Map<String, Object> naverCallback(...) {
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("status", "success");
+//        return response;
+//    }
+
 
     // 로그아웃 및 탈퇴 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 

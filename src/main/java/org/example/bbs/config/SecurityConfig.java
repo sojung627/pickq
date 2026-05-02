@@ -11,7 +11,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // REST API라 CSRF 비활성화
+                .csrf(csrf -> csrf.disable())
+                .formLogin(form -> form.disable())    // ← 추가
+                .httpBasic(basic -> basic.disable())  // ← 추가
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()
                 );
