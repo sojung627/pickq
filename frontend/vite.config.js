@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
       proxy: {
         '/mypage': 'http://localhost:8080',
+        '/members': 'http://localhost:8080',
       }
     }
 })

@@ -89,7 +89,7 @@ public class MemberController {
 
     // 로그아웃 및 탈퇴 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-
+    // 로그아웃
     @PostMapping("/logout")
     public Map<String, Object> logout(HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
@@ -99,6 +99,26 @@ public class MemberController {
             session.invalidate(); // 세션 완전 삭제!
         }
 
+        response.put("status", "success");
+        return response;
+    }
+
+    // 탈퇴
+    @DeleteMapping("/withdraw")
+    public Map<String, Object> withdraw(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("loginMember") == null) {
+            response.put("status", "fail");
+            response.put("message", "로그인이 필요합니다.");
+            return response;
+        }
+
+        String memId = (String) session.getAttribute("loginMember");
+        memberService.withdraw(memId);
+
+        session.invalidate(); // 세션 삭제
         response.put("status", "success");
         return response;
     }

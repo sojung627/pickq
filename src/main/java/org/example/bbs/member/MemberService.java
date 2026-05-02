@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -31,6 +33,19 @@ public class MemberService {
                 .filter(m -> m.getMemPwd().equals(memPwd))
                 .filter(m -> "N".equals(m.getMemIsDeleted())) // 탈퇴 계정 체크 추가
                 .orElse(null);
+    }
+
+
+    // 로그아웃 및 탈퇴 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 탈퇴
+    @Transactional
+    public void withdraw(String memId) {
+        memberRepository.findByMemId(memId).ifPresent(member -> {
+            member.setMemIsDeleted("Y");
+            member.setMemDeldate(LocalDateTime.now());
+            // save 안 해도 됨 — @Transactional이 변경 감지해서 자동 업데이트
+        });
     }
 
 }

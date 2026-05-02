@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 const MyPageLayout = () => {
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarBodyRef = useRef(null);
 
@@ -16,13 +17,25 @@ const MyPageLayout = () => {
     setIsSidebarOpen((prev) => !prev);
   };
 
-  const handleDeleteAccount = (e) => {
-    e.preventDefault();
-    if (window.confirm('정말 탈퇴하시겠습니까?')) {
-      // 탈퇴 API 호출 로직
-      console.log("탈퇴 진행");
-    }
-  };
+   const handleDeleteAccount = (e) => {
+      e.preventDefault();
+      if (window.confirm('정말 탈퇴하시겠습니까?\n탈퇴 후 복구는 불가능합니다.')) {
+        fetch('/members/withdraw', {
+          method: 'DELETE',
+          credentials: 'include',
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'success') {
+              alert('탈퇴가 완료되었습니다.');
+              navigate('/');
+            } else {
+              alert('탈퇴 처리 중 오류가 발생했습니다.');
+            }
+          })
+          .catch(() => alert('서버 오류가 발생했습니다.'));
+      }
+    };
 
   // 활성화 메뉴 스타일 (기본 디자인과 동일)
   const getNavClass = ({ isActive }) =>
