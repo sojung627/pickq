@@ -19,7 +19,7 @@ const MyPageLayout = () => {
 
    const handleDeleteAccount = (e) => {
       e.preventDefault();
-      if (window.confirm('정말 탈퇴하시겠습니까?\n탈퇴 후 복구는 불가능합니다.')) {
+      if (window.confirm('정말 탈퇴하시겠습니까?')) {
         fetch('/members/withdraw', {
           method: 'DELETE',
           credentials: 'include',
