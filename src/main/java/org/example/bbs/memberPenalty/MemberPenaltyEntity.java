@@ -2,6 +2,7 @@ package org.example.bbs.memberPenalty;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.bbs.auction.AuctionEntity;
 import org.example.bbs.bid.BidEntity;
 import org.example.bbs.member.MemberEntity;
 import java.time.LocalDateTime;

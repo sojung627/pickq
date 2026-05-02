@@ -2,6 +2,7 @@ package org.example.bbs.bid;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.bbs.auction.AuctionEntity;
 import org.example.bbs.item.ItemEntity;
 import org.example.bbs.member.MemberEntity; // MemberEntity 위치에 따라 수정 필요할 수 있음
 import java.time.LocalDateTime;

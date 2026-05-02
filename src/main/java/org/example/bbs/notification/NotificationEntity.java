@@ -2,6 +2,7 @@ package org.example.bbs.notification;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.bbs.auction.AuctionEntity;
 import org.example.bbs.bid.BidEntity;
 import org.example.bbs.board.BoardEntity;
 import org.example.bbs.board.ReplyEntity;
