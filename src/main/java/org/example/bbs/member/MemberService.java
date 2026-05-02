@@ -31,8 +31,7 @@ public class MemberService {
     public MemberEntity login(String memId, String memPwd) {
         return memberRepository.findByMemId(memId)
                 .filter(m -> m.getMemPwd().equals(memPwd))
-                .filter(m -> "N".equals(m.getMemIsDeleted())) // 탈퇴 계정 체크 추가
-                .orElse(null);
+                .orElse(null); // 탈퇴 여부는 Controller에서 체크
     }
 
 

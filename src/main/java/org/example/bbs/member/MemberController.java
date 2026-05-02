@@ -60,19 +60,24 @@ public class MemberController {
         MemberEntity loginMember = memberService.login(loginRequest.getMemId(), loginRequest.getMemPwd());
 
         if (loginMember != null) {
+            // 탈퇴 회원 체크
+            if ("Y".equals(loginMember.getMemIsDeleted())) {
+                response.put("status", "withdrawn");
+                response.put("message", "탈퇴한 회원입니다.");
+                return response;
+            }
+            // 정상 로그인
             HttpSession session = request.getSession();
             session.setAttribute("loginMember", loginMember.getMemId());
             response.put("status", "success");
             response.put("message", "로그인 되었습니다.");
-            // 확인용
-            System.out.println("로그인 성공 아이디: " + loginMember.getMemId());
-            System.out.println("로그인 성공 이름: " + loginMember.getMemName());
         } else {
             response.put("status", "fail");
             response.put("message", "아이디 또는 비밀번호가 일치하지 않습니다.");
             // 확인용
             System.out.println("로그인 실패 시도 아이디: " + loginRequest.getMemId());
         }
+
         return response;
     }
 
