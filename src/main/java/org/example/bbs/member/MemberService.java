@@ -1,6 +1,7 @@
 package org.example.bbs.member;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,16 +12,18 @@ import java.time.LocalDateTime;
 @Transactional(readOnly = true)
 public class MemberService {
 
+    private final PasswordEncoder passwordEncoder;
+    private final MemberRepository memberRepository;
+
     // 회원가입 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     @Transactional
     public MemberEntity signUp(MemberEntity member) {
+        member.setMemPwd(passwordEncoder.encode(member.getMemPwd()));
         return memberRepository.save(member);
     }
 
     // 로그인 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
-    private final MemberRepository memberRepository;
 
     /**
      * 로그인 인증 로직
@@ -30,6 +33,7 @@ public class MemberService {
      */
     public MemberEntity login(String memId, String memPwd) {
         return memberRepository.findByMemId(memId)
+                .filter(m -> passwordEncoder.matches(memPwd, m.getMemPwd()))
                 .filter(m -> m.getMemPwd().equals(memPwd))
                 .orElse(null); // 탈퇴 여부는 Controller에서 체크
     }
