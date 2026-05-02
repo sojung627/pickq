@@ -17,6 +17,8 @@ import SupportLayout from "./components/support/SupportLayout";
 
 import Auctions from "./components/auction/Auctions";
 
+import MemberUpdate from "./components/members/MemberUpdate";
+
 function App() {
 
   return (
@@ -39,6 +41,7 @@ function App() {
 
             <Route path="/mypage" element={<MyPageLayout />}>
               <Route path="auctions" element={<Auctions />} />
+              <Route path="members" element={<MemberUpdate />} />
             </Route>
           </Routes>
         </main>
