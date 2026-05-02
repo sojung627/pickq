@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Auctions = ({ auctions = [] }) => {
+const Auctions = () => {
   const navigate = useNavigate();
+  const [auctions, setAuctions] = useState([]);
+
+  useEffect(() => {
+    fetch('/mypage/auctions')
+      .then(res => res.json())
+      .then(data => setAuctions(data))
+      .catch(err => console.error(err));
+  }, []);
 
   // 숫자 포맷팅 함수 (Thymeleaf의 numbers.formatInteger 대체)
   const formatPrice = (price) => {
