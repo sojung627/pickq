@@ -52,33 +52,52 @@ public class MemberController {
     }
 
     // 로그인 처리
+//    @PostMapping("/login")
+//    public Map<String, Object> loginProcess(@RequestBody LoginRequestDTO loginRequest, HttpServletRequest request) {
+//        Map<String, Object> response = new HashMap<>();
+//
+//        // loginRequest에서 아이디와 비번을 꺼내서 서비스에 전달!
+//        MemberEntity loginMember = memberService.login(loginRequest.getMemId(), loginRequest.getMemPwd());
+//
+//        if (loginMember != null) {
+//            // 탈퇴 회원 체크
+//            if ("Y".equals(loginMember.getMemIsDeleted())) {
+//                response.put("status", "withdrawn");
+//                response.put("message", "탈퇴한 회원입니다.");
+//                return response;
+//            }
+//            // 정상 로그인
+//            HttpSession session = request.getSession();
+//            session.setAttribute("loginMember", loginMember.getMemId());
+//            response.put("status", "success");
+//            response.put("message", "로그인 되었습니다.");
+//        } else {
+//            response.put("status", "fail");
+//            response.put("message", "아이디 또는 비밀번호가 일치하지 않습니다.");
+//            // 확인용
+//            System.out.println("로그인 실패 시도 아이디: " + loginRequest.getMemId());
+//        }
+//
+//        return response;
+//    }
+
     @PostMapping("/login")
     public Map<String, Object> loginProcess(@RequestBody LoginRequestDTO loginRequest, HttpServletRequest request) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> result = memberService.loginWithLock(loginRequest.getMemId(), loginRequest.getMemPwd());
 
-        // loginRequest에서 아이디와 비번을 꺼내서 서비스에 전달!
-        MemberEntity loginMember = memberService.login(loginRequest.getMemId(), loginRequest.getMemPwd());
-
-        if (loginMember != null) {
-            // 탈퇴 회원 체크
+        if ("success".equals(result.get("status"))) {
+            MemberEntity loginMember = (MemberEntity) result.get("member");
             if ("Y".equals(loginMember.getMemIsDeleted())) {
+                Map<String, Object> response = new HashMap<>();
                 response.put("status", "withdrawn");
                 response.put("message", "탈퇴한 회원입니다.");
                 return response;
             }
-            // 정상 로그인
             HttpSession session = request.getSession();
             session.setAttribute("loginMember", loginMember.getMemId());
-            response.put("status", "success");
-            response.put("message", "로그인 되었습니다.");
-        } else {
-            response.put("status", "fail");
-            response.put("message", "아이디 또는 비밀번호가 일치하지 않습니다.");
-            // 확인용
-            System.out.println("로그인 실패 시도 아이디: " + loginRequest.getMemId());
         }
 
-        return response;
+        return result;
     }
 
     // 로그인 API ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
