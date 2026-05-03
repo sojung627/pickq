@@ -8,27 +8,16 @@ INSERT INTO member (
     mem_id, mem_pwd, mem_name, mem_tel, mem_email,
     mem_ip, mem_role_idx, mem_grade_idx, mem_bday
 ) VALUES
-('admin', 'admin', '관리자', '010-0000-0000', 'admin01@test.com',
- '127.0.0.1', 2, 5, '1990-01-01'),
-
-('user01', '1234', '유저01', '010-1111-1111', 'user01@test.com',
- '127.0.0.1', 1, 1, '1993-01-01'),
-('user02', '1234', '유저02', '010-2222-2222', 'user02@test.com',
- '127.0.0.1', 1, 1, '1993-02-01'),
-('user03', '1234', '유저03', '010-3333-3333', 'user03@test.com',
- '127.0.0.1', 1, 2, '1993-03-01'),
-('user04', '1234', '유저04', '010-4444-4444', 'user04@test.com',
- '127.0.0.1', 1, 2, '1993-04-01'),
-('user05', '1234', '유저05', '010-5555-5555', 'user05@test.com',
- '127.0.0.1', 1, 3, '1993-05-01'),
-('user06', '1234', '유저06', '010-6666-6666', 'user06@test.com',
- '127.0.0.1', 1, 3, '1993-06-01'),
-('user07', '1234', '유저07', '010-7777-7777', 'user07@test.com',
- '127.0.0.1', 1, 1, '1993-07-01'),
-('user08', '1234', '유저08', '010-8888-8888', 'user08@test.com',
- '127.0.0.1', 1, 2, '1993-08-01'),
-('user09', '1234', '유저09', '010-9999-9999', 'user09@test.com',
- '127.0.0.1', 1, 4, '1993-09-01');
+      ('admin', '$2a$10$SdPZn2I0grYmMmdU1D8oseMcuUo41MuIhCVz6E57Z/wyKjkD3E4za', '관리자', '010-0000-0000', 'admin01@test.com', '127.0.0.1', 2, 5, '1990-01-01'),
+      ('user01', '$2a$10$SdPZn2I0grYmMmdU1D8oseMcuUo41MuIhCVz6E57Z/wyKjkD3E4za', '유저01', '010-1111-1111', 'user01@test.com', '127.0.0.1', 1, 1, '1993-01-01'),
+      ('user02', '$2a$10$SdPZn2I0grYmMmdU1D8oseMcuUo41MuIhCVz6E57Z/wyKjkD3E4za', '유저02', '010-2222-2222', 'user02@test.com', '127.0.0.1', 1, 1, '1993-02-01'),
+      ('user03', '$2a$10$SdPZn2I0grYmMmdU1D8oseMcuUo41MuIhCVz6E57Z/wyKjkD3E4za', '유저03', '010-3333-3333', 'user03@test.com', '127.0.0.1', 1, 2, '1993-03-01'),
+      ('user04', '$2a$10$SdPZn2I0grYmMmdU1D8oseMcuUo41MuIhCVz6E57Z/wyKjkD3E4za', '유저04', '010-4444-4444', 'user04@test.com', '127.0.0.1', 1, 2, '1993-04-01'),
+      ('user05', '$2a$10$SdPZn2I0grYmMmdU1D8oseMcuUo41MuIhCVz6E57Z/wyKjkD3E4za', '유저05', '010-5555-5555', 'user05@test.com', '127.0.0.1', 1, 3, '1993-05-01'),
+      ('user06', '$2a$10$SdPZn2I0grYmMmdU1D8oseMcuUo41MuIhCVz6E57Z/wyKjkD3E4za', '유저06', '010-6666-6666', 'user06@test.com', '127.0.0.1', 1, 3, '1993-06-01'),
+      ('user07', '$2a$10$SdPZn2I0grYmMmdU1D8oseMcuUo41MuIhCVz6E57Z/wyKjkD3E4za', '유저07', '010-7777-7777', 'user07@test.com', '127.0.0.1', 1, 1, '1993-07-01'),
+      ('user08', '$2a$10$SdPZn2I0grYmMmdU1D8oseMcuUo41MuIhCVz6E57Z/wyKjkD3E4za', '유저08', '010-8888-8888', 'user08@test.com', '127.0.0.1', 1, 2, '1993-08-01'),
+      ('user09', '$2a$10$SdPZn2I0grYmMmdU1D8oseMcuUo41MuIhCVz6E57Z/wyKjkD3E4za', '유저09', '010-9999-9999', 'user09@test.com', '127.0.0.1', 1, 4, '1993-09-01');
 
  /* ==========================================
    BOARD 더미
