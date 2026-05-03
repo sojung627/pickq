@@ -65,6 +65,15 @@ public class MemberEntity {
     @Column(name = "mem_login_type", length = 10)
     private String memLoginType;
 
+    @Column(name = "mem_login_fail_count", nullable = false)
+    private Integer memLoginFailCount = 0;
+
+    @Column(name = "mem_locked", nullable = false, length = 1)
+    private String memLocked = "N";
+
+    @Column(name = "mem_lock_time")
+    private LocalDateTime memLockTime;
+
     @PrePersist
     public void prePersist() {
         if (memRegdate == null) memRegdate = LocalDateTime.now();

@@ -1,7 +1,9 @@
 package org.example.bbs.memberUpdate;
 
 import lombok.RequiredArgsConstructor;
+//import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+//import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import org.example.bbs.member.MemberEntity;
@@ -16,6 +18,14 @@ public class MemberUpdateController {
 
     private final MemberUpdateService memberService;
     private final MemberUpdateRepository memberUpdateRepository;
+
+//    @Autowired
+//    private PasswordEncoder passwordEncoder;
+//
+//    @GetMapping("/test/encode")
+//    public String encode() {
+//        return passwordEncoder.encode("1234");
+//    }
 
     // 회원정보 불러오기
     @GetMapping("/info")
