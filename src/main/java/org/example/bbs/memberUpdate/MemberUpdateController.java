@@ -5,7 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.example.bbs.member.MemberEntity;
-import jakarta.servlet.http.HttpSession;
 
 import java.util.Map;
 
@@ -38,12 +37,18 @@ public class MemberUpdateController {
     // 회원정보 수정
     @PostMapping("/info")
     public ResponseEntity<?> updateInfo(@RequestBody MemberUpdateDTO memberUpdateDTO) {
-        boolean isUpdated = memberService.updateMemberInfo(memberUpdateDTO);
+        memberService.updateMemberInfo(memberUpdateDTO);
+        return ResponseEntity.ok(Map.of("message", "회원정보가 수정 되었습니다."));
+    }
 
-        if (isUpdated) {
-            return ResponseEntity.ok(Map.of("message", "회원정보가 수정 되었습니다."));
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("message", "기존 비밀번호와 동일하여 변경할 수 없습니다."));
-        }
+    // 이전 비밀번호 동일 여부 확인
+    @PostMapping("/checkPwd")
+    public ResponseEntity<?> checkPwd(
+            @SessionAttribute(name = "loginMember") String memId,
+            @RequestBody Map<String, String> body) {
+        MemberEntity member = memberUpdateRepository.findByMemId(memId)
+                .orElseThrow(() -> new RuntimeException("회원 없음"));
+        boolean isSame = memberService.isSamePassword(body.get("newPwd"), member.getMemPwd());
+        return ResponseEntity.ok(Map.of("isSame", isSame));
     }
 }

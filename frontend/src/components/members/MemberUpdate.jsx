@@ -11,8 +11,8 @@ const MemberUpdate = () => {
   const [pwdMsg, setPwdMsg] = useState({ text: '', color: 'text-gray-500' });
   const [showPwd, setShowPwd] = useState(false);
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
+  const [updateMsg, setUpdateMsg] = useState({ text: '', color: '' });
 
-  // 서버에서 회원정보 불러오기
   useEffect(() => {
     fetch("http://localhost:8080/mypage/info", { credentials: "include" })
       .then(res => res.json())
@@ -63,7 +63,7 @@ const MemberUpdate = () => {
       })
     });
     const data = await res.json();
-    console.log(data.message);
+    setUpdateMsg({ text: '✔ 회원정보가 수정되었습니다.', color: 'text-green-600' });
   };
 
   useEffect(() => {
@@ -91,8 +91,22 @@ const MemberUpdate = () => {
       setIsSubmitDisabled(true);
       return;
     }
-    setPwdMsg({ text: '✔ 비밀번호가 일치하며 사용 가능합니다.', color: 'text-gray-500' });
-    setIsSubmitDisabled(false);
+    fetch("http://localhost:8080/mypage/checkPwd", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newPwd })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.isSame) {
+        setPwdMsg({ text: '✘ 이전 비밀번호와 동일합니다.', color: 'text-red-500 text-[12px]' });
+        setIsSubmitDisabled(true);
+      } else {
+        setPwdMsg({ text: '✔ 비밀번호가 일치하며 사용 가능합니다.', color: 'text-gray-500' });
+        setIsSubmitDisabled(!fieldsChanged);
+      }
+    });
   }, [formData, initialValues]);
 
   return (
@@ -150,7 +164,7 @@ const MemberUpdate = () => {
               <input type={showPwd ? 'text' : 'password'} name="newPwdConfirm" value={formData.newPwdConfirm}
                 onChange={handleChange} placeholder="🔒 변경할 비밀번호를 확인해주세요"
                 className="w-full bg-white border border-gray-300 rounded-md px-3 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#7CBD00]" />
-              {pwdMsg.text && <p className={`text-[11px] mt-1 ${pwdMsg.color}`}>{pwdMsg.text}</p>}
+              {pwdMsg.text && <p className={`text-[12px] mt-1 ${pwdMsg.color}`}>{pwdMsg.text}</p>}
             </div>
           )}
 
@@ -159,6 +173,9 @@ const MemberUpdate = () => {
               className="w-full sm:w-auto px-6 py-2.5 bg-[#7CBD00] text-white rounded-md text-sm font-semibold hover:bg-[#6BAD00] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">
               정보 업데이트
             </button>
+            {updateMsg.text && (
+              <p className={`text-sm mt-2 ${updateMsg.color}`}>{updateMsg.text}</p>
+            )}
           </div>
         </div>
       </div>
