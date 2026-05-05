@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 /**
  * 배송지 관리 컴포넌트
@@ -24,8 +25,10 @@ const AddressManagement = ({ addrList = [], member = {} }) => {
   };
 
   // 페이지 이동 (수정/추가)
+  const navigate = useNavigate();
+
   const navigateTo = (url) => {
-    window.location.href = url;
+    navigate(url);
   };
 
   return (

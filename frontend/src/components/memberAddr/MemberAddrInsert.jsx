@@ -74,9 +74,9 @@ const AddressInsert = ({ member = {}, redirectAfterSave = "" }) => {
         isPrimary: primaryValue
       };
 
-      // 2. 주소 수정: 컨트롤러의 @RequestMapping("/mypage/addresses") + @PostMapping("/new")
       fetch("/mypage/addresses/new", {
         method: "POST",
+        credentials: "include", // 세션 쿠키 포함
         headers: {
           "Content-Type": "application/json" // JSON 전송 명시
         },
