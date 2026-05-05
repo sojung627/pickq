@@ -21,6 +21,7 @@ import MemberUpdate from "./components/members/MemberUpdate";
 
 import AddressManagement from "./components/memberAddr/memberAddr";
 import AddressInsert from "./components/memberAddr/memberAddrInsert";
+import AddressUpdate from "./components/memberAddr/memberAddrUpdate";
 
 function App() {
 
@@ -47,6 +48,7 @@ function App() {
               <Route path="info" element={<MemberUpdate />} />
               <Route path="addresses" element={<AddressManagement />} />
               <Route path="addresses/new" element={<AddressInsert />} />
+              <Route path="addresses/edit" element={<AddressUpdate />} />
             </Route>
           </Routes>
         </main>
