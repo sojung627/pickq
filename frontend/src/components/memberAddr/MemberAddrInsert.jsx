@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-/**
- * 배송지 추가 컴포넌트
- * (PickQ 프로젝트 마이페이지 주소 등록 섹션)
- */
+// 주소 등록
 const AddressInsert = ({ member = {}, redirectAfterSave = "" }) => {
   // 상태 관리: 주소 정보 및 버튼 활성화 여부
   const [addressData, setAddressData] = useState({
@@ -58,47 +55,48 @@ const AddressInsert = ({ member = {}, redirectAfterSave = "" }) => {
   };
 
   // 주소 저장 로직 (fetch 방식 유지)
-  const saveAddr = () => {
-    const { memZipcode, memAddr, memAddrDetail, isPrimary } = addressData;
-    const primaryValue = isPrimary ? "Y" : "N";
+  // 주소 저장 로직 수정
+    const saveAddr = () => {
+      const { memZipcode, memAddr, memAddrDetail, isPrimary } = addressData;
+      const primaryValue = isPrimary ? "Y" : "N";
 
-    // 회원 번호 체크 (기존 로직 유지)
-    if (!member.memIdx || member.memIdx === "" || member.memIdx === "0") {
-      alert("로그인 정보가 없습니다. 다시 로그인해 주세요!");
-      window.location.href = "/login";
-      return;
-    }
+      if (!member.memIdx) { // memId가 필요한지 memIdx가 필요한지 체크 필요
+        alert("로그인 정보가 없습니다.");
+        return;
+      }
 
-    if (memZipcode === "" || memAddr === "") {
-      alert("주소를 먼저 검색해 주세요!");
-      return;
-    }
+      // 1. 전송 데이터 구성 (JSON 객체로 생성)
+      const requestData = {
+        memId: member.memId, // 컨트롤러 DTO 구조에 따라 memId 또는 memIdx 전달
+        memZipcode,
+        memAddr,
+        memAddrDetail,
+        isPrimary: primaryValue
+      };
 
-    // 전송 데이터 구성
-    const bodyParams = new URLSearchParams({
-      memZipcode,
-      memAddr,
-      memAddrDetail,
-      memIdx: member.memIdx,
-      isPrimary: primaryValue
-    });
-
-    fetch("/member/insertAddrAjax.do", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: bodyParams.toString()
-    })
-      .then(res => res.text())
-      .then(result => {
-        if (result.trim() === "1") {
-          alert("✓ 성공적으로 저장되었습니다!");
-          window.location.href = redirectAfterSave || "/mypage/addresses";
-        } else {
-          alert("✗ 저장 실패: 다시 시도해 주세요.");
-        }
+      // 2. 주소 수정: 컨트롤러의 @RequestMapping("/mypage/addresses") + @PostMapping("/new")
+      fetch("/mypage/addresses/new", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json" // JSON 전송 명시
+        },
+        body: JSON.stringify(requestData) // 객체를 문자열로 변환
       })
-      .catch(err => console.error("에러 발생: ", err));
-  };
+        .then(res => {
+          if (res.ok) return res.text();
+          throw new Error("네트워크 응답 에러");
+        })
+        .then(result => {
+          if (result === "success") {
+            alert("✓ 성공적으로 저장되었습니다!");
+            window.location.href = redirectAfterSave || "/mypage/addresses";
+          }
+        })
+        .catch(err => {
+          console.error("에러 발생: ", err);
+          alert("저장 중 오류가 발생했습니다.");
+        });
+    };
 
   return (
     <div className="border border-gray-200 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
