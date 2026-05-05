@@ -40,10 +40,4 @@ public class MemberAddrEntity {
             isPrimary = "N";
         }
     }
-
-    // 조인
-    // MemberEntity와 조인 (N:1 관계)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "memId") // DB의 외래키 컬럼명
-    private MemberEntity member;
 }

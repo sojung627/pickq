@@ -2,35 +2,40 @@ package org.example.bbs.memberAddr;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.bbs.member.MemberEntity;
+import org.example.bbs.member.MemberRepository; // 추가 필요
 import org.springframework.stereotype.Service;
-
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class MemberAddrService {
 
-    private final MemberAddressRepository memberAddressRepository;
+    private final MemberAddrRepository memberAddrRepository;
+    private final MemberRepository memberRepository; // Member를 찾기 위해 주입
 
     public List<AddressDTO> findAllByMemId(String memId) {
-        // DB에서 해당 회원의 주소 목록을 가져와서 DTO로 변환하는 로직
-        return memberAddressRepository.findByMemId(memId);
+        // 엔티티로 조회 후 DTO로 변환
+        return memberAddrRepository.findByMember_MemId(memId).stream()
+                .map(AddressDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
     public void saveAddress(AddressDTO dto) {
-        memberAddressRepository.save(dto.toEntity());
+        // dto.toEntity()에 필요한 MemberEntity를 찾아서 전달
+        MemberEntity member = memberRepository.findByMemId(dto.getMemId())
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+        memberAddrRepository.save(dto.toEntity(member));
     }
 
     public void deleteAddress(Long addrIdx) {
-        memberAddressRepository.deleteById(addrIdx);
+        memberAddrRepository.deleteById(addrIdx);
     }
 
     @Transactional
     public void updatePrimaryAddress(Long addrIdx, String memId) {
-        // 1. 기존에 'Y'였던 배송지들을 모두 'N'으로 변경
-        memberAddressRepository.resetPrimaryStatus(memId);
-        // 2. 선택한 배송지만 'Y'로 변경
-        memberAddressRepository.setPrimaryStatus(addrIdx);
+        memberAddrRepository.resetPrimaryStatus(memId);
+        memberAddrRepository.setPrimaryStatus(addrIdx);
     }
-
 }
