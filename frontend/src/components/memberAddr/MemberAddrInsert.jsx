@@ -11,7 +11,7 @@ const AddressInsert = ({ member = {}, redirectAfterSave = "" }) => {
   });
   const [isBtnDisabled, setIsBtnDisabled] = useState(true);
 
-  // 입력값 변경 핸들러
+  // 입력값 변경 핸들러 
   const handleInputChange = (e) => {
     const { id, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
