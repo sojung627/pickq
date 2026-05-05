@@ -50,7 +50,7 @@ public class MemberController {
         }
         return response;
     }
-    
+
 
     @PostMapping("/login")
     public Map<String, Object> loginProcess(@RequestBody LoginRequestDTO loginRequest, HttpServletRequest request) {
