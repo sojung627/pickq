@@ -19,6 +19,9 @@ import Auctions from "./components/auction/Auctions";
 
 import MemberUpdate from "./components/members/MemberUpdate";
 
+import AddressManagement from "./components/memberAddr/memberAddr";
+import AddressInsert from "./components/memberAddr/memberAddrInsert";
+
 function App() {
 
   return (
@@ -42,6 +45,8 @@ function App() {
             <Route path="/mypage" element={<MyPageLayout />}>
               <Route path="auctions" element={<Auctions />} />
               <Route path="info" element={<MemberUpdate />} />
+              <Route path="addresses" element={<AddressManagement />} />
+              <Route path="addresses/new" element={<AddressInsert />} />
             </Route>
           </Routes>
         </main>

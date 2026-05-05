@@ -69,8 +69,7 @@ const MyPageLayout = () => {
               <button
                 type="button"
                 className="lg:hidden w-full flex items-center justify-between px-4 py-3 border-b border-gray-100 text-base font-semibold text-[#222222]"
-                onClick={toggleSidebar}
-              >
+                onClick={toggleSidebar}>
                 <span>마이페이지 메뉴</span>
                 <i className={`bi bi-chevron-down text-[#767676] transition-transform duration-300 ${isSidebarOpen ? 'rotate-180' : ''}`}></i>
               </button>
@@ -86,8 +85,7 @@ const MyPageLayout = () => {
                 style={{
                   maxHeight: isSidebarOpen ? `${sidebarBodyRef.current?.scrollHeight}px` : '0px',
                 }}
-                className={`overflow-hidden transition-[max-height] duration-300 ease-in-out lg:!max-h-none lg:overflow-visible`}
-              >
+                className={`overflow-hidden transition-[max-height] duration-300 ease-in-out lg:!max-h-none lg:overflow-visible`}>
                 {/* MY 경매 */}
                 <div className="px-4 py-3 border-b border-gray-100">
                   <h3 className="text-xs font-semibold tracking-[0.06em] text-[#8C8F95]">MY 경매</h3>
