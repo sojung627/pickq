@@ -38,4 +38,20 @@ public class MemberAddrService {
         memberAddrRepository.resetPrimaryStatus(memId);
         memberAddrRepository.setPrimaryStatus(addrIdx);
     }
+
+    public AddressDTO findByAddrIdx(Long addrIdx) {
+        MemberAddrEntity entity = memberAddrRepository.findById(addrIdx)
+                .orElseThrow(() -> new RuntimeException("주소를 찾을 수 없습니다."));
+        return AddressDTO.fromEntity(entity);
+    }
+
+    @Transactional
+    public void updateAddress(AddressDTO dto) {
+        MemberAddrEntity entity = memberAddrRepository.findById(dto.getAddrIdx())
+                .orElseThrow(() -> new RuntimeException("주소를 찾을 수 없습니다."));
+        entity.setMemZipcode(dto.getMemZipcode());
+        entity.setMemAddr(dto.getMemAddr());
+        entity.setMemAddrDetail(dto.getMemAddrDetail());
+        entity.setIsPrimary(dto.getIsPrimary() != null ? dto.getIsPrimary() : "N");
+    }
 }

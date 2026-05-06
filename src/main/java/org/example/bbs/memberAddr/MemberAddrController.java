@@ -3,7 +3,6 @@ package org.example.bbs.memberAddr;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.example.bbs.memberAddr.MemberAddrService;
 
 import java.util.List;
 
@@ -23,11 +22,25 @@ public class MemberAddrController {
         return ResponseEntity.ok(list);
     }
 
+    // 배송지 단건 조회
+    @GetMapping("/{addrIdx}")
+    public ResponseEntity<AddressDTO> getAddress(@PathVariable Long addrIdx) {
+        AddressDTO dto = memberAddrService.findByAddrIdx(addrIdx);
+        return ResponseEntity.ok(dto);
+    }
+
     // 새 배송지 추가
     @PostMapping("/new")
     public ResponseEntity<String> addAddress(@RequestBody AddressDTO addressDTO) {
         memberAddrService.saveAddress(addressDTO);
         return ResponseEntity.ok("success");
+    }
+
+    // 배송지 수정
+    @PutMapping("/edit")
+    public ResponseEntity<String> updateAddress(@RequestBody AddressDTO addressDTO) {
+        memberAddrService.updateAddress(addressDTO);
+        return ResponseEntity.ok("updated");
     }
 
     // 배송지 삭제
@@ -45,6 +58,4 @@ public class MemberAddrController {
         memberAddrService.updatePrimaryAddress(addrIdx, memId);
         return ResponseEntity.ok("primary updated");
     }
-
-
 }

@@ -1,37 +1,44 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
-const AddressUpdate = ({ member, addr }) => {
-  // 초기값 저장 (변경 여부 체크용)
-  const [originalValues] = useState({
-    zipcode: addr?.memZipcode || '',
-    addr: addr?.memAddr || '',
-    addrDetail: addr?.memAddrDetail || '',
-    isPrimary: addr?.isPrimary === 'Y'
-  });
-
-  // 입력 필드 상태 관리
+const AddressUpdate = () => {
+  const [searchParams] = useSearchParams();
+  const addrIdx = searchParams.get('addrIdx');
+  const navigate = useNavigate();
+  const [member, setMember] = useState({});
+  const [originalValues, setOriginalValues] = useState({});
   const [addressData, setAddressData] = useState({
-    memZipcode: addr?.memZipcode || '',
-    memAddr: addr?.memAddr || '',
-    memAddrDetail: addr?.memAddrDetail || '',
-    isPrimary: addr?.isPrimary === 'Y'
+    memZipcode: '', memAddr: '', memAddrDetail: '', isPrimary: false
   });
-
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [showNoChangeMsg, setShowNoChangeMsg] = useState(false);
 
-  // 변경 여부 및 유효성 검사 (useEffect로 실시간 체크)
+  useEffect(() => {
+    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+      .then(res => res.json())
+      .then(data => setMember(data));
+
+    fetch(`http://localhost:8080/mypage/addresses/${addrIdx}`, { credentials: "include" })
+      .then(res => res.json())
+      .then(data => {
+        const loaded = {
+          memZipcode: data.memZipcode || '',
+          memAddr: data.memAddr || '',
+          memAddrDetail: data.memAddrDetail || '',
+          isPrimary: data.isPrimary === 'Y'
+        };
+        setAddressData(loaded);
+        setOriginalValues(loaded);
+      });
+  }, [addrIdx]);
+
   useEffect(() => {
     const { memZipcode, memAddr, memAddrDetail, isPrimary } = addressData;
-
-    // 필수 입력 체크
     const isFilled = memZipcode.trim() !== '' && memAddr.trim() !== '' && memAddrDetail.trim() !== '';
-
-    // 원래 값과 비교
     const hasChanged =
-      memZipcode !== originalValues.zipcode ||
-      memAddr !== originalValues.addr ||
-      memAddrDetail !== originalValues.addrDetail ||
+      memZipcode !== originalValues.memZipcode ||
+      memAddr !== originalValues.memAddr ||
+      memAddrDetail !== originalValues.memAddrDetail ||
       isPrimary !== originalValues.isPrimary;
 
     if (!isFilled) {
@@ -46,7 +53,6 @@ const AddressUpdate = ({ member, addr }) => {
     }
   }, [addressData, originalValues]);
 
-  // 주소창 띄우기 (카카오/다음 우편번호 서비스)
   const findAddr = () => {
     new window.daum.Postcode({
       oncomplete: (data) => {
@@ -54,45 +60,31 @@ const AddressUpdate = ({ member, addr }) => {
           ...prev,
           memZipcode: data.zonecode,
           memAddr: data.address,
-          memAddrDetail: '' // 주소 변경 시 상세주소 초기화 및 포커스는 수동 제어 필요
+          memAddrDetail: ''
         }));
       }
     }).open();
   };
 
-  // 주소 저장 버튼 (기능 유지)
   const saveAddr = () => {
-    if (!member || !member.memIdx || member.memIdx === "0") {
-      alert("로그인 정보가 없습니다");
-      window.location.href = "members/login";
-      return;
-    }
-
     const { memZipcode, memAddr, memAddrDetail, isPrimary } = addressData;
-    const primaryValue = isPrimary ? "Y" : "N";
 
-    fetch("/member/updateAddrAjax.do", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        addrIdx: addr.addrIdx,
+    fetch(`http://localhost:8080/mypage/addresses/edit`, {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        addrIdx: Number(addrIdx),
         memZipcode,
         memAddr,
         memAddrDetail,
-        memIdx: member.memIdx,
-        isPrimary: primaryValue
-      }).toString()
-    })
-      .then(res => res.text())
-      .then(result => {
-        if (result.trim() === "1") {
-          alert("✓ 성공적으로 수정되었습니다!");
-          window.location.href = "/mypage/addresses";
-        } else {
-          alert("✗ 저장 실패: 다시 시도해 주세요");
-        }
+        isPrimary: isPrimary ? "Y" : "N"
       })
-      .catch(err => console.log("에러 발생: ", err));
+    })
+    .then(res => {
+      if (res.ok) navigate("/mypage/addresses");
+    })
+    .catch(err => console.error("에러: ", err));
   };
 
   return (
