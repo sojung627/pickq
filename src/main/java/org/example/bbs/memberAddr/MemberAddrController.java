@@ -39,7 +39,9 @@ public class MemberAddrController {
 
     // 대표 배송지 설정
     @PutMapping("/primary")
-    public ResponseEntity<String> setPrimaryAddress(@RequestParam Long addrIdx, @RequestParam String memId) {
+    public ResponseEntity<String> setPrimaryAddress(
+            @RequestParam Long addrIdx,
+            @SessionAttribute(name = "loginMember") String memId) {
         memberAddrService.updatePrimaryAddress(addrIdx, memId);
         return ResponseEntity.ok("primary updated");
     }

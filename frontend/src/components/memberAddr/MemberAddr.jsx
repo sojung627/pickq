@@ -17,13 +17,39 @@ const AddressManagement = () => {
   }, []);
 
   const deleteAddr = (addrIdx) => {
-    if (window.confirm("주소를 삭제하시겠습니까?")) {
-      console.log(`주소 삭제 실행: ${addrIdx}`);
-    }
+      if (window.confirm("주소를 삭제하시겠습니까?")) {
+          fetch(`http://localhost:8080/mypage/addresses/delete?addrIdx=${addrIdx}`, {
+              method: "DELETE",
+              credentials: "include"
+          })
+          .then(res => {
+              if (res.ok) {
+                  setAddresses(prev => prev.filter(addr => addr.addrIdx !== addrIdx));
+              }
+          })
+          .catch(err => console.error("삭제 에러: ", err));
+      }
   };
 
   const setPrimary = (addrIdx) => {
-    console.log(`대표 배송지 설정 실행: ${addrIdx}`);
+      fetch(`http://localhost:8080/mypage/addresses/primary?addrIdx=${addrIdx}`, {
+          method: "PUT",
+          credentials: "include"
+      })
+      .then(res => {
+          if (res.ok) {
+              // 대표 배송지 변경 후 목록 다시 불러오기 + 맨 위로 정렬
+              fetch("http://localhost:8080/mypage/addresses", { credentials: "include" })
+                  .then(res => res.json())
+                  .then(data => {
+                      const sorted = [...data].sort((a, b) =>
+                          a.isPrimary === 'Y' ? -1 : b.isPrimary === 'Y' ? 1 : 0
+                      );
+                      setAddresses(sorted);
+                  });
+          }
+      })
+      .catch(err => console.error("대표 배송지 설정 에러: ", err));
   };
 
   return (
@@ -93,7 +119,7 @@ const AddressManagement = () => {
           className="w-full inline-flex items-center justify-center px-4 py-2.5 bg-[#7CBD00] text-white rounded-md text-sm font-semibold hover:bg-[#6BAD00]">
           새 배송지 추가
         </button>
-      </div> 
+      </div>
     </div>
   );
 };
