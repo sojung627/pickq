@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useNavigate } from 'react';
 
 const AddressInsert = ({ redirectAfterSave = "" }) => {
+  const navigate = useNavigate();
   const [member, setMember] = useState({});
   const [addressData, setAddressData] = useState({
     memZipcode: "",
@@ -79,7 +80,7 @@ const AddressInsert = ({ redirectAfterSave = "" }) => {
     })
     .then(result => {
       if (result === "success") {
-        window.location.href = redirectAfterSave || "/mypage/addresses";
+        navigate(redirectAfterSave || "/mypage/addresses");
       }
     })
     .catch(err => console.error("에러 발생: ", err));

@@ -2,6 +2,7 @@ spring:
   application:
     name: pickq
 
+# 에러 핸들링용
 #  mvc:
 #    throw-exception-if-no-handler-found: true
 #
