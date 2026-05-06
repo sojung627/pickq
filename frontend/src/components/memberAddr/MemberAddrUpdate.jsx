@@ -10,6 +10,7 @@ const AddressUpdate = () => {
   const [addressData, setAddressData] = useState({
     memZipcode: '', memAddr: '', memAddrDetail: '', isPrimary: false
   });
+  const [isDirty, setIsDirty] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [showNoChangeMsg, setShowNoChangeMsg] = useState(false);
 
@@ -29,6 +30,7 @@ const AddressUpdate = () => {
         };
         setAddressData(loaded);
         setOriginalValues(loaded);
+        setIsDirty(false);
       });
   }, [addrIdx]);
 
@@ -47,11 +49,12 @@ const AddressUpdate = () => {
     } else if (hasChanged) {
       setIsButtonDisabled(false);
       setShowNoChangeMsg(false);
+      setIsDirty(true);
     } else {
       setIsButtonDisabled(true);
-      setShowNoChangeMsg(true);
+      setShowNoChangeMsg(isDirty);
     }
-  }, [addressData, originalValues]);
+  }, [addressData, originalValues, isDirty]);
 
   const findAddr = () => {
     new window.daum.Postcode({
