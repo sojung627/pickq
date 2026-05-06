@@ -11,7 +11,7 @@ const AddressInsert = ({ member = {}, redirectAfterSave = "" }) => {
   });
   const [isBtnDisabled, setIsBtnDisabled] = useState(true);
 
-  // 입력값 변경 핸들러 
+  // 입력값 변경 핸들러
   const handleInputChange = (e) => {
     const { id, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
@@ -60,9 +60,9 @@ const AddressInsert = ({ member = {}, redirectAfterSave = "" }) => {
       const { memZipcode, memAddr, memAddrDetail, isPrimary } = addressData;
       const primaryValue = isPrimary ? "Y" : "N";
 
-      if (!member.memIdx) { // memId가 필요한지 memIdx가 필요한지 체크 필요
+      if (!member.memId) {
         alert("로그인 정보가 없습니다.");
-        return;
+        return; 
       }
 
       // 1. 전송 데이터 구성 (JSON 객체로 생성)
