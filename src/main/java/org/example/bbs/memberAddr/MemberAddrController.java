@@ -17,7 +17,8 @@ public class MemberAddrController {
 
     // 배송지 리스트 조회
     @GetMapping
-    public ResponseEntity<List<AddressDTO>> getAddressList(@RequestParam String memId) {
+    public ResponseEntity<List<AddressDTO>> getAddressList(
+            @SessionAttribute(name = "loginMember") String memId) {
         List<AddressDTO> list = memberAddrService.findAllByMemId(memId);
         return ResponseEntity.ok(list);
     }
