@@ -9,45 +9,52 @@ const AddressManagement = () => {
   useEffect(() => {
     fetch("http://localhost:8080/mypage/info", { credentials: "include" })
       .then(res => res.json())
-      .then(data => setMember(data));
+      .then(data => setMember(data))
+      .catch(err => console.error("회원 정보 조회 에러:", err));
 
     fetch("http://localhost:8080/mypage/addresses", { credentials: "include" })
       .then(res => res.json())
-      .then(data => setAddresses(data));
+      .then(data => {
+        // 불러올 때부터 대표 배송지가 맨 위로 오도록 정렬해서 저장
+        const sorted = [...data].sort((a, b) =>
+          a.isPrimary === 'Y' ? -1 : b.isPrimary === 'Y' ? 1 : 0
+        );
+        setAddresses(sorted);
+      })
+      .catch(err => console.error("주소 목록 조회 에러:", err));
   }, []);
 
   const deleteAddr = (addrIdx) => {
-      if (window.confirm("주소를 삭제하시겠습니까?")) {
-          fetch(`http://localhost:8080/mypage/addresses/delete?addrIdx=${addrIdx}`, {
-              method: "DELETE",
-              credentials: "include"
-          })
-          .then(res => {
-              if (res.ok) {
-                  setAddresses(prev => prev.filter(addr => addr.addrIdx !== addrIdx));
-              }
-          })
-          .catch(err => console.error("삭제 에러: ", err));
-      }
+    if (window.confirm("주소를 삭제하시겠습니까?")) {
+      fetch(`http://localhost:8080/mypage/addresses/delete?addrIdx=${addrIdx}`, {
+        method: "DELETE",
+        credentials: "include"
+      })
+        .then(res => {
+          if (res.ok) {
+            setAddresses(prev => prev.filter(addr => addr.addrIdx !== addrIdx));
+          }
+        })
+        .catch(err => console.error("삭제 에러: ", err));
+    }
   };
 
   const setPrimary = (addrIdx) => {
-      fetch(`http://localhost:8080/mypage/addresses/primary?addrIdx=${addrIdx}`, {
-          method: "PUT",
-          credentials: "include"
-      })
+    fetch(`http://localhost:8080/mypage/addresses/primary?addrIdx=${addrIdx}`, {
+      method: "PUT",
+      credentials: "include"
+    })
       .then(res => {
-          if (res.ok) {
-              // 대표 배송지 변경 후 목록 다시 불러오기 + 맨 위로 정렬
-              fetch("http://localhost:8080/mypage/addresses", { credentials: "include" })
-                  .then(res => res.json())
-                  .then(data => {
-                      const sorted = [...data].sort((a, b) =>
-                          a.isPrimary === 'Y' ? -1 : b.isPrimary === 'Y' ? 1 : 0
-                      );
-                      setAddresses(sorted);
-                  });
-          }
+        if (res.ok) {
+          fetch("http://localhost:8080/mypage/addresses", { credentials: "include" })
+            .then(res => res.json())
+            .then(data => {
+              const sorted = [...data].sort((a, b) =>
+                a.isPrimary === 'Y' ? -1 : b.isPrimary === 'Y' ? 1 : 0
+              );
+              setAddresses(sorted);
+            });
+        }
       })
       .catch(err => console.error("대표 배송지 설정 에러: ", err));
   };
@@ -59,6 +66,7 @@ const AddressManagement = () => {
         <p className="mt-1 text-xs sm:text-sm text-[#767676]">주문 시 사용할 배송지를 관리하세요</p>
       </div>
 
+      {/* ⚠️ 여기서부터 조건문 시작! addresses가 있을 때만 map을 돌려야 해 */}
       {addresses && addresses.length > 0 ? (
         <div className="space-y-4">
           {addresses.map((addr) => (
@@ -77,7 +85,9 @@ const AddressManagement = () => {
               <div className="px-6 py-4 space-y-3">
                 <div>
                   <div className="text-sm text-gray-500 mb-1">주소</div>
+                  <div className="text-sm text-gray-900">({addr.memZipcode})</div>
                   <div className="text-sm text-gray-900">{addr.memAddr}</div>
+                  <div className="text-sm text-gray-900">{addr.memAddrDetail}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 mb-1">연락처</div>
