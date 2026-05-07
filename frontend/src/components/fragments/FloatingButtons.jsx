@@ -18,7 +18,7 @@ const FloatingButtons = () => {
 
     // 맨 위로 이동
     const scrollToTop = () => {
-        window.scrollToTop({
+        window.scrollTo({
             top: 0,
             behavior: 'smooth', // 자연스레 넘어가라
         });

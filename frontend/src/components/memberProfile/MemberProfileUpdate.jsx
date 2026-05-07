@@ -133,8 +133,8 @@ const MemberProfileUpdate = () => {
       credentials: "include",
       body: formData
     }).then(res => {
-      if (res.ok) alert("프로필이 업데이트되었습니다!");
-    });
+          if (res.ok) window.location.reload();
+      });
   };
 
   return (
@@ -149,11 +149,11 @@ const MemberProfileUpdate = () => {
       <form onSubmit={handleSubmit} className="px-6 py-6 sm:py-7 space-y-6">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="flex-shrink-0 w-full sm:w-auto flex justify-center sm:justify-start">
-            <div className="w-[140px] h-[140px] sm:w-36 sm:h-36 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-200">
+            <div className="w-[140px] h-[140px] sm:w-36 sm:h-36 aspect-square rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
               <img
                 src={previewUrl}
                 alt="⚠️ 프로필 이미지가 예기치 못한 이유로 업로드 되지 않았습니다."
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover rounded-full"
               />
             </div>
           </div>
