@@ -43,7 +43,7 @@ public class MemberProfileService {
 
         if (memImgFile != null && !memImgFile.isEmpty()) {
             // 절대 경로로 변경
-            String uploadDir = System.getProperty("user.dir") + "/src/main/resources/static/images/profile/";
+            String uploadDir = System.getProperty("user.dir") + "/uploads/profile/";
             String fileName = UUID.randomUUID() + "_" + memImgFile.getOriginalFilename();
             File dest = new File(uploadDir + fileName);
             dest.getParentFile().mkdirs();

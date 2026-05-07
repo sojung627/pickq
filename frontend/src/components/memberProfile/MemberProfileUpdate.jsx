@@ -53,7 +53,7 @@ const MemberProfileUpdate = () => {
         setProfile(initial);
         setOriginalData(initial);
         // 서버의 이미지 경로에 맞춰서 URL 설정
-        setPreviewUrl(`/images/profile/${initial.memImg}`);
+        setPreviewUrl(`http://localhost:8080/uploads/profile/${initial.memImg}`);
       });
   }, []);
 
@@ -140,7 +140,9 @@ const MemberProfileUpdate = () => {
       credentials: "include",
       body: formData
     }).then(res => {
-          if (res.ok) window.location.reload();
+       if (res.ok) {
+              window.location.href = window.location.href;
+          }
       });
   };
 

@@ -2,6 +2,10 @@ spring:
   application:
     name: pickq
 
+  web:
+    resources:
+      static-locations: classpath:/static/,file:uploads/
+
 # 에러 핸들링용
 #  mvc:
 #    throw-exception-if-no-handler-found: true
