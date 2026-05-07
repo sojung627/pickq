@@ -9,8 +9,14 @@ const MemberProfileUpdate = () => {
     memIntro: '',
     memImg: ''
   });
+
+  const getRandomDefault = () => {
+    const randomIndex = Math.floor(Math.random() * 5) + 1; // 1~5 랜덤
+    return `/images/profile/profile_default_${randomIndex}.png`;
+  };
+
   const [originalData, setOriginalData] = useState({}); // 초기값 비교용
-  const [previewUrl, setPreviewUrl] = useState('');     // 이미지 미리보기
+  const [previewUrl, setPreviewUrl] = useState(getRandomDefault()); // 이미지 미리보기
   const [selectedFile, setSelectedFile] = useState(null); // 실제 업로드용 파일
 
   const [messages, setMessages] = useState({ nickname: '', intro: '' });
@@ -150,11 +156,14 @@ const MemberProfileUpdate = () => {
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="flex-shrink-0 w-full sm:w-auto flex justify-center sm:justify-start">
             <div className="w-[140px] h-[140px] sm:w-36 sm:h-36 aspect-square rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
+              { previewUrl && (
               <img
-                src={previewUrl}
-                alt="⚠️ 프로필 이미지가 예기치 못한 이유로 업로드 되지 않았습니다."
-                className="w-full h-full object-cover rounded-full"
+                 src={previewUrl}
+                 alt="⚠️ 프로필 이미지가 예기치 못한 이유로 업로드 되지 않았습니다."
+                 className="w-full h-full object-cover"
               />
+              )}
+
             </div>
           </div>
 
