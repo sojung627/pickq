@@ -23,18 +23,35 @@ const MemberProfileUpdate = () => {
     fetch("http://localhost:8080/mypage/profile/data", { credentials: "include" })
       .then(res => res.json())
       .then(data => {
+        // ✨ 랜덤 디폴트 이미지 5개 설정
+        const defaultImages = [
+          'profile_default_1.png',
+          'profile_default_2.png',
+          'profile_default_3.png',
+          'profile_default_4.png',
+          'profile_default_5.png'
+        ];
+
+        const getRandomDefault = () => {
+          const randomIndex = Math.floor(Math.random() * defaultImages.length);
+          return defaultImages[randomIndex];
+        };
+
         const initial = {
           memNickname: data.memNickname || '',
           memIntro: data.memIntro || '',
-          memImg: data.memImg || 'profile_default.png'
+          // 이미지가 없으면 5개 중 하나 랜덤 배정
+          memImg: data.memImg || getRandomDefault()
         };
+
         setProfile(initial);
         setOriginalData(initial);
-        setPreviewUrl(`http://localhost:8080/images/profile/${initial.memImg}`);
+        // 서버의 이미지 경로에 맞춰서 URL 설정
+        setPreviewUrl(`/images/profile/${initial.memImg}`);
       });
   }, []);
 
-  // 3. 닉네임 중복 체크 (디바운싱 없이 즉시 실행 로직 유지)
+  // 3. 닉네임 중복 체크
   const checkNickname = async (nickname) => {
     if (nickname === originalData.memNickname) {
       setMessages(prev => ({ ...prev, nickname: '' }));
@@ -51,7 +68,7 @@ const MemberProfileUpdate = () => {
       const count = await response.json();
 
       if (count > 0) {
-        setMessages(prev => ({ ...prev, nickname: '이미 사용중인 닉네임입니다' }));
+        setMessages(prev => ({ ...prev, nickname: '이미 사용중인 닉네임입니다.' }));
         setIsNicknameOk(false);
       } else {
         setMessages(prev => ({ ...prev, nickname: '' }));
@@ -67,18 +84,15 @@ const MemberProfileUpdate = () => {
   useEffect(() => {
     const { memNickname, memIntro } = profile;
 
-    // 유효성 체크
     const nicknameValid = memNickname.length >= 2 && memNickname.length <= 10;
     const introValid = memIntro.length >= 1 && memIntro.length <= 200;
 
-    // 메시지 처리
     setMessages(prev => ({
       ...prev,
       nickname: nicknameValid || memNickname === "" ? (isNicknameOk ? "" : prev.nickname) : "닉네임은 2~10자 이내로 작성해주세요",
       intro: introValid || memIntro === "" ? "" : "자기소개는 1~200자 이내로 작성해주세요"
     }));
 
-    // 변경 사항 체크
     const hasChanged =
       memNickname !== originalData.memNickname ||
       memIntro !== originalData.memIntro ||
@@ -125,7 +139,6 @@ const MemberProfileUpdate = () => {
 
   return (
     <div className="border border-gray-100 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
-      {/* 헤더 */}
       <div className="px-6 py-5 border-b border-gray-100">
         <h2 className="text-xl sm:text-2xl font-bold text-[#222222]">나의 프로필</h2>
         <p className="mt-2 text-sm sm:text-base text-[#767676]">
@@ -133,17 +146,14 @@ const MemberProfileUpdate = () => {
         </p>
       </div>
 
-      {/* 내용 */}
       <form onSubmit={handleSubmit} className="px-6 py-6 sm:py-7 space-y-6">
-
-        {/* 프로필 이미지 섹션 */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="flex-shrink-0 w-full sm:w-auto flex justify-center sm:justify-start">
             <div className="w-[140px] h-[140px] sm:w-36 sm:h-36 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-200">
               <img
                 src={previewUrl}
-                alt="미리보기"
-                className="w-full h-full object-cover"
+                alt="⚠️ 프로필 이미지가 예기치 못한 이유로 업로드 되지 않았습니다."
+                className="w-full h-full object-contain"
               />
             </div>
           </div>
@@ -168,7 +178,6 @@ const MemberProfileUpdate = () => {
           </div>
         </div>
 
-        {/* 닉네임 입력 */}
         <div className="space-y-1.5">
           <label htmlFor="memNickname" className="text-base sm:text-lg font-medium text-gray-900 block">닉네임</label>
           <input
@@ -182,7 +191,6 @@ const MemberProfileUpdate = () => {
           {messages.nickname && <p className="text-sm text-red-500">{messages.nickname}</p>}
         </div>
 
-        {/* 자기소개 입력 */}
         <div className="space-y-1.5">
           <label htmlFor="memIntro" className="text-base sm:text-lg font-medium text-gray-900 block">자기소개</label>
           <textarea
@@ -196,12 +204,11 @@ const MemberProfileUpdate = () => {
           {messages.intro && <p className="text-sm text-red-500">{messages.intro}</p>}
         </div>
 
-        {/* 하단 버튼 */}
         <div>
           <button
             type="submit"
             disabled={!(isValid && isDirty)}
-            className="inline-flex items-center px-6 py-3 bg-[#7CBD00] text-white rounded-lg text-base font-semibold hover:bg-[#6BAD00] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-[#7CBD00] text-white rounded-lg text-base font-semibold hover:bg-[#6BAD00] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             프로필 업데이트
           </button>
