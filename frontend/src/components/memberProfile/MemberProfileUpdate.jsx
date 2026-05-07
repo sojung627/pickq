@@ -66,7 +66,7 @@ const MemberProfileUpdate = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/members/checkNickname`, {
+      const response = await fetch(`http://localhost:8080/mypage/profile/members/checkNickname`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ memNickname: nickname })
@@ -134,6 +134,7 @@ const MemberProfileUpdate = () => {
     formData.append('memIntro', profile.memIntro);
     if (selectedFile) formData.append('memImgFile', selectedFile);
 
+    // 400 에러
     fetch("http://localhost:8080/mypage/profile", {
       method: "POST",
       credentials: "include",

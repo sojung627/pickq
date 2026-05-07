@@ -36,7 +36,7 @@ public class MemberProfileController {
         ));
     }
 
-    // 프로필 저장/수정
+    // 프로필 저장 / 수정
     @PostMapping
     public ResponseEntity<String> saveProfile(
             @SessionAttribute(name = "loginMember") String memId,
@@ -47,6 +47,7 @@ public class MemberProfileController {
             memberProfileService.saveProfile(memId, memNickname, memIntro, memImgFile);
             return ResponseEntity.ok("success");
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("fail");
         }
     }

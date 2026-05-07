@@ -31,14 +31,19 @@ public class MemberProfileService {
                 .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
 
         MemberProfileEntity profile = memberProfileRepository.findByMember_MemId(memId)
-                .orElse(MemberProfileEntity.builder().member(member).build());
+                .orElseGet(() -> {
+                    MemberProfileEntity newProfile = MemberProfileEntity.builder()
+                            .member(member)
+                            .build();
+                    return memberProfileRepository.save(newProfile); // 먼저 저장
+                });
 
         profile.setMemNickname(memNickname);
         profile.setMemIntro(memIntro);
 
-        // 이미지 파일 업로드
         if (memImgFile != null && !memImgFile.isEmpty()) {
-            String uploadDir = "src/main/resources/static/images/profile/";
+            // 절대 경로로 변경
+            String uploadDir = System.getProperty("user.dir") + "/src/main/resources/static/images/profile/";
             String fileName = UUID.randomUUID() + "_" + memImgFile.getOriginalFilename();
             File dest = new File(uploadDir + fileName);
             dest.getParentFile().mkdirs();

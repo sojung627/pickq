@@ -60,3 +60,5 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+    # 에러 콘솔 확인용
+    org.springframework.web.servlet: DEBUG
