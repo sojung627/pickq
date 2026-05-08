@@ -31,7 +31,7 @@ public class BoardService {
     public Map<String, Object> getBoardList(int page, String searchType, String keyword, String typeCode) {
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("boardIdx").descending());
 
-        Page<BoardEntity> boardPage = boardRepository.findBySearch(typeCode, keyword, pageable, searchType);
+        Page<BoardEntity> boardPage = boardRepository.findBySearch(typeCode, keyword, pageable);
 
         Map<String, Object> result = new HashMap<>();
         result.put("boards", boardPage.getContent().stream()
