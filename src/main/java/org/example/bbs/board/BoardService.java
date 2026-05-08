@@ -1,6 +1,9 @@
 package org.example.bbs.board;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.example.bbs.member.MemberEntity;
+import org.example.bbs.member.MemberRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,7 +22,9 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final BoardTypeRepository boardTypeRepository;
 
-    // 보드 리스트
+    private final MemberRepository memberRepository;
+
+    // 게시글 리스트
     public Map<String, Object> getBoardList(int page, String searchType, String keyword, String typeCode) {
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("boardIdx").descending());
 
@@ -63,7 +68,7 @@ public class BoardService {
     }
 
 
-    // 보드 상세보기
+    // 게시글 상세보기
     @Transactional
     public BoardDetailDTO getBoardDetail(String boardTypeCode, Long boardIdx) {
         BoardEntity board = boardRepository.findDetail(boardTypeCode, boardIdx)
@@ -85,5 +90,26 @@ public class BoardService {
                 .boardRegdate(board.getBoardRegdate())
                 .isLiked(true)
                 .build();
+    }
+
+
+    // 게시글 작성하기
+    @Transactional
+    public Long writeBoard(String typeCode, BoardWriteDTO dto, HttpServletRequest request, Long memIdx) {
+        MemberEntity member = memberRepository.findById(memIdx)
+                .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+
+        BoardTypeEntity boardType = boardTypeRepository.findByBoardTypeCode(typeCode)
+                .orElseThrow(() -> new RuntimeException("게시판 타입을 찾을 수 없습니다."));
+
+        BoardEntity board = BoardEntity.builder()
+                .member(member)
+                .boardType(boardType)
+                .boardTitle(dto.getBoardTitle())
+                .boardContent(dto.getBoardContent())
+                .boardIp(request.getRemoteAddr())
+                .build();
+
+        return boardRepository.save(board).getBoardIdx();
     }
 }

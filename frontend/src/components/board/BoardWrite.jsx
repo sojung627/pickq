@@ -18,19 +18,29 @@ const BoardWrite = () => {
   const listPath = from === 'all' ? '/boards' : `/boards/${selectedTypeCode}`;
 
   // 등록 핸들러 (기존의 form submit 역할)
+  const [errorMsg, setErrorMsg] = useState('');
+
   const handleSubmit = () => {
-    if (!boardTitle.trim()) {
-      alert('제목을 입력해주세요.');
-      return;
-    }
-    // 여기서 API 호출 (POST /boards/${selectedTypeCode})
-    const formData = {
-      boardTitle,
-      boardContent,
-      from
-    };
-    console.log('서버로 전송할 데이터:', formData);
-    // 성공 시 navigate(listPath);
+      if (!boardTitle.trim()) {
+          setErrorMsg('제목을 입력해주세요.');
+          return;
+      }
+      setErrorMsg('');
+      fetch(`http://localhost:8080/boards/${selectedTypeCode}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ boardTitle, boardContent })
+      })
+      .then(res => res.json())
+      .then(data => {
+          if (data.boardIdx) {
+              navigate(`/boards/${data.typeCode}/${data.boardIdx}`);
+          } else {
+              setErrorMsg(data.error || '등록에 실패했습니다.');
+          }
+      })
+      .catch(() => setErrorMsg('서버 오류가 발생했습니다.'));
   };
 
   return (
@@ -126,6 +136,9 @@ const BoardWrite = () => {
                 >
                   취소
                 </button>
+                {errorMsg && (
+                    <p className="mb-3 text-sm text-red-500">{errorMsg}</p>
+                )}
               </div>
 
             </div>

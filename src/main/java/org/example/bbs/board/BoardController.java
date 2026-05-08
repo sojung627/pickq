@@ -1,5 +1,7 @@
 package org.example.bbs.board;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,5 +47,23 @@ public class BoardController {
 
         BoardDetailDTO board = boardService.getBoardDetail(boardTypeCode, boardIdx);
         return ResponseEntity.ok(board);
+    }
+
+
+    // 게시글 작성하기
+    @PostMapping("/{typeCode}")
+    public ResponseEntity<?> write(
+            @PathVariable String typeCode,
+            @RequestBody BoardWriteDTO dto,
+            HttpServletRequest request,
+            HttpSession session) {
+
+        Long memIdx = (Long) session.getAttribute("memIdx");
+        if (memIdx == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
+        }
+
+        Long boardIdx = boardService.writeBoard(typeCode, dto, request, memIdx);
+        return ResponseEntity.ok(Map.of("boardIdx", boardIdx, "typeCode", typeCode));
     }
 }
