@@ -16,11 +16,12 @@ public class BoardController {
 
     private final BoardService boardService;
     private final BoardRepository boardRepository;
+    private final BoardTypeRepository boardTypeRepository;
 
     // 게시판 종류 가져오기
     @GetMapping("/types")
     public List<BoardTypeEntity> getBoardTypes() {
-        return BoardTypeEntity.findAll(); // BoardTypeEntity에 findAll이 존재하지 않음
+        return boardTypeRepository.findAll();
     }
 
     // 게시글 목록 가져오기 (리액트 useEffect 대응)
