@@ -58,12 +58,12 @@ public class BoardController {
             HttpServletRequest request,
             HttpSession session) {
 
-        Long memIdx = (Long) session.getAttribute("memIdx");
-        if (memIdx == null) {
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
         }
 
-        Long boardIdx = boardService.writeBoard(typeCode, dto, request, memIdx);
+        Long boardIdx = boardService.writeBoard(typeCode, dto, request, memId);
         return ResponseEntity.ok(Map.of("boardIdx", boardIdx, "typeCode", typeCode));
     }
 }

@@ -95,8 +95,8 @@ public class BoardService {
 
     // 게시글 작성하기
     @Transactional
-    public Long writeBoard(String typeCode, BoardWriteDTO dto, HttpServletRequest request, Long memIdx) {
-        MemberEntity member = memberRepository.findById(memIdx)
+    public Long writeBoard(String typeCode, BoardWriteDTO dto, HttpServletRequest request, String memId) {
+        MemberEntity member = memberRepository.findByMemId(memId)
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
 
         BoardTypeEntity boardType = boardTypeRepository.findByBoardTypeCode(typeCode)

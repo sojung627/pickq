@@ -29,7 +29,7 @@ const BoardWrite = () => {
       fetch(`http://localhost:8080/boards/${selectedTypeCode}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+          credentials: 'include', // 로그인용
           body: JSON.stringify({ boardTitle, boardContent })
       })
       .then(res => res.json())
@@ -59,8 +59,7 @@ const BoardWrite = () => {
           </div>
           <button
             onClick={() => navigate(listPath)}
-            className="inline-flex items-center text-xs sm:text-sm px-3 py-1.5 rounded-full text-[#767676] hover:text-[#222222] hover:bg-gray-50 border border-transparent transition-colors cursor-pointer"
-          >
+            className="inline-flex items-center text-xs sm:text-sm px-3 py-1.5 rounded-full text-[#767676] hover:text-[#222222] hover:bg-gray-50 border border-transparent transition-colors cursor-pointer">
             <i className="bi bi-arrow-left-short me-1 text-[1rem]"></i>
             목록으로
           </button>
@@ -80,8 +79,7 @@ const BoardWrite = () => {
                   id="categorySelect"
                   value={selectedTypeCode}
                   onChange={(e) => setSelectedTypeCode(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-[#222222] bg-white focus:outline-none focus:ring-2 focus:ring-[#7CBD00] cursor-pointer"
-                >
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-[#222222] bg-white focus:outline-none focus:ring-2 focus:ring-[#7CBD00] cursor-pointer">
                   {/* 예시 데이터 - 나중에 API로 불러온 boardTypes를 map으로 돌리면 돼 */}
                   <option value="soccer">축구</option>
                   <option value="baseball">야구</option>
@@ -101,8 +99,7 @@ const BoardWrite = () => {
                   onChange={(e) => setBoardTitle(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-[#222222] placeholder:text-[#a7a7a7] focus:outline-none focus:ring-2 focus:ring-[#7CBD00]"
                   placeholder="제목을 입력하세요"
-                  maxLength={200}
-                />
+                  maxLength={200}/>
               </div>
 
               {/* 내용 (에디터 영역) */}
@@ -125,15 +122,13 @@ const BoardWrite = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleSubmit}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] cursor-pointer"
-                >
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] cursor-pointer">
                   <i className="bi bi-pencil-square text-[13px]"></i>
                   <span>등록</span>
                 </button>
                 <button
-                  onClick={() => navigate(listPath)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold border border-gray-300 text-[#222222] bg-white hover:bg-gray-50 cursor-pointer"
-                >
+                    onClick={() => navigate(listPath)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold border border-gray-300 text-[#222222] bg-white hover:bg-gray-50 cursor-pointer">
                   취소
                 </button>
                 {errorMsg && (
