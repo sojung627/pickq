@@ -55,6 +55,7 @@ server:
   error:
     whitelabel:
       enabled: false
+    path: /api/error # 에러창
     include-message: never
     include-binding-errors: never
     include-stacktrace: never

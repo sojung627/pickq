@@ -114,19 +114,26 @@ const MemberProfileUpdate = () => {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('memNickname', profile.memNickname);
-    formData.append('memIntro', profile.memIntro);
-    if (selectedFile) formData.append('memImgFile', selectedFile);
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('memNickname', profile.memNickname);
+      formData.append('memIntro', profile.memIntro);
+      if (selectedFile) formData.append('memImgFile', selectedFile);
 
-    fetch("http://localhost:8080/mypage/profile", {
-      method: "POST",
-      credentials: "include",
-      body: formData
-    }).then(res => {
-       if (res.ok) window.location.reload();
-    });
+      fetch("http://localhost:8080/mypage/profile", {
+          method: "POST",
+          credentials: "include",
+          body: formData
+      })
+      .then(res => res.text())
+      .then(result => {
+          if (result === "success") {
+              setOriginalData({ ...profile });
+              setSelectedFile(null);
+              setWasModified(false);
+              setIsDirty(false);
+          }
+      });
   };
 
   return (
@@ -164,7 +171,7 @@ const MemberProfileUpdate = () => {
         {/* 자기소개 섹션 */}
         <div className="space-y-1.5">
           <label htmlFor="memIntro" className="text-base sm:text-lg font-medium text-gray-900 block">자기소개</label>
-          <div className="relative"> {/* ✨ 글자수 배치를 위한 relative 부모 */}
+          <div className="relative"> {/* 글자수 배치를 위한 relative 부모 */}
             <textarea
               id="memIntro"
               rows="4"
