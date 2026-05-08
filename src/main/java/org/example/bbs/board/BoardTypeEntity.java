@@ -1,7 +1,10 @@
 package org.example.bbs.board;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "board_type")
@@ -38,4 +41,8 @@ public class BoardTypeEntity {
             this.boardMinRole = 1L;
         }
     }
+
+    @OneToMany(mappedBy = "boardType")
+    @JsonIgnore
+    private List<BoardEntity> boards;
 }

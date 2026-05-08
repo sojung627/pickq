@@ -25,21 +25,36 @@ public class BoardService {
         Page<BoardEntity> boardPage = boardRepository.findBySearch(typeCode, keyword, pageable);
 
         Map<String, Object> result = new HashMap<>();
-        result.put("boards", boardPage.getContent());
+        result.put("boards", boardPage.getContent().stream()
+                .map(b -> {
+                    String memId = null;
+                    try {
+                        memId = b.getMember().getMemId();
+                    } catch (Exception e) {
+                        memId = "(탈퇴회원)";
+                    }
+                    return BoardListDTO.builder()
+                            .boardIdx(b.getBoardIdx())
+                            .boardTitle(b.getBoardTitle())
+                            .boardViewCount(b.getBoardViewCount())
+                            .boardLike(b.getBoardLike())
+                            .boardRegdate(b.getBoardRegdate())
+                            .boardTypeCode(b.getBoardType().getBoardTypeCode())
+                            .memId(memId)
+                            .build();
+                })
+                .toList());
         result.put("currentPage", page);
         result.put("totalPages", boardPage.getTotalPages());
 
         int blockLimit = 5;
         int start = (((int) (Math.ceil((double) page / blockLimit))) - 1) * blockLimit + 1;
-
-        // totalPages가 0일 때 end가 0이 되지 않게 방어 로직 추가
         int end = Math.min((start + blockLimit - 1), Math.max(1, boardPage.getTotalPages()));
 
         result.put("blockStart", start);
         result.put("blockEnd", end);
 
         if (typeCode != null && !typeCode.isEmpty()) {
-            // findById(Long) 대신 우리가 만든 findByBoardTypeCode(String) 사용!
             result.put("currentType", boardTypeRepository.findByBoardTypeCode(typeCode).orElse(null));
         }
 

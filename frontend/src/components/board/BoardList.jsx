@@ -25,15 +25,16 @@ const BoardList = () => {
       .then(res => res.json())
       .then(data => setMember(data))
       .catch(err => console.error("회원 조회 에러:", err));
-    fetch("http://localhost:8080/board/types")
+    fetch("http://localhost:8080/boards/types")
       .then(res => res.json())
       .then(data => setBoardTypes(data))
       .catch(err => console.error("게시판 타입 조회 에러:", err));
-
-    fetch(`http://localhost:8080/boards?page=${currentPage}&searchType=${searchType}&keyword=${keyword}${typeCode ? `&typeCode=${typeCode}` : ''}`)
-      .then(res => res.json())
+      /* http://localhost:8080/boards/pages는 존재하지 않지 않나??? */
+      fetch(`http://localhost:8080/boards/?page=${currentPage}&searchType=${searchType}&keyword=${keyword}${typeCode ? `&typeCode=${typeCode}` : ''}`)
+          .then(res => res.json())
       .then(data => {
         setBoards(data.boards);
+        setCurrentType(data.currentType ?? null);
         setCurrentType(data.currentType);
         setCurrentPage(data.currentPage);
         setBlockStart(data.blockStart);
