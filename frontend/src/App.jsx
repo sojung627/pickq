@@ -54,7 +54,7 @@ function App() {
 
             {/* 게시판 파트 */}
             <Route path="/boards" element={<BoardList />} />
-            <Route path="/boards/" element={<BoardDetail />} />
+            <Route path="/boards/:boardTypeCode/:boardIdx" element={<BoardDetail />} />
 
             {/* 헤더의 마이페이지에서만 뜨는 것들 */}
             <Route path="/mypage" element={<MyPageLayout />}>

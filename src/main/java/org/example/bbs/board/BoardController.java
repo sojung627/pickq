@@ -35,4 +35,15 @@ public class BoardController {
         Map<String, Object> response = boardService.getBoardList(page, searchType, keyword, typeCode);
         return ResponseEntity.ok(response);
     }
+
+
+    // 게시글 상세보기
+    @GetMapping("/{boardTypeCode}/{boardIdx}")
+    public ResponseEntity<BoardDetailDTO> detail(
+            @PathVariable String boardTypeCode,
+            @PathVariable Long boardIdx) {
+
+        BoardDetailDTO board = boardService.getBoardDetail(boardTypeCode, boardIdx);
+        return ResponseEntity.ok(board);
+    }
 }

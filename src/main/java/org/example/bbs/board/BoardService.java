@@ -19,6 +19,7 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final BoardTypeRepository boardTypeRepository;
 
+    // 보드 리스트
     public Map<String, Object> getBoardList(int page, String searchType, String keyword, String typeCode) {
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("boardIdx").descending());
 
@@ -59,5 +60,30 @@ public class BoardService {
         }
 
         return result;
+    }
+
+
+    // 보드 상세보기
+    @Transactional
+    public BoardDetailDTO getBoardDetail(String boardTypeCode, Long boardIdx) {
+        BoardEntity board = boardRepository.findDetail(boardTypeCode, boardIdx)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+
+        // 조회수 증가
+        board.setBoardViewCount(board.getBoardViewCount() + 1);
+
+        return BoardDetailDTO.builder()
+                .boardIdx(board.getBoardIdx())
+                .boardTitle(board.getBoardTitle())
+                .boardContent(board.getBoardContent())
+                .boardTypeCode(board.getBoardType().getBoardTypeCode())
+                .boardTypeName(board.getBoardType().getBoardTypeName())
+                .memIdx(board.getMember().getMemIdx())
+                .memId(board.getMember().getMemId())
+                .boardViewCount(board.getBoardViewCount())
+                .boardLike(board.getBoardLike())
+                .boardRegdate(board.getBoardRegdate())
+                .isLiked(true) 
+                .build();
     }
 }

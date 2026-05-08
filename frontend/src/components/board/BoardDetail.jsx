@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 
 const BoardDetail = () => {
-  const { typeCode, id } = useParams();
+  const { boardTypeCode, boardIdx } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -31,6 +31,15 @@ const BoardDetail = () => {
   // 대댓글/수정 폼 토글
   const toggleEditForm = (rid) => setEditReplyId(editReplyId === rid ? null : rid);
   const toggleReplyForm = (rid) => setReplyFormId(replyFormId === rid ? null : rid);
+
+  useEffect(() => {
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
+      .then(res => res.json())
+      .then(data => {
+        setBoard(data);
+      })
+      .catch(err => console.error("게시글 상세 조회 에러:", err));
+  }, [boardTypeCode, boardIdx]);
 
   if (!board) return <div className="py-20 text-center">로딩 중...</div>;
 
@@ -122,7 +131,7 @@ const BoardDetail = () => {
         {member && (member.memIdx === board.memIdx || member.memRoleIdx === 2) && (
           <div className="flex gap-2 mb-6">
             <button
-              onClick={() => navigate(`/boards/${typeCode}/${id}/edit`)}
+              onClick={() => navigate(`/boards/${boardTypeCode}/${boardIdx}/edit`)}
               className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm border border-gray-300 text-[#222222] bg-white hover:bg-gray-50 cursor-pointer"
             >
               <i className="bi bi-pencil-fill text-[12px]"></i> <span>수정</span>
