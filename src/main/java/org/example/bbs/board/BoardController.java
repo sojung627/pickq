@@ -26,6 +26,8 @@ public class BoardController {
         return boardTypeRepository.findAll();
     }
 
+    // 게시글 목록 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
     // 게시글 목록 가져오기(useEffect용)
     @GetMapping("/")
     public ResponseEntity<Map<String, Object>> list(
@@ -38,6 +40,7 @@ public class BoardController {
         return ResponseEntity.ok(response);
     }
 
+    // 게시글 상세보기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 상세보기
     @GetMapping("/{boardTypeCode}/{boardIdx}")
@@ -49,6 +52,41 @@ public class BoardController {
         return ResponseEntity.ok(board);
     }
 
+    // 좋아요 토글
+    @PostMapping("/{boardTypeCode}/{boardIdx}/like")
+    public ResponseEntity<?> like(
+            @PathVariable String boardTypeCode,
+            @PathVariable Long boardIdx,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
+        }
+
+        Map<String, Object> result = boardService.toggleLike(boardIdx, memId);
+        return ResponseEntity.ok(result);
+    }
+
+    // 댓글 / 답글
+    @PostMapping("/{boardTypeCode}/{boardIdx}/replies")
+    public ResponseEntity<?> writeReply(
+            @PathVariable String boardTypeCode,
+            @PathVariable Long boardIdx,
+            @RequestBody ReplyWriteDTO dto,
+            HttpServletRequest request,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
+        }
+
+        boardService.writeReply(boardIdx, dto, request, memId);
+        return ResponseEntity.ok(Map.of("result", "success"));
+    }
+
+    // 게시글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 작성하기
     @PostMapping("/{typeCode}")

@@ -21,8 +21,11 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final BoardTypeRepository boardTypeRepository;
+    private final ReplyRepository replyRepository;
 
     private final MemberRepository memberRepository;
+
+    // 게시글 목록 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 리스트
     public Map<String, Object> getBoardList(int page, String searchType, String keyword, String typeCode) {
@@ -67,6 +70,7 @@ public class BoardService {
         return result;
     }
 
+    // 게시글 상세 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 상세보기
     @Transactional
@@ -88,10 +92,47 @@ public class BoardService {
                 .boardViewCount(board.getBoardViewCount())
                 .boardLike(board.getBoardLike())
                 .boardRegdate(board.getBoardRegdate())
-                .isLiked(true)
+                .isLiked(false)
                 .build();
     }
 
+    // 좋아요 토글
+    @Transactional
+    public Map<String, Object> toggleLike(Long boardIdx, String memId) {
+        BoardEntity board = boardRepository.findById(boardIdx)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+
+        board.setBoardLike(board.getBoardLike() + 1);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("boardLike", board.getBoardLike());
+        result.put("isLiked", true);
+        return result;
+    }
+
+    // 댓글 / 답글
+    @Transactional
+    public void writeReply(Long boardIdx, ReplyWriteDTO dto, HttpServletRequest request, String memId) {
+        MemberEntity member = memberRepository.findByMemId(memId)
+                .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+
+        BoardEntity board = boardRepository.findById(boardIdx)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+
+        ReplyEntity reply = ReplyEntity.builder()
+                .board(board)
+                .member(member)
+                .replyContent(dto.getReplyContent())
+                .replyIp(request.getRemoteAddr())
+                .replyRef(0)
+                .replyStep(0)
+                .replyDepth(0)
+                .build();
+
+        replyRepository.save(reply);
+    }
+
+    // 게시글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 작성하기
     @Transactional

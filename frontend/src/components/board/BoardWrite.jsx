@@ -84,6 +84,18 @@ const BoardWrite = () => {
                   <option value="soccer">축구</option>
                   <option value="baseball">야구</option>
                   <option value="basketball">농구</option>
+                  <option value="golf">골프</option>
+                  <option value="ski">스키</option>
+                  <option value="tennis">테니스</option>
+                  <option value="badminton">배드민턴</option>
+                  <option value="tabletennis">탁구</option>
+                  <option value="running">러닝</option>
+                  <option value="bicycle">자전거</option>
+                  <option value="fitness">헬스</option>
+                  <option value="yoga">요가</option>
+                  <option value="pilates">필라테스</option>
+                  <option value="aerobics">에어로빅</option>
+                  <option value="swimming">수영</option>
                 </select>
               </div>
 

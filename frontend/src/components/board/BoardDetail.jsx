@@ -6,40 +6,68 @@ const BoardDetail = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 데이터 상태 관리 (초기값 설정)
   const [board, setBoard] = useState(null);
   const [replies, setReplies] = useState([]);
   const [totalReplies, setTotalReplies] = useState(0);
-  const [member, setMember] = useState(null); // 로그인 유저 정보
+  const [member, setMember] = useState(null);
   const [sortType, setSortType] = useState('oldest');
   const [replyPage, setReplyPage] = useState(1);
   const [editReplyId, setEditReplyId] = useState(null);
   const [replyFormId, setReplyFormId] = useState(null);
+  const [replyContent, setReplyContent] = useState('');
 
-  // URL 파라미터에서 이전 페이지 정보 가져오기
   const from = searchParams.get("from") || "";
   const page = searchParams.get("page") || "1";
 
-  // URL 복사 함수
   const copyPostUrl = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url)
+    navigator.clipboard.writeText(window.location.href)
       .then(() => alert('URL이 클립보드에 복사되었습니다.'))
       .catch(() => alert('URL 복사에 실패했습니다.'));
   };
 
-  // 대댓글/수정 폼 토글
   const toggleEditForm = (rid) => setEditReplyId(editReplyId === rid ? null : rid);
   const toggleReplyForm = (rid) => setReplyFormId(replyFormId === rid ? null : rid);
 
   useEffect(() => {
+    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => setMember(data))
+      .catch(() => setMember(null));
+
     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
       .then(res => res.json())
-      .then(data => {
-        setBoard(data);
-      })
+      .then(data => setBoard(data))
       .catch(err => console.error("게시글 상세 조회 에러:", err));
   }, [boardTypeCode, boardIdx]);
+
+  const handleLike = () => {
+    if (!member) {
+      navigate('/members/login');
+      return;
+    }
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/like`, {
+      method: 'POST',
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => setBoard(prev => ({ ...prev, boardLike: data.boardLike, isLiked: data.isLiked })))
+    .catch(err => console.error("좋아요 에러:", err));
+  };
+
+  const handleReplySubmit = () => {
+    if (!replyContent.trim()) return;
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ replyContent })
+    })
+    .then(res => res.json())
+    .then(() => {
+      setReplyContent('');
+    })
+    .catch(err => console.error("댓글 등록 에러:", err));
+  };
 
   if (!board) return <div className="py-20 text-center">로딩 중...</div>;
 
@@ -114,10 +142,10 @@ const BoardDetail = () => {
 
             {/* 좋아요 */}
             <div className="pt-6 border-t border-gray-100">
-              <button className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold border transition-colors cursor-pointer ${
+              <button onClick={handleLike} className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold border transition-colors cursor-pointer ${
                 board.isLiked
-                ? 'bg-[#222222] border-[#222222] text-white hover:bg-[#444444]'
-                : 'border-gray-200 text-[#222222] hover:bg-gray-50'
+                  ? 'bg-[#222222] border-[#222222] text-white hover:bg-[#444444]'
+                  : 'border-gray-200 text-[#222222] hover:bg-gray-50'
               }`}>
                 <i className="bi bi-hand-thumbs-up-fill text-[13px]"></i>
                 <span>좋아요</span>
@@ -152,7 +180,6 @@ const BoardDetail = () => {
               <h2 className="text-lg sm:text-xl font-semibold text-[#222222] mb-0">
                 댓글 <span className="ml-1 text-[#7CBD00]">{totalReplies}</span>
               </h2>
-
               <div className="flex items-center gap-2 text-xs sm:text-sm">
                 {['oldest', 'latest'].map((type) => (
                   <button
@@ -160,8 +187,8 @@ const BoardDetail = () => {
                     onClick={() => setSortType(type)}
                     className={`px-3 py-1.5 rounded-md border transition-colors cursor-pointer ${
                       sortType === type
-                      ? 'bg-[#222222] border-[#222222] text-white'
-                      : 'border-gray-300 text-[#222222] bg-white hover:bg-gray-50'
+                        ? 'bg-[#222222] border-[#222222] text-white'
+                        : 'border-gray-300 text-[#222222] bg-white hover:bg-gray-50'
                     }`}
                   >
                     {type === 'oldest' ? '등록순' : '최신순'}
@@ -175,11 +202,9 @@ const BoardDetail = () => {
               {replies.map((r) => (
                 <div key={r.replyIdx} className="border border-gray-100 rounded-lg bg-white px-3 py-3 sm:px-4 sm:py-4">
                   <div className="flex items-start gap-2 sm:gap-3">
-                    {/* depth 들여쓰기 */}
                     <span style={{ marginLeft: `${r.replyDepth * 12}px` }}>
                       {r.replyDepth > 0 && <span className="text-[#7CBD00] mr-1">↳</span>}
                     </span>
-
                     <div className="flex-1">
                       <div className="mb-2 flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
@@ -191,7 +216,6 @@ const BoardDetail = () => {
                             <div className="text-[11px] text-[#a7a7a7]">{r.replyRegdate}</div>
                           </div>
                         </div>
-
                         <div className="flex items-center gap-1 sm:gap-2">
                           <button className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 cursor-pointer">
                             <i className="bi bi-hand-thumbs-up-fill text-[11px]"></i> <span>{r.replyLike}</span>
@@ -204,10 +228,7 @@ const BoardDetail = () => {
                           )}
                         </div>
                       </div>
-
                       <div className="reply-content mb-2 text-sm text-[#222222]">{r.replyContent}</div>
-
-                      {/* 인라인 수정 폼 */}
                       {editReplyId === r.replyIdx && (
                         <div className="mt-2">
                           <textarea className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-[#7CBD00]" rows="2" defaultValue={r.replyContent}></textarea>
@@ -217,16 +238,13 @@ const BoardDetail = () => {
                           </div>
                         </div>
                       )}
-
-                      {/* 답글 버튼 & 폼 */}
                       <div className="mt-1 flex items-center gap-3 text-[11px] sm:text-xs text-[#767676]">
                         {member ? (
-                          <button onClick={() => r.replyDepth < 3 ? toggleReplyForm(r.replyIdx) : alert('더 이상 답글을 작성할 수 없습니다.')} className="text-[#7CBD00] cursor-pointer">↩ 답글</button>
+                          <button onClick={() => r.replyDepth < 3 ? toggleReplyForm(r.replyIdx) : null} className="text-[#7CBD00] cursor-pointer">↩ 답글</button>
                         ) : (
                           <button onClick={() => navigate('/members/login')} className="text-[#7CBD00] cursor-pointer">↩ 답글</button>
                         )}
                       </div>
-
                       {replyFormId === r.replyIdx && (
                         <div className="mt-2">
                           <textarea className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-[#7CBD00]" rows="2" placeholder="답글을 입력하세요"></textarea>
@@ -248,8 +266,16 @@ const BoardDetail = () => {
         <div className="mt-6">
           {member ? (
             <div className="reply-form">
-              <textarea className="w-full rounded-lg border border-gray-200 p-3 text-sm focus:border-[#7CBD00] focus:outline-none mb-2" rows="3" placeholder="댓글을 입력하세요"></textarea>
-              <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] cursor-pointer">
+              <textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 p-3 text-sm focus:border-[#7CBD00] focus:outline-none mb-2"
+                rows="3"
+                placeholder="댓글을 입력하세요"
+              />
+              <button
+                onClick={handleReplySubmit}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] cursor-pointer">
                 <i className="bi bi-chat-dots me-1 text-[13px]"></i> 댓글 등록
               </button>
             </div>
