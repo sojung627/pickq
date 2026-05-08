@@ -15,8 +15,8 @@ public class CustomErrorController implements ErrorController {
 
     @RequestMapping("/api/error")
     public ResponseEntity<?> handleError(HttpServletRequest request) {
-        Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
-        Exception exception = (Exception) request.getAttribute("javax.servlet.error.exception");
+        Integer statusCode = (Integer) request.getAttribute("jakarta.servlet.error.status_code");
+        Exception exception = (Exception) request.getAttribute("jakarta.servlet.error.exception");
         String message = exception != null ? exception.getMessage() : "알 수 없는 에러";
         return ResponseEntity.status(statusCode != null ? statusCode : 500)
                 .body(Map.of("error", message));
