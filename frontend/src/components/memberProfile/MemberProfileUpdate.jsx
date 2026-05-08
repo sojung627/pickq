@@ -202,7 +202,7 @@ const MemberProfileUpdate = () => {
 
           {wasModified && !isDirty && (
             <span className="ml-6 text-sm font-medium text-red-500 whitespace-nowrap">
-              이전과 같습니다.
+              <i className="bi bi-exclamation-circle mr-1"></i>이전과 같습니다.
             </span>
           )}
         </div>

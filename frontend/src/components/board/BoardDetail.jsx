@@ -72,22 +72,6 @@ const BoardDetail = () => {
     .catch(err => console.error("좋아요 에러:", err));
   };
 
-//   const handleReplySubmit = () => {
-//     if (!replyContent.trim()) return;
-//     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       credentials: 'include',
-//       body: JSON.stringify({ replyContent })
-//     })
-//     .then(res => res.json())
-//     .then(() => {
-//       setReplies(data.replies);
-//       setTotalReplies(data.totalReplies);
-//     })
-//     .catch(err => console.error("댓글 조회 에러:", err));
-//   };
-
   const handleReplySubmit = () => {
         if (!replyContent.trim()) return;
         fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
@@ -146,9 +130,11 @@ const BoardDetail = () => {
                     <i className="bi bi-person-circle text-[14px]"></i>
                     <span>{board.memNickname || board.memId}</span>
                   </div>
+                  {/* 게시글 본문 날짜 */}
                   <div className="flex items-center gap-1 text-[#999999]">
                     <i className="bi bi-clock-history text-[13px]"></i>
-                    <span>{board.boardRegdate}</span>
+                    {/* 날짜만 출력! */}
+                    <span>{board.boardRegdate ? board.boardRegdate.split('T')[0] : ''}</span>
                   </div>
                 </div>
 
@@ -249,7 +235,11 @@ const BoardDetail = () => {
                           </div>
                           <div>
                             <div className="text-[13px] font-semibold text-[#222222]">{r.memNickname || r.memId}</div>
-                            <div className="text-[11px] text-[#a7a7a7]">{r.replyRegdate}</div>
+                            <div>
+                              <div className="text-[11px] text-[#a7a7a7]">
+                                {r.replyRegdate ? r.replyRegdate.split('T')[0] : ''}
+                              </div>
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-1 sm:gap-2">

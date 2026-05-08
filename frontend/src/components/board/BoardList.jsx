@@ -29,13 +29,11 @@ const BoardList = () => {
       .then(res => res.json())
       .then(data => setBoardTypes(data))
       .catch(err => console.error("게시판 타입 조회 에러:", err));
-      /* http://localhost:8080/boards/pages는 존재하지 않지 않나??? */
       fetch(`http://localhost:8080/boards/?page=${currentPage}&searchType=${searchType}&keyword=${keyword}${typeCode ? `&typeCode=${typeCode}` : ''}`)
           .then(res => res.json())
       .then(data => {
         setBoards(data.boards);
         setCurrentType(data.currentType ?? null);
-        setCurrentType(data.currentType);
         setCurrentPage(data.currentPage);
         setBlockStart(data.blockStart);
         setBlockEnd(data.blockEnd);
@@ -254,10 +252,13 @@ const BoardList = () => {
                         {b.boardViewCount}
                       </div>
                       {/* 추천 */}
-                      <div className="col-span-1 text-center text-[#767676]"></div>
+                      <div className="col-span-1 text-center text-[#767676]">
+                        {b.boardLike ?? 0}
+                      </div>
                       {/* 작성일 */}
                       <div className="col-span-1 text-center text-[10px] sm:text-xs text-[#767676]">
-                        {b.boardRegdate}
+                        {/* 타이머 끊어내기 */}
+                        {b.boardRegdate ? b.boardRegdate.split('T')[0] : ''}
                       </div>
                     </div>
                   ))}
