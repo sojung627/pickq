@@ -86,6 +86,18 @@ public class BoardController {
         return ResponseEntity.ok(Map.of("result", "success"));
     }
 
+    // 댓글 목록
+    @GetMapping("/{boardTypeCode}/{boardIdx}/replies")
+    public ResponseEntity<?> getReplies(
+            @PathVariable String boardTypeCode,
+            @PathVariable Long boardIdx,
+            @RequestParam(defaultValue = "oldest") String sort,
+            @RequestParam(defaultValue = "1") int page) {
+
+        Map<String, Object> result = boardService.getReplies(boardIdx, sort, page);
+        return ResponseEntity.ok(result);
+    }
+
     // 게시글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 작성하기

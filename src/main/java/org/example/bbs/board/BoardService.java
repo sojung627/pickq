@@ -132,6 +132,47 @@ public class BoardService {
         replyRepository.save(reply);
     }
 
+    // 댓글 리스트 조회
+    public Map<String, Object> getReplies(Long boardIdx, String sort, int page) {
+        // 1. 정렬 조건 설정 (최신순 vs 오래된순)
+        Sort sortOption = sort.equals("latest")
+                ? Sort.by("replyRegdate").descending()
+                : Sort.by("replyRegdate").ascending();
+
+        // 2. 페이징 정보 생성 (페이지 번호는 0부터 시작하니까 page - 1)
+        Pageable pageable = PageRequest.of(page - 1, 10, sortOption);
+
+        // 3. 레포지토리 호출 (이 부분이 에러였지! 변수명을 replyPage로 선언하고 repository를 호출해야 해)
+        Page<ReplyEntity> replyPage = replyRepository.findByBoard_BoardIdx(boardIdx, pageable); // 에러라고 5번째 말한다
+
+        // 4. 결과 가공 (Entity -> Map)
+        Map<String, Object> result = new HashMap<>();
+        result.put("replies", replyPage.getContent().stream()
+                .map(r -> {
+                    // 탈퇴한 회원일 경우를 대비한 안전한 처리
+                    String memId = (r.getMember() != null) ? r.getMember().getMemId() : "(탈퇴회원)";
+                    Long memIdx = (r.getMember() != null) ? r.getMember().getMemIdx() : 0L;
+
+                    return Map.of(
+                            "replyIdx", r.getReplyIdx(),
+                            "replyContent", r.getReplyContent(),
+                            "replyRegdate", r.getReplyRegdate(),
+                            "replyLike", r.getReplyLike(),
+                            "replyDepth", r.getReplyDepth(),
+                            "memId", memId,
+                            "memIdx", memIdx
+                    );
+                })
+                .toList());
+
+        // 5. 전체 댓글 수 등 추가 정보 담기
+        result.put("totalReplies", replyPage.getTotalElements());
+        result.put("totalPages", replyPage.getTotalPages());
+        result.put("currentPage", page);
+
+        return result;
+    }
+
     // 게시글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 작성하기
