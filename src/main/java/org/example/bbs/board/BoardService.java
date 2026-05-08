@@ -27,12 +27,12 @@ public class BoardService {
 
     // 게시글 목록 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-    // 게시글 리스트
+    // 게시글 리스트    
     public Map<String, Object> getBoardList(int page, String searchType, String keyword, String typeCode) {
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("boardIdx").descending());
 
         Page<BoardEntity> boardPage = boardRepository.findBySearch(typeCode, keyword, searchType, pageable);
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("boards", boardPage.getContent().stream()
                 .map(b -> {
