@@ -11,6 +11,7 @@ import MyPageLayout from "./components/layout/MyPageLayout";
 /* 게시판 */
 import BoardList from "./components/board/BoardList";
 import BoardDetail from "./components/board/BoardDetail";
+import BoardWrite from "./components/board/BoardWrite";
 
 /* 회원가입 / 로그인 */
 import Register from "./components/members/SignUp";
@@ -54,6 +55,7 @@ function App() {
 
             {/* 게시판 파트 */}
             <Route path="/boards" element={<BoardList />} />
+            <Route path="/boards/:typeCode/new" element={<BoardWrite />} />
             <Route path="/boards/:boardTypeCode/:boardIdx" element={<BoardDetail />} />
 
             {/* 헤더의 마이페이지에서만 뜨는 것들 */}

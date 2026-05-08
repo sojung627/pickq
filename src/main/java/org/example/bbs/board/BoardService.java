@@ -83,7 +83,7 @@ public class BoardService {
                 .boardViewCount(board.getBoardViewCount())
                 .boardLike(board.getBoardLike())
                 .boardRegdate(board.getBoardRegdate())
-                .isLiked(true) 
+                .isLiked(true)
                 .build();
     }
 }
