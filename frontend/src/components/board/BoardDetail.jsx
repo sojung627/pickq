@@ -16,6 +16,19 @@ const BoardDetail = () => {
   const [replyFormId, setReplyFormId] = useState(null);
   const [replyContent, setReplyContent] = useState('');
 
+    // 답글 저장용
+    const fetchReplies = () => {
+      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
+        credentials: "include"
+      })
+        .then(res => res.json())
+        .then(data => {
+          setReplies(data.replies || []); // 서버에서 받은 댓글 목록
+          setTotalReplies(data.totalReplies || 0); // 전체 개수
+        })
+        .catch(err => console.error("댓글 조회 에러:", err));
+    };
+
   const from = searchParams.get("from") || "";
   const page = searchParams.get("page") || "1";
 
@@ -29,16 +42,21 @@ const BoardDetail = () => {
   const toggleReplyForm = (rid) => setReplyFormId(replyFormId === rid ? null : rid);
 
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => setMember(data))
-      .catch(() => setMember(null));
+      // 내 정보
+      fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => setMember(data))
+        .catch(() => setMember(null));
 
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
-      .then(res => res.json())
-      .then(data => setBoard(data))
-      .catch(err => console.error("게시글 상세 조회 에러:", err));
-  }, [boardTypeCode, boardIdx]);
+      // 게시글 본문
+      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
+        .then(res => res.json())
+        .then(data => setBoard(data))
+        .catch(err => console.error("게시글 상세 조회 에러:", err));
+
+      // 댓글 목록
+      fetchReplies();
+    }, [boardTypeCode, boardIdx, sortType, replyPage]); // 재실행
 
   const handleLike = () => {
     if (!member) {
@@ -71,20 +89,21 @@ const BoardDetail = () => {
 //   };
 
   const handleReplySubmit = () => {
-      if (!replyContent.trim()) return;
-      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ replyContent })
-      })
-      .then(res => res.json())
-      .then(() => {
-          setReplyContent('');
-          setReplyPage(1); // ← 첫 페이지로 이동해서 새로 불러오기
-      })
-      .catch(err => console.error("댓글 등록 에러:", err));
-  };
+        if (!replyContent.trim()) return;
+        fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ replyContent })
+        })
+        .then(res => res.json())
+        .then(() => {
+            setReplyContent('');
+            setReplyPage(1);
+            fetchReplies(); // 최신 목록 불러오기
+        })
+        .catch(err => console.error("댓글 등록 에러:", err));
+    };
 
   if (!board) return <div className="py-20 text-center">로딩 중...</div>;
 
