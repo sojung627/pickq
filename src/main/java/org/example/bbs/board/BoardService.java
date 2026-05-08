@@ -32,7 +32,7 @@ public class BoardService {
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("boardIdx").descending());
 
         Page<BoardEntity> boardPage = boardRepository.findBySearch(typeCode, keyword, searchType, pageable);
-
+        
         Map<String, Object> result = new HashMap<>();
         result.put("boards", boardPage.getContent().stream()
                 .map(b -> {
