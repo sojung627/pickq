@@ -8,6 +8,9 @@ import MainPage from "./components/fragments/MainPage";
 import FloatingButtons from "./components/fragments/FloatingButtons";
 import MyPageLayout from "./components/layout/MyPageLayout";
 
+/* 게시판 */
+import BoardList from "./components/board/BoardList";
+
 /* 회원가입 / 로그인 */
 import Register from "./components/members/SignUp";
 import Login from "./components/members/Login";
@@ -47,6 +50,8 @@ function App() {
             {/* 회원 파트 */}
             <Route path="/members/login" element={<Login />} />
             <Route path="/members/signUp" element={<Register />} />
+
+            <Route path="/boards" element={<BoardList />} />
 
             {/* 헤더의 마이페이지에서만 뜨는 것들 */}
             <Route path="/mypage" element={<MyPageLayout />}>
