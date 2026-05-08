@@ -37,6 +37,7 @@ public class BoardController {
             @RequestParam(required = false) String typeCode) {
 
         Map<String, Object> response = boardService.getBoardList(page, searchType, keyword, typeCode);
+
         return ResponseEntity.ok(response);
     }
 
