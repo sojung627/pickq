@@ -62,7 +62,15 @@ const MemberProfileUpdate = () => {
       });
       const count = await response.json();
       setIsNicknameOk(count === 0);
-      setMessages(prev => ({ ...prev, nickname: count > 0 ? '이미 사용중인 닉네임입니다.' : '' }));
+      setMessages(prev => ({
+        ...prev,
+        nickname: count > 0 ? (
+          <>
+            <i className="bi bi-exclamation-circle mr-1"></i>
+            이미 사용중인 닉네임입니다.
+          </>
+        ) : ''
+      }));
     } catch (err) {
       setIsNicknameOk(false);
     }
@@ -79,7 +87,14 @@ const MemberProfileUpdate = () => {
 
     setMessages(prev => ({
       ...prev,
-      nickname: nicknameValid || memNickname === "" ? (isNicknameOk ? "" : prev.nickname) : "닉네임은 2~10자 이내로 작성해주세요",
+      nickname: nicknameValid || memNickname === ""
+          ? (isNicknameOk ? "" : prev.nickname)
+          : (
+              <>
+                <i className="bi bi-exclamation-circle mr-1"></i>
+                닉네임은 2~10자 이내로 작성해주세요
+              </>
+            ),
       intro: introValid || memIntro === "" ? "" : "자기소개는 최소 10자 이상 작성해주세요."
     }));
 
@@ -164,8 +179,25 @@ const MemberProfileUpdate = () => {
         {/* 닉네임 섹션 */}
         <div className="space-y-1.5">
           <label htmlFor="memNickname" className="text-base sm:text-lg font-medium text-gray-900 block">닉네임</label>
-          <input id="memNickname" type="text" value={profile.memNickname} onChange={handleNicknameChange} className="w-full bg-white border border-gray-300 rounded-md px-4 h-12 text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#7CBD00]" />
-          {messages.nickname && <p className="text-sm text-red-500">{messages.nickname}</p>}
+          <input
+            id="memNickname"
+            type="text"
+            value={profile.memNickname}
+            onChange={handleNicknameChange}
+            /* ✅ messages.nickname에 내용이 있으면 border-red-500, 없으면 기존 gray-300 */
+            className={`w-full bg-white border rounded-md px-4 h-12 text-base text-gray-900 focus:outline-none focus:ring-2
+              ${messages.nickname
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-[#7CBD00]"
+              }`}
+          />
+
+          {/* 에러 메시지 출력 영역 */}
+          {messages.nickname && (
+            <p className="text-sm text-red-500 flex items-center">
+              {messages.nickname}
+            </p>
+          )}
         </div>
 
         {/* 자기소개 섹션 */}

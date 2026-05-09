@@ -38,7 +38,15 @@ export default function SignUp() {
   const checkId = async () => {
     const idReg = /^[A-Za-z0-9]{5,}$/;
     if (!idReg.test(formData.memId)) {
-      setIdMsg({ text: "✘ 영문 + 숫자 5글자 이상으로 입력해주세요.", isError: true });
+      setIdMsg({
+        text: (
+          <>
+            <i className="bi bi-exclamation-circle mr-1"></i>
+            영문 + 숫자 5글자 이상으로 입력해주세요.
+          </>
+        ),
+        isError: true
+      });
       setIsIdDuplicate(true);
       return;
     }
@@ -49,11 +57,27 @@ export default function SignUp() {
         setIdMsg({ text: "✔ 사용 가능한 아이디입니다.", isError: false });
         setIsIdDuplicate(false);
       } else {
-        setIdMsg({ text: "✘ 이미 사용 중인 아이디입니다.", isError: true });
+        setIdMsg({
+          text: (
+            <>
+              <i className="bi bi-exclamation-circle mr-1"></i>
+              이미 사용 중인 아이디입니다.
+            </>
+          ),
+          isError: true
+        });
         setIsIdDuplicate(true);
       }
     } catch (err) {
-      setIdMsg({ text: "✘ 중복 확인 중 오류 발생", isError: true });
+      setIdMsg({
+        text: (
+          <>
+            <i className="bi bi-exclamation-circle mr-1"></i>
+            중복 확인 중 오류 발생
+          </>
+        ),
+        isError: true
+      });
     }
   };
 
@@ -85,17 +109,54 @@ export default function SignUp() {
   };
 
   // 유효성 검사
-  const isPwdOk = /^[A-Za-z0-9]{5,}$/.test(formData.memPwd) && formData.memPwd === formData.memPwdCheck;
+  const isPwdOk = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/.test(formData.memPwd) && formData.memPwd === formData.memPwdCheck;
   const isValid = formData.memName && formData.memTel.length >= 12 && formData.memEmail &&
                   formData.emailDomain && formData.agree && !isIdDuplicate && isPwdOk;
 
   useEffect(() => {
-    if (!formData.memPwd) return;
-    if (formData.memPwd !== formData.memPwdCheck) {
-      setPwdMsg({ text: "✘ 비밀번호가 일치하지 않습니다.", isError: true });
-    } else {
+      if (!formData.memPwd) return;
+
+      const pwdReg = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/;
+
+      // 1. 첫번째 비밀번호 형식 오류
+      if (!pwdReg.test(formData.memPwd)) {
+          setPwdMsg({
+              text: (<><i className="bi bi-exclamation-circle mr-1"></i>영문 + 숫자 포함 5글자 이상 입력해주세요.</>),
+              isError: true
+          });
+          return;
+      }
+
+      // 2. 확인란 비어있음
+      if (!formData.memPwdCheck) {
+          setPwdMsg({
+              text: (<><i className="bi bi-exclamation-circle mr-1"></i>비밀번호 확인을 입력해주세요.</>),
+              isError: true
+          });
+          return;
+      }
+
+      // 3. 두 값이 다름 (형식 검사보다 먼저)
+      if (formData.memPwd !== formData.memPwdCheck) {
+          setPwdMsg({
+              text: (<><i className="bi bi-exclamation-circle mr-1"></i>비밀번호가 일치하지 않습니다.</>),
+              isError: true
+          });
+          return;
+      }
+
+      // 4. 확인란 형식 오류
+      if (!pwdReg.test(formData.memPwdCheck)) {
+          setPwdMsg({
+              text: (<><i className="bi bi-exclamation-circle mr-1"></i>영문 + 숫자 포함 5글자 이상 입력해주세요.</>),
+              isError: true
+          });
+          return;
+      }
+
+      // 5. 성공
       setPwdMsg({ text: "✔ 비밀번호가 일치합니다.", isError: false });
-    }
+
   }, [formData.memPwd, formData.memPwdCheck]);
 
   return (
@@ -157,17 +218,48 @@ export default function SignUp() {
               <div>
                 <label className="block text-sm font-medium text-[#222222] mb-1">아이디</label>
                 <div className="flex gap-2 items-start">
-                  <input type="text" name="memId" className="flex-[2] px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="your ID" onChange={handleChange} />
-                  <button type="button" className="flex-[1] py-2 rounded-lg bg-amber-400 text-sm font-bold text-white hover:bg-amber-500" onClick={checkId}>중복확인</button>
+                  <input
+                    type="text"
+                    name="memId"
+                    /* ✅ idMsg.isError가 true면 border-red-500, 아니면 border-gray-200 */
+                    className={`flex-[2] px-3 py-2 border rounded-lg text-sm outline-none transition-all
+                      ${idMsg.isError
+                        ? "border-red-500 focus:ring-2 focus:ring-red-500"
+                        : "border-gray-200 focus:ring-2 focus:ring-[#7CBD00]"
+                      }`}
+                    placeholder="your ID"
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    className="flex-[1] py-2 rounded-lg bg-amber-400 text-sm font-bold text-white hover:bg-amber-500"
+                    onClick={checkId}
+                  >
+                    중복확인
+                  </button>
                 </div>
-                <span className={`block text-[11px] mt-1 ${idMsg.isError ? 'text-red-500' : 'text-gray-500'}`}>{idMsg.text}</span>
+                {/* 에러 메시지 영역 */}
+                <span className={`block text-[11px] mt-1 ${idMsg.isError ? 'text-red-500' : 'text-gray-500'}`}>
+                  {idMsg.text}
+                </span>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#222222] mb-1">비밀번호</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#a7a7a7]"><i className="bi bi-lock"></i></span>
-                  <input type={showPwd ? "text" : "password"} name="memPwd" className="w-full pl-9 pr-10 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="••••••••" onChange={handleChange} />
+                  <input
+                    type={showPwd ? "text" : "password"}
+                    name="memPwd"
+                    /* ✅ 비밀번호 에러 시 빨간 테두리 적용 */
+                    className={`w-full pl-9 pr-10 py-2 border rounded-lg text-sm outline-none transition-all
+                      ${pwdMsg.isError
+                        ? "border-red-500 focus:ring-2 focus:ring-red-500"
+                        : "border-gray-200 focus:ring-2 focus:ring-[#7CBD00]"
+                      }`}
+                    placeholder="••••••••"
+                    onChange={handleChange}
+                  />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer text-sm" onClick={() => setShowPwd(!showPwd)}>
                     <i className={showPwd ? "bi bi-eye-slash" : "bi bi-eye"}></i>
                   </span>
@@ -176,8 +268,21 @@ export default function SignUp() {
 
               <div>
                 <label className="block text-sm font-medium text-[#222222] mb-1">비밀번호 확인</label>
-                <input type={showPwd ? "text" : "password"} name="memPwdCheck" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#7CBD00] outline-none" placeholder="••••••••" onChange={handleChange} />
-                <span className={`block text-[11px] mt-1 ${pwdMsg.isError ? 'text-red-500' : 'text-green-500'}`}>{pwdMsg.text}</span>
+                <input
+                  type={showPwd ? "text" : "password"}
+                  name="memPwdCheck"
+                  /* ✅ 비밀번호 확인 창도 똑같이 에러 시 빨간 테두리 */
+                  className={`w-full px-3 py-2 border rounded-lg text-sm outline-none transition-all
+                    ${pwdMsg.isError
+                      ? "border-red-500 focus:ring-2 focus:ring-red-500"
+                      : "border-gray-200 focus:ring-2 focus:ring-[#7CBD00]"
+                    }`}
+                  placeholder="••••••••"
+                  onChange={handleChange}
+                />
+                <span className={`block text-[11px] mt-1 ${pwdMsg.isError ? 'text-red-500' : 'text-green-500'}`}>
+                  {pwdMsg.text}
+                </span>
               </div>
 
               <div className="pt-3 border-t border-gray-100">

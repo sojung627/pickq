@@ -179,6 +179,7 @@ export default function Login() {
                                         ? "text-gray-500"
                                         : "text-red-600"
                                     }`}>
+                                        <i className="bi bi-exclamation-circle mr-1"></i>
                                         {errorMsg}
                                     </div>
                                 )}
