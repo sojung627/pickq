@@ -20,7 +20,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
             "    (:searchType = 'title' AND b.boardTitle LIKE %:keyword%) OR " +
             "    (:searchType = 'content' AND b.boardContent LIKE %:keyword%) OR " +
             "    (:searchType = 'writer' AND b.member.memId LIKE %:keyword%))")
-    Page<BoardEntity> findBySearch(
+    Page<BoardEntity> findBySearch( 
             @Param("typeCode") String typeCode,
             @Param("keyword") String keyword,
             @Param("searchType") String searchType,

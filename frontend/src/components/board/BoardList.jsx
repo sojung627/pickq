@@ -14,6 +14,7 @@ const BoardList = () => {
   const [member, setMember] = useState(null);
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [sortType, setSortType] = useState("latest");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const typeCode = searchParams.get("typeCode");
@@ -29,7 +30,7 @@ const BoardList = () => {
       .then(res => res.json())
       .then(data => setBoardTypes(data))
       .catch(err => console.error("게시판 타입 조회 에러:", err));
-      fetch(`http://localhost:8080/boards/?page=${currentPage}&searchType=${searchType}&keyword=${keyword}${typeCode ? `&typeCode=${typeCode}` : ''}`)
+      fetch(`http://localhost:8080/boards/?page=${currentPage}&searchType=${searchType}&keyword=${keyword}&sortType=${sortType}${typeCode ? `&typeCode=${typeCode}` : ''}`)
           .then(res => res.json())
       .then(data => {
         setBoards(data.boards);
@@ -40,7 +41,7 @@ const BoardList = () => {
         setTotalPages(data.totalPages);
       })
       .catch(err => console.error("게시글 조회 에러:", err));
-  }, [currentPage, searchType, keyword, typeCode]);
+  }, [currentPage, searchType, keyword, typeCode, sortType]);
 
   const toggleSidebarAccordion = () => {
     setIsAccordionOpen(prev => !prev);
@@ -69,6 +70,30 @@ const BoardList = () => {
             </div>
           </div>
         </header>
+        {/* 정렬 버튼 */}
+        <div className="flex justify-end items-center gap-2 px-6 py-2">
+          {[
+            { value: "latest", label: "최신순" },
+            { value: "views", label: "조회수순" }
+          ].map((s) => (
+            <button
+              key={s.value}
+              type="button"
+              onClick={() => {
+                setSortType(s.value);
+                setCurrentPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-md text-xs sm:text-sm border transition-colors
+              ${
+                sortType === s.value
+                  ? "bg-[#222222] border-[#222222] text-white"
+                  : "border-gray-300 text-[#222222] bg-white hover:bg-gray-50"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
         <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
           {/* Left Sidebar */}
           <aside className="w-full lg:w-60 lg:flex-shrink-0">

@@ -27,8 +27,13 @@ public class BoardService {
 
     // 게시글 목록 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-    // 게시글 리스트    
-    public Map<String, Object> getBoardList(int page, String searchType, String keyword, String typeCode) {
+    // 게시글 리스트
+    public Map<String, Object> getBoardList(int page, String searchType, String keyword, String typeCode, String sortType) {
+
+        Sort sort = sortType.equals("views") // sortType을 해결할 수 없습니다
+                ? Sort.by("boardViewCount").descending()
+                : Sort.by("boardIdx").descending();
+
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("boardIdx").descending());
 
         Page<BoardEntity> boardPage = boardRepository.findBySearch(typeCode, keyword, searchType, pageable);

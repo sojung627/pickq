@@ -34,10 +34,10 @@ public class BoardController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "all") String searchType,
             @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(required = false) String typeCode) {
+            @RequestParam(required = false) String typeCode,
+            @RequestParam(defaultValue = "latest") String sortType) {
 
-        Map<String, Object> response = boardService.getBoardList(page, searchType, keyword, typeCode);
-
+        Map<String, Object> response = boardService.getBoardList(page, searchType, keyword, typeCode, sortType);
         return ResponseEntity.ok(response);
     }
 
