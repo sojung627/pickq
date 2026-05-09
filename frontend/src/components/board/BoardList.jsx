@@ -19,6 +19,7 @@ const BoardList = () => {
   const navigate = useNavigate();
   const typeCode = searchParams.get("typeCode");
 
+  /* 로그인 체크용 */
   useEffect(() => {
     fetch("http://localhost:8080/mypage/info", {
       credentials: "include"

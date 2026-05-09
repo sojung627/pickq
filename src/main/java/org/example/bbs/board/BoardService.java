@@ -34,7 +34,7 @@ public class BoardService {
                 ? Sort.by("boardViewCount").descending()
                 : Sort.by("boardIdx").descending();
 
-        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("boardIdx").descending());
+        Pageable pageable = PageRequest.of(page - 1, 10, sort);
 
         Page<BoardEntity> boardPage = boardRepository.findBySearch(typeCode, keyword, searchType, pageable);
 
