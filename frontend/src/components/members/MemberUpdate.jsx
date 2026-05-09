@@ -82,12 +82,28 @@ const MemberUpdate = () => {
       return;
     }
     if (!pwdReg.test(newPwd)) {
-      setPwdMsg({ text: '✘ 영문 + 숫자 5글자 이상으로 입력해주세요.', color: 'text-red-500' });
+      setPwdMsg({
+        text: (
+          <span className="text-red-500">
+            <i className="bi bi-exclamation-circle mr-1"></i>
+            영문 + 숫자 5글자 이상으로 입력해주세요.
+          </span>
+        ),
+        isError: true
+      });
       setIsSubmitDisabled(true);
       return;
     }
     if (newPwd !== newPwdConfirm) {
-      setPwdMsg({ text: '✘ 비밀번호가 일치하지 않습니다.', color: 'text-red-500' });
+      setPwdMsg({
+        text: (
+          <span className="text-red-500">
+            <i className="bi bi-exclamation-circle mr-1"></i>
+            비밀번호가 일치하지 않습니다.
+          </span>
+        ),
+        isError: true
+      });
       setIsSubmitDisabled(true);
       return;
     }
@@ -100,7 +116,15 @@ const MemberUpdate = () => {
     .then(res => res.json())
     .then(data => {
       if (data.isSame) {
-        setPwdMsg({ text: '✘ 이전 비밀번호와 동일합니다.', color: 'text-red-500 text-[12px]' });
+        setPwdMsg({
+          text: (
+            <span className="text-red-500 text-[12px]">
+              <i className="bi bi-exclamation-circle mr-1"></i>
+              이전 비밀번호와 동일합니다.
+            </span>
+          ),
+          isError: true
+        });
         setIsSubmitDisabled(true);
       } else {
         setPwdMsg({ text: '✔ 비밀번호가 일치하며 사용 가능합니다.', color: 'text-gray-500' });
@@ -152,19 +176,45 @@ const MemberUpdate = () => {
             <div className="space-y-2 pt-2">
               <label className="text-sm font-medium text-gray-900">새 비밀번호</label>
               <div className="relative">
-                <input type={showPwd ? 'text' : 'password'} name="newPwd" value={formData.newPwd}
-                  onChange={handleChange} placeholder="🔒 변경할 비밀번호를 입력해주세요"
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 pr-10 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#7CBD00]" />
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  name="newPwd"
+                  value={formData.newPwd}
+                  onChange={handleChange}
+                  placeholder="🔒 변경할 비밀번호를 입력해주세요"
+                  /* ✅ 에러 시 border-red-500과 focus:ring-red-500 적용 */
+                  className={`w-full bg-white border rounded-md px-3 pr-10 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 transition-all
+                    ${pwdMsg.isError
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:ring-[#7CBD00]"
+                    }`}
+                />
                 <button type="button" onClick={() => setShowPwd(!showPwd)}
                   className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600">
                   <i className={`bi ${showPwd ? 'bi-eye-slash' : 'bi-eye'}`}></i>
                 </button>
               </div>
+
               <label className="text-sm font-medium text-gray-900 mt-2 block">비밀번호 확인</label>
-              <input type={showPwd ? 'text' : 'password'} name="newPwdConfirm" value={formData.newPwdConfirm}
-                onChange={handleChange} placeholder="🔒 변경할 비밀번호를 확인해주세요"
-                className="w-full bg-white border border-gray-300 rounded-md px-3 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#7CBD00]" />
-              {pwdMsg.text && <p className={`text-[12px] mt-1 ${pwdMsg.color}`}>{pwdMsg.text}</p>}
+              <input
+                type={showPwd ? 'text' : 'password'}
+                name="newPwdConfirm"
+                value={formData.newPwdConfirm}
+                onChange={handleChange}
+                placeholder="🔒 변경할 비밀번호를 확인해주세요"
+                /* ✅ 확인란도 동일하게 빨간 테두리 적용 */
+                className={`w-full bg-white border rounded-md px-3 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 transition-all
+                  ${pwdMsg.isError
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-[#7CBD00]"
+                  }`}
+              />
+
+              {pwdMsg.text && (
+                <p className={`text-[12px] mt-1 ${!pwdMsg.isError ? 'text-gray-500' : ''}`}>
+                  {pwdMsg.text}
+                </p>
+              )}
             </div>
           )}
 
