@@ -10,35 +10,122 @@ const BoardWrite = () => {
   const [boardTitle, setBoardTitle] = useState('');
   const [boardContent, setBoardContent] = useState('');
   const [selectedTypeCode, setSelectedTypeCode] = useState(initialTypeCode || 'soccer');
-  const [boardTypes, setBoardTypes] = useState([]); // 서버에서 받아올 카테고리 목록
+  const [boardTypes, setBoardTypes] = useState([]);
 
   const from = searchParams.get('from') || '';
-
-  // 목록으로 가기 경로 계산
   const listPath = from === 'all' ? '/boards' : `/boards/${selectedTypeCode}`;
 
-  // 등록 핸들러 (기존의 form submit 역할)
+  // 유효성 메시지 상태
+  const [messages, setMessages] = useState({ title: '', content: '' });
   const [errorMsg, setErrorMsg] = useState('');
 
+  // 유효성 검사 (실시간)
+  useEffect(() => {
+    setMessages(prev => ({
+      ...prev,
+      title:
+        boardTitle.length > 0 && boardTitle.trim().length < 5
+          ? (
+            <>
+              <i className="bi bi-exclamation-circle mr-1"></i>
+              제목은 5자 이상 입력해주세요.
+            </>
+          )
+          : '',
+      content:
+        boardContent.length > 0 && boardContent.length < 10
+          ? (
+            <>
+              <i className="bi bi-exclamation-circle mr-1"></i>
+              내용은 10자 이상 입력해주세요.
+            </>
+          )
+          : boardContent.length > 1000
+          ? (
+            <>
+              <i className="bi bi-exclamation-circle mr-1"></i>
+              내용은 1000자 이내로 입력해주세요.
+            </>
+          )
+          : '',
+    }));
+  }, [boardTitle, boardContent]);
+
+  // 글자 수 색상 계산: 0글자이면 초록, 1자 이상이면서 범위 벗어나면 빨간색
+  const contentCountColor =
+    boardContent.length > 0 && (boardContent.length < 10 || boardContent.length > 1000)
+      ? 'text-red-500'
+      : 'text-[#7CBD00]';
+
+  // 등록 버튼 활성화 여부
+  const isSubmitDisabled =
+    boardTitle.trim().length < 5 ||
+    boardContent.length < 10 ||
+    boardContent.length > 1000;
+
+  // 제목 테두리 색상
+  const titleBorderClass =
+    messages.title
+      ? 'border-red-500 focus:ring-red-500'
+      : 'border-gray-200 focus:ring-[#7CBD00]';
+
+  // 내용 테두리 색상
+  const contentBorderClass =
+    messages.content
+      ? 'border-red-500 focus:ring-red-500'
+      : 'border-gray-200 focus:ring-[#7CBD00]';
+
+  // 등록 핸들러
   const handleSubmit = () => {
-      if (!boardTitle.trim()) {
-          setErrorMsg('제목을 입력해주세요.');
-          return;
-      }
-      setErrorMsg('');
-      fetch(`http://localhost:8080/boards/${selectedTypeCode}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // 로그인용
-          body: JSON.stringify({ boardTitle, boardContent })
-      })
+    // 제출 시 한 번 더 전체 검증
+    const titleValid = boardTitle.trim().length >= 5;
+    const contentValid = boardContent.length >= 10 && boardContent.length <= 1000;
+
+    if (!titleValid) {
+      setMessages(prev => ({
+        ...prev,
+        title: (
+          <>
+            <i className="bi bi-exclamation-circle mr-1"></i>
+            제목은 5자 이상 입력해주세요.
+          </>
+        ),
+      }));
+    }
+    if (!contentValid) {
+      setMessages(prev => ({
+        ...prev,
+        content: boardContent.length < 10
+          ? (
+            <>
+              <i className="bi bi-exclamation-circle mr-1"></i>
+              내용은 10자 이상 입력해주세요.
+            </>
+          )
+          : (
+            <>
+              <i className="bi bi-exclamation-circle mr-1"></i>
+              내용은 1000자 이내로 입력해주세요.
+            </>
+          ),
+      }));
+    }
+    if (!titleValid || !contentValid) return;
+
+    setErrorMsg('');
+    fetch(`http://localhost:8080/boards/${selectedTypeCode}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ boardTitle, boardContent }),
+    })
       .then(res => res.json())
       .then(data => {
-          if (data.boardIdx) {
-              navigate(`/boards/${data.typeCode}/${data.boardIdx}`);
-          } else {
-              setErrorMsg(data.error || '등록에 실패했습니다.');
-          }
+        if (data.boardIdx) {
+          navigate(`/boards/${data.typeCode}/${data.boardIdx}`);
+        } else {
+          setErrorMsg(data.error || '등록에 실패했습니다.');
+        }
       })
       .catch(() => setErrorMsg('서버 오류가 발생했습니다.'));
   };
@@ -65,7 +152,7 @@ const BoardWrite = () => {
           </button>
         </div>
 
-        {/* 카드 (Form 대신 Div 사용) */}
+        {/* 카드 */}
         <div className="bg-white border border-gray-100 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)]">
           <div className="p-6 sm:p-8">
             <div id="writeForm">
@@ -80,7 +167,6 @@ const BoardWrite = () => {
                   value={selectedTypeCode}
                   onChange={(e) => setSelectedTypeCode(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-[#222222] bg-white focus:outline-none focus:ring-2 focus:ring-[#7CBD00] cursor-pointer">
-                  {/* 예시 데이터 - 나중에 API로 불러온 boardTypes를 map으로 돌리면 돼 */}
                   <option value="soccer">축구</option>
                   <option value="baseball">야구</option>
                   <option value="basketball">농구</option>
@@ -100,7 +186,7 @@ const BoardWrite = () => {
               </div>
 
               {/* 제목 */}
-              <div className="mb-4">
+              <div className="mb-4 space-y-1.5">
                 <label htmlFor="boardTitle" className="block text-xs sm:text-sm font-medium text-[#222222] mb-1.5">
                   제목
                 </label>
@@ -109,42 +195,61 @@ const BoardWrite = () => {
                   type="text"
                   value={boardTitle}
                   onChange={(e) => setBoardTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-[#222222] placeholder:text-[#a7a7a7] focus:outline-none focus:ring-2 focus:ring-[#7CBD00]"
-                  placeholder="제목을 입력하세요"
-                  maxLength={200}/>
+                  className={`w-full px-3 py-2 border rounded-lg text-sm text-[#222222] placeholder:text-[#a7a7a7] focus:outline-none focus:ring-2 ${titleBorderClass}`}
+                  placeholder="제목을 입력하세요 (5자 이상)"
+                  maxLength={200}
+                />
+                {/* 제목 에러 메시지 */}
+                {messages.title && (
+                  <p className="text-sm text-red-500 flex items-center">
+                    {messages.title}
+                  </p>
+                )}
               </div>
 
-              {/* 내용 (에디터 영역) */}
-              <div className="mb-5">
+              {/* 내용 */}
+              <div className="mb-5 space-y-1.5">
                 <label htmlFor="boardContent" className="block text-xs sm:text-sm font-medium text-[#222222] mb-1.5">
                   내용
                 </label>
-                {/* 실무에서는 리액트용 에디터(React-Quill 등)를 쓰거나
-                    기존 Summernote를 쓰려면 useRef를 활용해 */}
-                <textarea
-                  id="boardContent"
-                  value={boardContent}
-                  onChange={(e) => setBoardContent(e.target.value)}
-                  className="w-full min-h-[300px] px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#7CBD00]"
-                  placeholder="내용을 입력해주세요..."
-                ></textarea>
+                <div className="relative">
+                  <textarea
+                    id="boardContent"
+                    value={boardContent}
+                    onChange={(e) => setBoardContent(e.target.value)}
+                    className={`w-full min-h-[300px] px-3 py-2 pb-8 border rounded-lg text-sm focus:outline-none focus:ring-2 resize-none ${contentBorderClass}`}
+                    placeholder="내용을 입력해주세요 (10자 ~ 1000자)"
+                    maxLength={1100}
+                  />
+                  {/* 실시간 글자 수 카운터 (우측 하단) */}
+                  <span className={`absolute bottom-3 right-4 text-xs font-semibold ${contentCountColor}`}>
+                    {boardContent.length} / 1000
+                  </span>
+                </div>
+                {/* 내용 에러 메시지 */}
+                {messages.content && (
+                  <p className="text-sm text-red-500 flex items-center">
+                    {messages.content}
+                  </p>
+                )}
               </div>
 
               {/* 버튼 */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleSubmit}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] cursor-pointer">
+                  disabled={isSubmitDisabled}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer">
                   <i className="bi bi-pencil-square text-[13px]"></i>
                   <span>등록</span>
                 </button>
                 <button
-                    onClick={() => navigate(listPath)}
+                  onClick={() => navigate(listPath)}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold border border-gray-300 text-[#222222] bg-white hover:bg-gray-50 cursor-pointer">
                   취소
                 </button>
                 {errorMsg && (
-                    <p className="mb-3 text-sm text-red-500">{errorMsg}</p>
+                  <p className="text-sm text-red-500">{errorMsg}</p>
                 )}
               </div>
 
