@@ -7,12 +7,14 @@ const BoardEdit = () => {
 
   const [boardTitle, setBoardTitle] = useState('');
   const [boardContent, setBoardContent] = useState('');
-
-  // ✨ 원본 데이터 보관 및 변경 감지 상태
   const [original, setOriginal] = useState({ title: '', content: '' });
+
   const [isTitleValid, setIsTitleValid] = useState(true);
   const [isContentValid, setIsContentValid] = useState(true);
   const [contentErrorMsg, setContentErrorMsg] = useState('');
+
+  // ✨ 수정을 시도했는지 확인하는 상태 (처음엔 false)
+  const [hasTouched, setHasTouched] = useState(false);
 
   useEffect(() => {
     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`, {
@@ -24,17 +26,18 @@ const BoardEdit = () => {
         const content = data.boardContent || '';
         setBoardTitle(title);
         setBoardContent(content);
-        setOriginal({ title, content }); // ✨ 원본 저장
+        setOriginal({ title, content });
       })
       .catch(err => console.error('게시글 조회 에러:', err));
   }, [boardTypeCode, boardIdx]);
 
-  // 변경 여부 확인 (둘 다 같으면 false)
+  // 변경 여부 확인
   const isDirty = boardTitle !== original.title || boardContent !== original.content;
 
   const handleTitleChange = (e) => {
     const value = e.target.value;
     setBoardTitle(value);
+    setHasTouched(true); // ✨ 수정 시도 감지
     setIsTitleValid(value.trim().length === 0 || value.trim().length >= 5);
   };
 
@@ -42,6 +45,7 @@ const BoardEdit = () => {
     const value = e.target.value;
     const length = value.trim().length;
     setBoardContent(value);
+    setHasTouched(true); // ✨ 수정 시도 감지
 
     if (length > 0 && length < 10) {
       setIsContentValid(false);
@@ -56,7 +60,7 @@ const BoardEdit = () => {
   };
 
   const handleSubmit = () => {
-    if (!isDirty) return; // 변경사항 없으면 중단
+    if (!isDirty) return;
 
     const titleOk = boardTitle.trim().length >= 5;
     const contentOk = boardContent.trim().length >= 10 && boardContent.trim().length <= 1000;
@@ -81,9 +85,10 @@ const BoardEdit = () => {
       .catch(err => console.error('게시글 수정 에러:', err));
   };
 
-  // ✨ 테두리 색상 결정 로직 (에러가 있거나, 변경사항이 없으면 빨간색)
-  const titleError = !isTitleValid || (!isDirty && original.title !== '');
-  const contentError = !isContentValid || (!isDirty && original.content !== '');
+  // ✨ 테두리 및 에러 메시지 노출 조건: (유효성 실패) OR (수정 시도함 AND 원본과 동일함)
+  const isSameAsOriginal = hasTouched && !isDirty;
+  const titleError = !isTitleValid || isSameAsOriginal;
+  const contentError = !isContentValid || isSameAsOriginal;
 
   return (
     <div className="min-h-[calc(100vh-200px)] bg-white py-8">
@@ -139,8 +144,7 @@ const BoardEdit = () => {
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  // ✨ 변경사항이 없어도 버튼 비활성화!
-                  disabled={!isDirty || !isTitleValid || !isContentValid || boardTitle.trim().length < 5}
+                  disabled={!isDirty || !isTitleValid || !isContentValid || boardTitle.trim().length < 5 || boardContent.trim().length < 10}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-[#222222] px-4 py-2 text-xs font-semibold text-white hover:bg-[#444444] disabled:bg-gray-300 disabled:cursor-not-allowed sm:text-sm cursor-pointer"
                 >
                   <i className="bi bi-save text-[13px]"></i>
