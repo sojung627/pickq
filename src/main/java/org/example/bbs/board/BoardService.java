@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -298,4 +300,22 @@ public class BoardService {
 
         return boardRepository.save(board).getBoardIdx();
     }
+
+    // 게시글 수정 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 게시글 수정
+    @Transactional
+    public void editBoard(Long boardIdx, BoardWriteDTO dto, String memId) {
+        BoardEntity board = boardRepository.findById(boardIdx)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+
+        if (!board.getMember().getMemId().equals(memId)) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        board.setBoardTitle(dto.getBoardTitle());
+        board.setBoardContent(dto.getBoardContent());
+        board.setBoardModdate(LocalDateTime.now());
+    }
+
 }

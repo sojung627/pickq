@@ -169,4 +169,24 @@ public class BoardController {
         Long boardIdx = boardService.writeBoard(typeCode, dto, request, memId);
         return ResponseEntity.ok(Map.of("boardIdx", boardIdx, "typeCode", typeCode));
     }
+
+    // 게시글 수정 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 게시글 수정
+    @PutMapping("/{boardTypeCode}/{boardIdx}/edit")
+    public ResponseEntity<?> editBoard(
+            @PathVariable String boardTypeCode,
+            @PathVariable Long boardIdx,
+            @RequestBody BoardWriteDTO dto,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
+        }
+
+        boardService.editBoard(boardIdx, dto, memId);
+        return ResponseEntity.ok(Map.of("result", "success"));
+    }
+
 }

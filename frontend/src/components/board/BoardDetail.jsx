@@ -230,7 +230,7 @@ const BoardDetail = () => {
             {/* 본문 */}
             <div className="prose max-w-none mb-6">
               <div
-                className="board-content text-sm sm:text-base leading-relaxed text-[#222222]"
+                className="board-content text-sm sm:text-base leading-relaxed text-[#222222] whitespace-pre-wrap"
                 dangerouslySetInnerHTML={{ __html: board.boardContent }}
               />
             </div>
