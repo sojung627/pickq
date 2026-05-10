@@ -13,22 +13,22 @@ const BoardDetail = () => {
   const [sortType, setSortType] = useState('oldest');
   const [replyPage, setReplyPage] = useState(1);
   const [editReplyId, setEditReplyId] = useState(null);
+  const [editContent, setEditContent] = useState('');
   const [replyFormId, setReplyFormId] = useState(null);
   const [replyContent, setReplyContent] = useState('');
   const [childReplyContent, setChildReplyContent] = useState('');
 
-    // 답글 저장용
-    const fetchReplies = () => {
-      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
-        credentials: "include"
+  const fetchReplies = () => {
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
+      credentials: "include"
+    })
+      .then(res => res.json())
+      .then(data => {
+        setReplies(data.replies || []);
+        setTotalReplies(data.totalReplies || 0);
       })
-        .then(res => res.json())
-        .then(data => {
-          setReplies(data.replies || []); // 서버에서 받은 댓글 목록
-          setTotalReplies(data.totalReplies || 0); // 전체 개수
-        })
-        .catch(err => console.error("댓글 조회 에러:", err));
-    };
+      .catch(err => console.error("댓글 조회 에러:", err));
+  };
 
   const from = searchParams.get("from") || "";
   const page = searchParams.get("page") || "1";
@@ -39,100 +39,125 @@ const BoardDetail = () => {
       .catch(() => alert('URL 복사에 실패했습니다.'));
   };
 
-  const toggleEditForm = (rid) => setEditReplyId(editReplyId === rid ? null : rid);
+  const toggleEditForm = (rid, content = '') => {
+    setEditReplyId(editReplyId === rid ? null : rid);
+    setEditContent(content);
+  };
   const toggleReplyForm = (rid) => setReplyFormId(replyFormId === rid ? null : rid);
 
-   // 게시글 상세 (조회수 증가) - boardIdx 바뀔 때만
-   // 게시글 + 내 정보: boardIdx 바뀔 때만
-   useEffect(() => {
-     fetch("http://localhost:8080/mypage/info", { credentials: "include" })
-       .then(res => res.ok ? res.json() : null)
-       .then(data => setMember(data))
-       .catch(() => setMember(null));
+  useEffect(() => {
+    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => setMember(data))
+      .catch(() => setMember(null));
 
-     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
-       .then(res => res.json())
-       .then(data => setBoard(data))
-       .catch(err => console.error("게시글 상세 조회 에러:", err));
-   }, [boardTypeCode, boardIdx]);
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
+      .then(res => res.json())
+      .then(data => setBoard(data))
+      .catch(err => console.error("게시글 상세 조회 에러:", err));
+  }, [boardTypeCode, boardIdx]);
 
-   // 댓글 목록 - 정렬/페이지 바뀔 때만
-   useEffect(() => {
-     fetchReplies();
-   }, [boardTypeCode, boardIdx, sortType, replyPage]);
+  useEffect(() => {
+    fetchReplies();
+  }, [boardTypeCode, boardIdx, sortType, replyPage]);
 
-  // 게시글 좋아요
   const handleLike = () => {
-    if (!member) {
-      navigate('/members/login');
-      return;
-    }
+    if (!member) { navigate('/members/login'); return; }
     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/like`, {
       method: 'POST',
       credentials: 'include'
     })
-    .then(res => res.json())
-    .then(data => setBoard(prev => ({ ...prev, boardLike: data.boardLike, isLiked: data.isLiked })))
-    .catch(err => console.error("좋아요 에러:", err));
+      .then(res => res.json())
+      .then(data => setBoard(prev => ({ ...prev, boardLike: data.boardLike, isLiked: data.isLiked })))
+      .catch(err => console.error("좋아요 에러:", err));
   };
 
   const handleReplySubmit = () => {
-        if (!replyContent.trim()) return;
-        fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ replyContent })
-        })
-        .then(res => res.json())
-        .then(() => {
-            setReplyContent('');
-            setReplyPage(1);
-            fetchReplies(); // 최신 목록 불러오기
-        })
-        .catch(err => console.error("댓글 등록 에러:", err));
-    };
-
-    // 댓글 좋아요
-    const handleReplyLike = (rid) => {
-      if (!member) {
-        navigate('/members/login');
-        return;
-      }
-      fetch(`http://localhost:8080/boards/replies/${rid}/like`, { // 엔드포인트는 백엔드 설계에 맞게 만들어야 함
-        method: 'POST',
-        credentials: 'include'
-      })
+    if (!replyContent.trim()) return;
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ replyContent })
+    })
       .then(res => res.json())
-      .then(data => {
-        // 좋아요 후 목록 새로고침
+      .then(() => {
+        setReplyContent('');
+        setReplyPage(1);
         fetchReplies();
       })
-      .catch(err => console.error("댓글 좋아요 에러:", err));
-    };
+      .catch(err => console.error("댓글 등록 에러:", err));
+  };
 
-    // 답글 등록
-    const handleChildReplySubmit = (parentIdx) => {
-      if (!childReplyContent.trim()) return;
-      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          replyContent: childReplyContent,
-          replyParentIdx: parentIdx // 부모 ID 전달
-        })
+  const handleReplyLike = (rid) => {
+    if (!member) { navigate('/members/login'); return; }
+    fetch(`http://localhost:8080/boards/replies/${rid}/like`, {
+      method: 'POST',
+      credentials: 'include'
+    })
+      .then(res => res.json())
+      .then(() => fetchReplies())
+      .catch(err => console.error("댓글 좋아요 에러:", err));
+  };
+
+  const handleReplyEdit = (rid) => {
+    if (!editContent.trim()) return;
+    fetch(`http://localhost:8080/boards/replies/${rid}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ replyContent: editContent })
+    })
+      .then(res => res.json())
+      .then(() => {
+        setEditReplyId(null);
+        setEditContent('');
+        fetchReplies();
       })
+      .catch(err => console.error("댓글 수정 에러:", err));
+  };
+
+  const handleReplyDelete = (rid) => {
+    if (!confirm('삭제하시겠습니까?')) return;
+    fetch(`http://localhost:8080/boards/replies/${rid}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+      .then(() => fetchReplies())
+      .catch(err => console.error("댓글 삭제 에러:", err));
+  };
+
+  const handleChildReplySubmit = (parentIdx) => {
+    if (!childReplyContent.trim()) return;
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ replyContent: childReplyContent, replyParentIdx: parentIdx })
+    })
       .then(res => res.json())
       .then(() => {
         setChildReplyContent('');
-        setReplyFormId(null); // 폼 닫기
+        setReplyFormId(null);
         fetchReplies();
       })
       .catch(err => console.error("답글 등록 에러:", err));
-    };
+  };
+
+  const handleBoardDelete = () => {
+    if (!confirm('삭제하시겠습니까?')) return;
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+      .then(() => navigate(`/boards?from=${from}&page=${page}`))
+      .catch(err => console.error("게시글 삭제 에러:", err));
+  };
 
   if (!board) return <div className="py-20 text-center">로딩 중...</div>;
+
+  const isOwner = Number(member?.memIdx) === Number(board.memIdx);
+  const isAdmin = Number(member?.memRoleIdx) === 2;
 
   return (
     <div className="min-h-screen bg-white py-8">
@@ -173,10 +198,8 @@ const BoardDetail = () => {
                     <i className="bi bi-person-circle text-[14px]"></i>
                     <span>{board.memNickname || board.memId}</span>
                   </div>
-                  {/* 게시글 본문 날짜 */}
                   <div className="flex items-center gap-1 text-[#999999]">
                     <i className="bi bi-clock-history text-[13px]"></i>
-                    {/* 날짜만 출력! */}
                     <span>{board.boardRegdate ? board.boardRegdate.split('T')[0] : ''}</span>
                   </div>
                 </div>
@@ -221,7 +244,7 @@ const BoardDetail = () => {
         </div>
 
         {/* 수정/삭제 (작성자/관리자만) */}
-        {member && (member.memIdx === board.memIdx || member.memRoleIdx === 2) && (
+        {member && (isOwner || isAdmin) && (
           <div className="flex gap-2 mb-6">
             <button
               onClick={() => navigate(`/boards/${boardTypeCode}/${boardIdx}/edit`)}
@@ -230,7 +253,7 @@ const BoardDetail = () => {
               <i className="bi bi-pencil-fill text-[12px]"></i> <span>수정</span>
             </button>
             <button
-              onClick={() => confirm('삭제하시겠습니까?') && console.log('삭제 로직')}
+              onClick={handleBoardDelete}
               className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs sm:text-sm border border-red-300 text-red-600 bg-white hover:bg-red-50 cursor-pointer"
             >
               <i className="bi bi-trash3-fill text-[12px]"></i> <span>삭제</span>
@@ -264,79 +287,101 @@ const BoardDetail = () => {
 
             {/* 댓글 리스트 */}
             <div className="space-y-4">
-              {replies.map((r) => (
-                <div key={r.replyIdx} className="border border-gray-100 rounded-lg bg-white px-3 py-3 sm:px-4 sm:py-4">
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <span style={{ marginLeft: `${r.replyDepth * 12}px` }}>
-                      {r.replyDepth > 0 && <span className="text-[#7CBD00] mr-1">↳</span>}
-                    </span>
-                    <div className="flex-1">
-                      <div className="mb-2 flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
-                            <i className="bi bi-person-fill text-[#a7a7a7]"></i>
-                          </div>
-                          <div>
-                            <div className="text-[13px] font-semibold text-[#222222]">{r.memNickname || r.memId}</div>
+              {replies.map((r) => {
+                const isReplyOwner = Number(member?.memIdx) === Number(r.memIdx);
+                return (
+                  <div key={r.replyIdx} className="border border-gray-100 rounded-lg bg-white px-3 py-3 sm:px-4 sm:py-4">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <span style={{ marginLeft: `${r.replyDepth * 12}px` }}>
+                        {r.replyDepth > 0 && <span className="text-[#7CBD00] mr-1">↳</span>}
+                      </span>
+                      <div className="flex-1">
+                        <div className="mb-2 flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
+                              <i className="bi bi-person-fill text-[#a7a7a7]"></i>
+                            </div>
                             <div>
+                              <div className="text-[13px] font-semibold text-[#222222]">{r.memNickname || r.memId}</div>
                               <div className="text-[11px] text-[#a7a7a7]">
                                 {r.replyRegdate ? r.replyRegdate.split('T')[0] : ''}
                               </div>
                             </div>
                           </div>
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <button
+                              onClick={() => handleReplyLike(r.replyIdx)}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 cursor-pointer">
+                              <i className="bi bi-hand-thumbs-up-fill text-[11px]"></i> <span>{r.replyLike}</span>
+                            </button>
+                            {member && (isReplyOwner || isAdmin) && (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => toggleEditForm(r.replyIdx, r.replyContent)}
+                                  className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 transition-colors cursor-pointer">
+                                  <i className="bi bi-pencil-fill text-[12px]"></i>
+                                </button>
+                                <button
+                                  onClick={() => handleReplyDelete(r.replyIdx)}
+                                  className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border border-red-300 bg-white text-red-500 hover:bg-red-50 transition-colors cursor-pointer">
+                                  <i className="bi bi-x-lg text-[12px]"></i>
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 sm:gap-2">
-                          <button onClick={() => handleReplyLike(r.replyIdx)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 cursor-pointer">
-                            <i className="bi bi-hand-thumbs-up-fill text-[11px]"></i> <span>{r.replyLike}</span>
-                          </button>
-                          {member && (member.memIdx === r.memIdx || member.memRoleIdx === 2) && (
-                            <div className="flex items-center gap-1">
-                              <button onClick={() => toggleEditForm(r.replyIdx)} className="inline-flex items-center px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white hover:bg-gray-50 cursor-pointer">✏️</button>
-                              <button onClick={() => confirm('삭제하시겠습니까?')} className="inline-flex items-center px-2 py-1 rounded-md text-[11px] sm:text-xs border border-red-300 bg-white text-red-600 hover:bg-red-50 cursor-pointer">✕</button>
+                        <div className="reply-content mb-2 text-sm text-[#222222]">{r.replyContent}</div>
+                        {editReplyId === r.replyIdx && (
+                          <div className="mt-2">
+                            <textarea
+                              className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-[#7CBD00]"
+                              rows="2"
+                              value={editContent}
+                              onChange={(e) => setEditContent(e.target.value)}
+                            />
+                            <div className="mt-1 flex gap-1">
+                              <button
+                                onClick={() => handleReplyEdit(r.replyIdx)}
+                                className="px-3 py-1 bg-[#7CBD00] text-white text-xs rounded-md">저장</button>
+                              <button
+                                onClick={() => setEditReplyId(null)}
+                                className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-md">취소</button>
                             </div>
+                          </div>
+                        )}
+                        <div className="mt-1 flex items-center gap-3 text-[11px] sm:text-xs text-[#767676]">
+                          {member ? (
+                            r.replyDepth < 3 && (
+                              <button onClick={() => toggleReplyForm(r.replyIdx)} className="text-[#7CBD00] cursor-pointer">↩ 답글</button>
+                            )
+                          ) : (
+                            <button onClick={() => navigate('/members/login')} className="text-[#7CBD00] cursor-pointer">↩ 답글</button>
                           )}
                         </div>
-                      </div>
-                      <div className="reply-content mb-2 text-sm text-[#222222]">{r.replyContent}</div>
-                      {editReplyId === r.replyIdx && (
-                        <div className="mt-2">
-                          <textarea className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-[#7CBD00]" rows="2" defaultValue={r.replyContent}></textarea>
-                          <div className="mt-1 flex gap-1">
-                            <button className="px-3 py-1 bg-[#7CBD00] text-white text-xs rounded-md">저장</button>
-                            <button onClick={() => setEditReplyId(null)} className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-md">취소</button>
+                        {replyFormId === r.replyIdx && (
+                          <div className="mt-2">
+                            <textarea
+                              className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-[#7CBD00]"
+                              rows="2"
+                              placeholder="답글을 입력하세요"
+                              value={childReplyContent}
+                              onChange={(e) => setChildReplyContent(e.target.value)}
+                            />
+                            <div className="mt-1 flex gap-1">
+                              <button
+                                onClick={() => handleChildReplySubmit(r.replyIdx)}
+                                className="px-3 py-1 bg-[#7CBD00] text-white text-xs rounded-md">등록</button>
+                              <button
+                                onClick={() => { setReplyFormId(null); setChildReplyContent(''); }}
+                                className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-md">취소</button>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      <div className="mt-1 flex items-center gap-3 text-[11px] sm:text-xs text-[#767676]">
-                        {member ? (
-                          <button onClick={() => r.replyDepth < 3 ? toggleReplyForm(r.replyIdx) : null} className="text-[#7CBD00] cursor-pointer">↩ 답글</button>
-                        ) : (
-                          <button onClick={() => navigate('/members/login')} className="text-[#7CBD00] cursor-pointer">↩ 답글</button>
                         )}
                       </div>
-                      {replyFormId === r.replyIdx && (
-                        <div className="mt-2">
-                          <textarea
-                            className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-[#7CBD00]"
-                            rows="2"
-                            placeholder="답글을 입력하세요"
-                            value={childReplyContent}
-                            onChange={(e) => setChildReplyContent(e.target.value)}
-                          ></textarea>
-                          <div className="mt-1 flex gap-1">
-                            <button
-                              onClick={() => handleChildReplySubmit(r.replyIdx)} // 답글 등록 함수 연결
-                              className="px-3 py-1 bg-[#7CBD00] text-white text-xs rounded-md"
-                            >등록</button>
-                            <button onClick={() => { setReplyFormId(null); setChildReplyContent(''); }} className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-md">취소</button>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -350,8 +395,7 @@ const BoardDetail = () => {
                 onChange={(e) => setReplyContent(e.target.value)}
                 className="w-full rounded-lg border border-gray-200 p-3 text-sm focus:border-[#7CBD00] focus:outline-none mb-2"
                 rows="3"
-                placeholder="댓글을 입력하세요"
-              />
+                placeholder="댓글을 입력하세요"/>
               <button
                 onClick={handleReplySubmit}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] cursor-pointer">
