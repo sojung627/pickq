@@ -101,7 +101,7 @@ public class BoardService {
                 .build();
     }
 
-    // 좋아요 토글
+    // 게시글 좋아요 토글
     @Transactional
     public Map<String, Object> toggleLike(Long boardIdx, String memId) {
         BoardEntity board = boardRepository.findById(boardIdx)
@@ -120,18 +120,27 @@ public class BoardService {
     public void writeReply(Long boardIdx, ReplyWriteDTO dto, HttpServletRequest request, String memId) {
         MemberEntity member = memberRepository.findByMemId(memId)
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
-
         BoardEntity board = boardRepository.findById(boardIdx)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+
+        int depth = 0;
+        int ref = 0;
+
+        if (dto.getReplyParentIdx() != null) {
+            ReplyEntity parent = replyRepository.findById(dto.getReplyParentIdx())
+                    .orElseThrow(() -> new RuntimeException("부모 댓글을 찾을 수 없습니다."));
+            depth = parent.getReplyDepth() + 1;
+            ref = Math.toIntExact(parent.getReplyIdx()); // 원댓글 기준점
+        }
 
         ReplyEntity reply = ReplyEntity.builder()
                 .board(board)
                 .member(member)
                 .replyContent(dto.getReplyContent())
                 .replyIp(request.getRemoteAddr())
-                .replyRef(0)
+                .replyRef(ref)
                 .replyStep(0)
-                .replyDepth(0)
+                .replyDepth(depth)
                 .build();
 
         replyRepository.save(reply);
@@ -176,6 +185,34 @@ public class BoardService {
         result.put("currentPage", page);
 
         return result;
+    }
+
+    // 댓글 좋아요
+    @Transactional
+    public Map<String, Object> toggleReplyLike(Long replyIdx, String memId) {
+        ReplyEntity reply = replyRepository.findById(replyIdx)
+                .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+
+        reply.setReplyLike(reply.getReplyLike() + 1);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("replyLike", reply.getReplyLike());
+        return result;
+    }
+
+    // 댓글 삭제
+    @Transactional
+    public void deleteReply(Long replyIdx, String memId) {
+
+        ReplyEntity reply = replyRepository.findById(replyIdx)
+                .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+
+        // 작성자 검증
+        if (!reply.getMember().getMemId().equals(memId)) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
+        replyRepository.delete(reply);
     }
 
     // 게시글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ

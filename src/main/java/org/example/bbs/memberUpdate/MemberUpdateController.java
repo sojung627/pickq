@@ -19,14 +19,6 @@ public class MemberUpdateController {
     private final MemberUpdateService memberService;
     private final MemberUpdateRepository memberUpdateRepository;
 
-//    @Autowired
-//    private PasswordEncoder passwordEncoder;
-//
-//    @GetMapping("/test/encode")
-//    public String encode() {
-//        return passwordEncoder.encode("1234");
-//    }
-
     // 회원정보 불러오기
     @GetMapping("/info")
     public ResponseEntity<?> getMemberInfo(
@@ -35,6 +27,7 @@ public class MemberUpdateController {
                 .orElseThrow(() -> new RuntimeException("회원 없음"));
 
         return ResponseEntity.ok(Map.of(
+                "memIdx", member.getMemIdx(),
                 "memId", member.getMemId(),
                 "memName", member.getMemName() != null ? member.getMemName() : "",
                 "memEmail", member.getMemEmail() != null ? member.getMemEmail() : "",

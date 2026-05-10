@@ -13,7 +13,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/boards")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true") // 리액트 포트 허용
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class BoardController {
 
     private final BoardService boardService;
@@ -97,6 +97,39 @@ public class BoardController {
 
         Map<String, Object> result = boardService.getReplies(boardIdx, sort, page);
         return ResponseEntity.ok(result);
+    }
+
+    // 댓글 좋아요
+    @PostMapping("/replies/{replyIdx}/like")
+    public ResponseEntity<?> replyLike(
+            @PathVariable Long replyIdx,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
+        }
+
+        Map<String, Object> result = boardService.toggleReplyLike(replyIdx, memId);
+        return ResponseEntity.ok(result);
+    }
+
+    // 댓글 삭제
+    @DeleteMapping("/replies/{replyIdx}")
+    public ResponseEntity<?> deleteReply(
+            @PathVariable Long replyIdx,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+
+        if (memId == null) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "로그인이 필요합니다."));
+        }
+
+        boardService.deleteReply(replyIdx, memId);
+
+        return ResponseEntity.ok(Map.of("result", "success"));
     }
 
     // 게시글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ

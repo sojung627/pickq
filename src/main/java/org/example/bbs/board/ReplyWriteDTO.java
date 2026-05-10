@@ -7,4 +7,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReplyWriteDTO {
     private String replyContent;
+    private Long replyParentIdx;
 }

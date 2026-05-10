@@ -51,6 +51,13 @@ const BoardDetail = () => {
       .then(data => setMember(data))
       .catch(() => setMember(null));
 
+//   fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+//     .then(res => res.json())
+//     .then(data => {
+//       console.log("member 응답 :", data); // 여기서 필드명 확인!
+//       setMember(data);
+//     });
+
     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
       .then(res => res.json())
       .then(data => setBoard(data))
@@ -288,7 +295,10 @@ const BoardDetail = () => {
             {/* 댓글 리스트 */}
             <div className="space-y-4">
               {replies.map((r) => {
+                console.log("member.memIdx:", member?.memIdx, typeof member?.memIdx);
+                console.log("r.memIdx:", r.memIdx, typeof r.memIdx);
                 const isReplyOwner = Number(member?.memIdx) === Number(r.memIdx);
+                console.log("isReplyOwner:", isReplyOwner, "/ member:", member);
                 return (
                   <div key={r.replyIdx} className="border border-gray-100 rounded-lg bg-white px-3 py-3 sm:px-4 sm:py-4">
                     <div className="flex items-start gap-2 sm:gap-3">
@@ -318,12 +328,12 @@ const BoardDetail = () => {
                               <div className="flex items-center gap-2">
                                 <button
                                   onClick={() => toggleEditForm(r.replyIdx, r.replyContent)}
-                                  className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 transition-colors cursor-pointer">
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 cursor-pointer">
                                   <i className="bi bi-pencil-fill text-[12px]"></i>
                                 </button>
                                 <button
                                   onClick={() => handleReplyDelete(r.replyIdx)}
-                                  className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border border-red-300 bg-white text-red-500 hover:bg-red-50 transition-colors cursor-pointer">
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#ff4d4f] hover:bg-red-50 cursor-pointer">
                                   <i className="bi bi-x-lg text-[12px]"></i>
                                 </button>
                               </div>
