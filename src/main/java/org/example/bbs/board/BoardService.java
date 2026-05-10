@@ -25,6 +25,7 @@ public class BoardService {
     private final BoardLikeRepository boardLikeRepository;
 
     private final ReplyRepository replyRepository;
+    private final ReplyLikeRepository replyLikeRepository;
 
     private final MemberRepository memberRepository;
 
@@ -216,13 +217,33 @@ public class BoardService {
     // 댓글 좋아요
     @Transactional
     public Map<String, Object> toggleReplyLike(Long replyIdx, String memId) {
+
         ReplyEntity reply = replyRepository.findById(replyIdx)
                 .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
 
-        reply.setReplyLike(reply.getReplyLike() + 1);
+        MemberEntity member = memberRepository.findByMemId(memId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
 
+        Optional<ReplyLikeEntity> existingLike =
+                replyLikeRepository.findByReply_ReplyIdxAndMember_MemId(replyIdx, memId);
+
+        if (existingLike.isPresent()) {
+            // 좋아요 취소
+            replyLikeRepository.delete(existingLike.get());
+            reply.setReplyLike(reply.getReplyLike() - 1);
+        } else {
+            // 좋아요 추가
+            ReplyLikeEntity like = ReplyLikeEntity.builder()
+                    .reply(reply)
+                    .member(member)
+                    .build();
+
+            replyLikeRepository.save(like);
+            reply.setReplyLike(reply.getReplyLike() + 1);
+        }
         Map<String, Object> result = new HashMap<>();
         result.put("replyLike", reply.getReplyLike());
+
         return result;
     }
 
