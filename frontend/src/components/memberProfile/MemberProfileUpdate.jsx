@@ -10,8 +10,6 @@ const MemberProfileUpdate = () => {
     memImg: ''
   });
 
-    // 레포지토리 주소 잘 수정 되었는지 테스트 중
-
   const [originalData, setOriginalData] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);

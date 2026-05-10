@@ -15,6 +15,7 @@ const BoardDetail = () => {
   const [editReplyId, setEditReplyId] = useState(null);
   const [replyFormId, setReplyFormId] = useState(null);
   const [replyContent, setReplyContent] = useState('');
+  const [childReplyContent, setChildReplyContent] = useState('');
 
     // 답글 저장용
     const fetchReplies = () => {
@@ -41,23 +42,26 @@ const BoardDetail = () => {
   const toggleEditForm = (rid) => setEditReplyId(editReplyId === rid ? null : rid);
   const toggleReplyForm = (rid) => setReplyFormId(replyFormId === rid ? null : rid);
 
-  useEffect(() => {
-      // 내 정보
-      fetch("http://localhost:8080/mypage/info", { credentials: "include" })
-        .then(res => res.ok ? res.json() : null)
-        .then(data => setMember(data))
-        .catch(() => setMember(null));
+   // 게시글 상세 (조회수 증가) - boardIdx 바뀔 때만
+   // 게시글 + 내 정보: boardIdx 바뀔 때만
+   useEffect(() => {
+     fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+       .then(res => res.ok ? res.json() : null)
+       .then(data => setMember(data))
+       .catch(() => setMember(null));
 
-      // 게시글 본문
-      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
-        .then(res => res.json())
-        .then(data => setBoard(data))
-        .catch(err => console.error("게시글 상세 조회 에러:", err));
+     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
+       .then(res => res.json())
+       .then(data => setBoard(data))
+       .catch(err => console.error("게시글 상세 조회 에러:", err));
+   }, [boardTypeCode, boardIdx]);
 
-      // 댓글 목록
-      fetchReplies();
-    }, [boardTypeCode, boardIdx, sortType, replyPage]); // 재실행
+   // 댓글 목록 - 정렬/페이지 바뀔 때만
+   useEffect(() => {
+     fetchReplies();
+   }, [boardTypeCode, boardIdx, sortType, replyPage]);
 
+  // 게시글 좋아요
   const handleLike = () => {
     if (!member) {
       navigate('/members/login');
@@ -87,6 +91,45 @@ const BoardDetail = () => {
             fetchReplies(); // 최신 목록 불러오기
         })
         .catch(err => console.error("댓글 등록 에러:", err));
+    };
+
+    // 댓글 좋아요
+    const handleReplyLike = (rid) => {
+      if (!member) {
+        navigate('/members/login');
+        return;
+      }
+      fetch(`http://localhost:8080/boards/replies/${rid}/like`, { // 엔드포인트는 백엔드 설계에 맞게 만들어야 함
+        method: 'POST',
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(data => {
+        // 좋아요 후 목록 새로고침
+        fetchReplies();
+      })
+      .catch(err => console.error("댓글 좋아요 에러:", err));
+    };
+
+    // 답글 등록
+    const handleChildReplySubmit = (parentIdx) => {
+      if (!childReplyContent.trim()) return;
+      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          replyContent: childReplyContent,
+          replyParentIdx: parentIdx // 부모 ID 전달
+        })
+      })
+      .then(res => res.json())
+      .then(() => {
+        setChildReplyContent('');
+        setReplyFormId(null); // 폼 닫기
+        fetchReplies();
+      })
+      .catch(err => console.error("답글 등록 에러:", err));
     };
 
   if (!board) return <div className="py-20 text-center">로딩 중...</div>;
@@ -243,7 +286,8 @@ const BoardDetail = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-1 sm:gap-2">
-                          <button className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 cursor-pointer">
+                          <button onClick={() => handleReplyLike(r.replyIdx)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 cursor-pointer">
                             <i className="bi bi-hand-thumbs-up-fill text-[11px]"></i> <span>{r.replyLike}</span>
                           </button>
                           {member && (member.memIdx === r.memIdx || member.memRoleIdx === 2) && (
@@ -273,10 +317,19 @@ const BoardDetail = () => {
                       </div>
                       {replyFormId === r.replyIdx && (
                         <div className="mt-2">
-                          <textarea className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-[#7CBD00]" rows="2" placeholder="답글을 입력하세요"></textarea>
+                          <textarea
+                            className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-[#7CBD00]"
+                            rows="2"
+                            placeholder="답글을 입력하세요"
+                            value={childReplyContent}
+                            onChange={(e) => setChildReplyContent(e.target.value)}
+                          ></textarea>
                           <div className="mt-1 flex gap-1">
-                            <button className="px-3 py-1 bg-[#7CBD00] text-white text-xs rounded-md">등록</button>
-                            <button onClick={() => setReplyFormId(null)} className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-md">취소</button>
+                            <button
+                              onClick={() => handleChildReplySubmit(r.replyIdx)} // 답글 등록 함수 연결
+                              className="px-3 py-1 bg-[#7CBD00] text-white text-xs rounded-md"
+                            >등록</button>
+                            <button onClick={() => { setReplyFormId(null); setChildReplyContent(''); }} className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-md">취소</button>
                           </div>
                         </div>
                       )}
