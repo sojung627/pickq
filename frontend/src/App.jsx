@@ -12,6 +12,7 @@ import MyPageLayout from "./components/layout/MyPageLayout";
 import BoardList from "./components/board/BoardList";
 import BoardDetail from "./components/board/BoardDetail";
 import BoardWrite from "./components/board/BoardWrite";
+import BoardEdit from "./components/board/BoardEdit"
 
 /* 회원가입 / 로그인 */
 import Register from "./components/members/SignUp";
@@ -57,6 +58,7 @@ function App() {
             <Route path="/boards" element={<BoardList />} />
             <Route path="/boards/:typeCode/new" element={<BoardWrite />} />
             <Route path="/boards/:boardTypeCode/:boardIdx" element={<BoardDetail />} />
+            <Route path="/boards/:boardTypeCode/:boardIdx/edit" element={<BoardEdit />} />
 
             {/* 헤더의 마이페이지에서만 뜨는 것들 */}
             <Route path="/mypage" element={<MyPageLayout />}>
