@@ -11,6 +11,7 @@ export default function Login() {
     const [loginMsg, setLoginMsg] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
     const navigate = useNavigate();
+    const [welcomeMsg, setWelcomeMsg] = useState('PickQ에 오신 것을 환영합니다.');
 
     // 1. 초기 로드 및 네이버 SDK
     useEffect(() => {
