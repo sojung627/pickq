@@ -340,7 +340,9 @@ const BoardDetail = () => {
                             )}
                           </div>
                         </div>
-                        <div className="reply-content mb-2 text-sm text-[#222222]">{r.replyContent}</div>
+                        <div className="reply-content mb-2 text-sm text-[#222222] whitespace-pre-wrap">
+                            {r.replyContent}
+                        </div>
                         {editReplyId === r.replyIdx && (
                           <div className="mt-2">
                             <textarea
