@@ -132,6 +132,25 @@ public class BoardController {
         return ResponseEntity.ok(Map.of("result", "success"));
     }
 
+    // 게시글 삭제
+    @DeleteMapping("/{boardTypeCode}/{boardIdx}")
+    public ResponseEntity<?> deleteBoard(
+            @PathVariable String boardTypeCode,
+            @PathVariable Long boardIdx,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+
+        if (memId == null) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "로그인이 필요합니다."));
+        }
+
+        boardService.deleteBoard(boardIdx, memId);
+
+        return ResponseEntity.ok(Map.of("result", "success"));
+    }
+
     // 게시글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 작성하기

@@ -215,6 +215,21 @@ public class BoardService {
         replyRepository.delete(reply);
     }
 
+    // 게시글 삭제
+    @Transactional
+    public void deleteBoard(Long boardIdx, String memId) {
+
+        BoardEntity board = boardRepository.findById(boardIdx)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+
+        // 작성자 검증
+        if (!board.getMember().getMemId().equals(memId)) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
+        boardRepository.delete(board);
+    }
+
     // 게시글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 작성하기
