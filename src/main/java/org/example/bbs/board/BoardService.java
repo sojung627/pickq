@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,8 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final BoardTypeRepository boardTypeRepository;
+    private final BoardLikeRepository boardLikeRepository;
+
     private final ReplyRepository replyRepository;
 
     private final MemberRepository memberRepository;
@@ -104,14 +107,37 @@ public class BoardService {
     // 게시글 좋아요 토글
     @Transactional
     public Map<String, Object> toggleLike(Long boardIdx, String memId) {
+
         BoardEntity board = boardRepository.findById(boardIdx)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
 
-        board.setBoardLike(board.getBoardLike() + 1);
+        MemberEntity member = memberRepository.findByMemId(memId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
 
+        Optional<BoardLikeEntity> existingLike =
+                boardLikeRepository.findByBoard_BoardIdxAndMember_MemId(boardIdx, memId);
+
+        boolean isLiked;
+
+        if (existingLike.isPresent()) {
+            // 좋아요 취소
+            boardLikeRepository.delete(existingLike.get());
+            board.setBoardLike(board.getBoardLike() - 1);
+            isLiked = false;
+        } else {
+            // 좋아요 추가
+            BoardLikeEntity like = BoardLikeEntity.builder()
+                    .board(board)
+                    .member(member)
+                    .build();
+            boardLikeRepository.save(like);
+            board.setBoardLike(board.getBoardLike() + 1);
+            isLiked = true;
+        }
         Map<String, Object> result = new HashMap<>();
         result.put("boardLike", board.getBoardLike());
-        result.put("isLiked", true);
+        result.put("isLiked", isLiked);
+
         return result;
     }
 
