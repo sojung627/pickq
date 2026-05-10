@@ -17,6 +17,7 @@ const BoardDetail = () => {
   const [replyFormId, setReplyFormId] = useState(null);
   const [replyContent, setReplyContent] = useState('');
   const [childReplyContent, setChildReplyContent] = useState('');
+  const [likedReplies, setLikedReplies] = useState(new Set()); // 좋아요 누른 댓글 추적
 
   const fetchReplies = () => {
     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
@@ -50,13 +51,6 @@ const BoardDetail = () => {
       .then(res => res.ok ? res.json() : null)
       .then(data => setMember(data))
       .catch(() => setMember(null));
-
-//   fetch("http://localhost:8080/mypage/info", { credentials: "include" })
-//     .then(res => res.json())
-//     .then(data => {
-//       console.log("member 응답 :", data); // 여기서 필드명 확인!
-//       setMember(data);
-//     });
 
     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
       .then(res => res.json())
@@ -103,7 +97,18 @@ const BoardDetail = () => {
       credentials: 'include'
     })
       .then(res => res.json())
-      .then(() => fetchReplies())
+      .then(data => {
+        // 좋아요 상태 토글
+        setLikedReplies(prev => {
+          const next = new Set(prev);
+          next.has(rid) ? next.delete(rid) : next.add(rid);
+          return next;
+        });
+        // 댓글 카운트만 업데이트 (재조회 없이)
+        setReplies(prev => prev.map(r =>
+          r.replyIdx === rid ? { ...r, replyLike: data.replyLike } : r
+        ));
+      })
       .catch(err => console.error("댓글 좋아요 에러:", err));
   };
 
@@ -295,10 +300,8 @@ const BoardDetail = () => {
             {/* 댓글 리스트 */}
             <div className="space-y-4">
               {replies.map((r) => {
-                console.log("member.memIdx:", member?.memIdx, typeof member?.memIdx);
-                console.log("r.memIdx:", r.memIdx, typeof r.memIdx);
                 const isReplyOwner = Number(member?.memIdx) === Number(r.memIdx);
-                console.log("isReplyOwner:", isReplyOwner, "/ member:", member);
+                const isReplyLiked = likedReplies.has(r.replyIdx);
                 return (
                   <div key={r.replyIdx} className="border border-gray-100 rounded-lg bg-white px-3 py-3 sm:px-4 sm:py-4">
                     <div className="flex items-start gap-2 sm:gap-3">
@@ -319,13 +322,19 @@ const BoardDetail = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-1 sm:gap-2">
+                            {/* 댓글 좋아요 버튼 - 게시글 좋아요와 동일한 디자인 */}
                             <button
                               onClick={() => handleReplyLike(r.replyIdx)}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 cursor-pointer">
-                              <i className="bi bi-hand-thumbs-up-fill text-[11px]"></i> <span>{r.replyLike}</span>
+                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs font-semibold border border-gray-300 transition-colors cursor-pointer ${
+                                isReplyLiked
+                                  ? 'bg-[#222222] border-[#222222] text-white hover:bg-[#444444]'
+                                  : 'border-gray-200 text-[#222222] hover:bg-gray-50'
+                              }`}>
+                              <i className="bi bi-hand-thumbs-up-fill text-[11px]"></i>
+                              <span>{r.replyLike}</span>
                             </button>
                             {member && (isReplyOwner || isAdmin) && (
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => toggleEditForm(r.replyIdx, r.replyContent)}
                                   className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 cursor-pointer">
@@ -341,7 +350,7 @@ const BoardDetail = () => {
                           </div>
                         </div>
                         <div className="reply-content mb-2 text-sm text-[#222222] whitespace-pre-wrap">
-                            {r.replyContent}
+                          {r.replyContent}
                         </div>
                         {editReplyId === r.replyIdx && (
                           <div className="mt-2">
