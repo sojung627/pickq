@@ -14,14 +14,12 @@ const BoardList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // URL 파라미터에서 상태 읽기
   const typeCode = searchParams.get("typeCode") || "";
   const currentPage = parseInt(searchParams.get("page") || "1");
   const searchType = searchParams.get("searchType") || "all";
   const keyword = searchParams.get("keyword") || "";
   const sortType = searchParams.get("sortType") || "latest";
 
-  // URL 파라미터 업데이트 헬퍼
   const updateParams = (updates) => {
     const next = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([k, v]) => {
@@ -33,7 +31,7 @@ const BoardList = () => {
 
   useEffect(() => {
     fetch("http://localhost:8080/mypage/info", { credentials: "include" })
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : null)
       .then(data => setMember(data))
       .catch(err => console.error("회원 조회 에러:", err));
 
@@ -143,19 +141,17 @@ const BoardList = () => {
                   </h1>
                   <div className="flex items-center justify-end">
                     {member ? (
-                      <>
-                        {typeCode ? (
-                          <button type="button" onClick={() => navigate(`/boards/${typeCode}/new`)}
-                            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] transition-colors">
-                            <i className="bi bi-plus-lg text-[0.8rem]"></i><span>글쓰기</span>
-                          </button>
-                        ) : (
-                          <button type="button" onClick={() => setIsModalOpen(true)}
-                            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] transition-colors">
-                            <i className="bi bi-plus-lg text-[0.8rem]"></i><span>글쓰기</span>
-                          </button>
-                        )}
-                      </>
+                      typeCode ? (
+                        <button type="button" onClick={() => navigate(`/boards/${typeCode}/new`)}
+                          className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] transition-colors">
+                          <i className="bi bi-plus-lg text-[0.8rem]"></i><span>글쓰기</span>
+                        </button>
+                      ) : (
+                        <button type="button" onClick={() => setIsModalOpen(true)}
+                          className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] transition-colors">
+                          <i className="bi bi-plus-lg text-[0.8rem]"></i><span>글쓰기</span>
+                        </button>
+                      )
                     ) : (
                       <button type="button" onClick={() => navigate('/members/login')}
                         className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] transition-colors">
@@ -209,14 +205,17 @@ const BoardList = () => {
                 <div className="divide-y divide-gray-100">
                   {boards.map((b) => (
                     <div key={b.boardIdx} className="grid grid-cols-12 gap-1 px-6 py-3 text-[11px] sm:text-sm hover:bg-gray-50 transition-colors">
-                      <div className="col-span-7">
+                      <div
+                        className="col-span-7 cursor-pointer"
+                        onClick={() => navigate(`/boards/${b.boardTypeCode}/${b.boardIdx}?page=${currentPage}`)}
+                      >
                         <div className="flex items-center gap-2 overflow-hidden">
-                          <button type="button"
-                            onClick={() => navigate(`/boards/${b.boardTypeCode}/${b.boardIdx}?page=${currentPage}`)}
-                            className="truncate text-[#222222] font-medium hover:text-[#7CBD00]">
+                          <span className="truncate text-[#222222] font-medium hover:text-[#7CBD00]">
                             {b.boardTitle}
-                          </button>
-                          {b.hasImage && <i className="bi bi-image-fill text-[10px] sm:text-xs text-[#999999] flex-shrink-0"></i>}
+                          </span>
+                          {b.hasImage && (
+                            <i className="bi bi-image-fill text-[10px] sm:text-xs text-[#999999] flex-shrink-0"></i>
+                          )}
                           {b.replyCount > 0 && (
                             <span className="flex items-center gap-1 text-xs text-[#999999] flex-shrink-0">
                               <i className="bi bi-chat-dots text-[11px]"></i>
@@ -241,7 +240,6 @@ const BoardList = () => {
               {/* 페이지네이션 */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-1 px-6 py-4 border-t border-gray-100">
-                  {/* 이전 블록 */}
                   {blockStart > 1 && (
                     <button
                       type="button"
@@ -250,7 +248,6 @@ const BoardList = () => {
                       <i className="bi bi-chevron-left"></i>
                     </button>
                   )}
-                  {/* 페이지 번호 */}
                   {Array.from({ length: blockEnd - blockStart + 1 }, (_, i) => blockStart + i).map((p) => (
                     <button
                       key={p}
@@ -264,7 +261,6 @@ const BoardList = () => {
                       {p}
                     </button>
                   ))}
-                  {/* 다음 블록 */}
                   {blockEnd < totalPages && (
                     <button
                       type="button"
