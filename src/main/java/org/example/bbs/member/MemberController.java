@@ -51,7 +51,7 @@ public class MemberController {
         return response;
     }
 
-
+    // 로그인 처리
     @PostMapping("/login")
     public Map<String, Object> loginProcess(@RequestBody LoginRequestDTO loginRequest, HttpServletRequest request) {
         Map<String, Object> result = memberService.loginWithLock(loginRequest.getMemId(), loginRequest.getMemPwd());

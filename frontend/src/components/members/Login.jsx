@@ -106,7 +106,10 @@ export default function Login() {
                         </div>
                     </div>
                     <h1 className="text-3xl font-bold text-[#222222] mb-1">로그인</h1>
-                    <p className="text-sm text-[#767676]">PickQ에 오신 것을 환영합니다.</p>
+                    <p className={`text-sm font-medium
+                    ${welcomeMsg !== 'PickQ에 오신 것을 환영합니다.' ? 'text-red-500' : 'text-[#767676]'}`}>
+                       {welcomeMsg}
+                    </p>
                 </div>
 
                 <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.03)]">

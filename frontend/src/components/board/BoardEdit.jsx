@@ -13,7 +13,7 @@ const BoardEdit = () => {
   const [isContentValid, setIsContentValid] = useState(true);
   const [contentErrorMsg, setContentErrorMsg] = useState('');
 
-  // ✨ 수정을 시도했는지 확인하는 상태 (처음엔 false)
+  // 수정을 시도했는지 확인하는 상태 (처음엔 false)
   const [hasTouched, setHasTouched] = useState(false);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const BoardEdit = () => {
   const handleTitleChange = (e) => {
     const value = e.target.value;
     setBoardTitle(value);
-    setHasTouched(true); // ✨ 수정 시도 감지
+    setHasTouched(true); // 수정 시도 감지
     setIsTitleValid(value.trim().length === 0 || value.trim().length >= 5);
   };
 
@@ -45,7 +45,7 @@ const BoardEdit = () => {
     const value = e.target.value;
     const length = value.trim().length;
     setBoardContent(value);
-    setHasTouched(true); // ✨ 수정 시도 감지
+    setHasTouched(true); // 수정 시도 감지
 
     if (length > 0 && length < 10) {
       setIsContentValid(false);
@@ -85,7 +85,7 @@ const BoardEdit = () => {
       .catch(err => console.error('게시글 수정 에러:', err));
   };
 
-  // ✨ 테두리 및 에러 메시지 노출 조건: (유효성 실패) OR (수정 시도함 AND 원본과 동일함)
+  // 테두리 및 에러 메시지 노출 조건: (유효성 실패) OR (수정 시도함 AND 원본과 동일함)
   const isSameAsOriginal = hasTouched && !isDirty;
   const titleError = !isTitleValid || isSameAsOriginal;
   const contentError = !isContentValid || isSameAsOriginal;
