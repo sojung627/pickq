@@ -325,7 +325,7 @@ const BoardDetail = () => {
                             {/* 댓글 좋아요 버튼 - 게시글 좋아요와 동일한 디자인 */}
                             <button
                               onClick={() => handleReplyLike(r.replyIdx)}
-                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs font-semibold border border-gray-300 transition-colors cursor-pointer ${
+                              className={`inline-flex items-center gap-1 px-2 h-[28px] rounded-md text-[11px] sm:text-xs font-semibold border border-gray-300 transition-colors cursor-pointer ${
                                 isReplyLiked
                                   ? 'bg-[#222222] border-[#222222] text-white hover:bg-[#444444]'
                                   : 'border-gray-200 text-[#222222] hover:bg-gray-50'
@@ -337,12 +337,12 @@ const BoardDetail = () => {
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => toggleEditForm(r.replyIdx, r.replyContent)}
-                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 cursor-pointer">
+                                  className="inline-flex items-center gap-1 px-2 h-[28px] rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#767676] hover:bg-gray-50 cursor-pointer">
                                   <i className="bi bi-pencil-fill text-[12px]"></i>
                                 </button>
                                 <button
                                   onClick={() => handleReplyDelete(r.replyIdx)}
-                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#ff4d4f] hover:bg-red-50 cursor-pointer">
+                                  className="inline-flex items-center gap-1 px-2 h-[28px] rounded-md text-[11px] sm:text-xs border border-gray-300 bg-white text-[#ff4d4f] hover:bg-red-50 cursor-pointer">
                                   <i className="bi bi-x-lg text-[12px]"></i>
                                 </button>
                               </div>
