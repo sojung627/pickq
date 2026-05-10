@@ -21,6 +21,7 @@ const MemberProfileUpdate = () => {
   const [wasModified, setWasModified] = useState(false);
 
   // 2. 초기 데이터 로드
+  // 2. 초기 데이터 로드 부분 수정
   useEffect(() => {
     fetch("http://localhost:8080/mypage/profile/data", { credentials: "include" })
       .then(res => res.json())
@@ -35,15 +36,25 @@ const MemberProfileUpdate = () => {
           return defaultImages[randomIndex];
         };
 
+        const initialImg = data.memImg || getRandomDefaultImg();
+
         const initial = {
           memNickname: data.memNickname || '',
           memIntro: data.memIntro || '',
-          memImg: data.memImg || getRandomDefaultImg()
+          memImg: initialImg
         };
 
         setProfile(initial);
         setOriginalData(initial);
-        setPreviewUrl(`http://localhost:8080/uploads/profile/${initial.memImg}`);
+
+        // 경로 구분 로직 추가!
+        if (initialImg.startsWith('profile_default_')) {
+          // 기본 이미지는 리액트의 public/images/profile 폴더에서 가져옴
+          setPreviewUrl(`/images/profile/${initialImg}`);
+        } else {
+          // 사용자가 올린 이미지는 백엔드의 uploads 폴더에서 가져옴
+          setPreviewUrl(`http://localhost:8080/uploads/profile/${initialImg}`);
+        }
       });
   }, []);
 
@@ -182,6 +193,7 @@ const MemberProfileUpdate = () => {
           <input
             id="memNickname"
             type="text"
+            placeholder="2 ~ 10글자 이내로 닉네임을 지어주세요."
             value={profile.memNickname}
             onChange={handleNicknameChange}
             /* ✅ messages.nickname에 내용이 있으면 border-red-500, 없으면 기존 gray-300 */
