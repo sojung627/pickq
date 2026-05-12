@@ -36,8 +36,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns(
                         "/mypage/**",
                         "/boards/*/new",
-                        "/boards/*/edit",
-                        "/support/inquiry"
+                        "/boards/*/edit"   
                 )
                 // 로그인이 필요없는 경로
                 .excludePathPatterns(
@@ -45,7 +44,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/members/signUp",
                         "/css/**",
                         "/js/**",
-                        "/images/**"
+                        "/images/**",
+                        "/fragments/**"
                 );
     }
 
