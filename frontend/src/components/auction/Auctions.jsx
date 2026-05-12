@@ -5,10 +5,22 @@ const Auctions = () => {
   const navigate = useNavigate();
   const [auctions, setAuctions] = useState([]);
 
+  // 로그인 인터셉터 + 페이지 처리
   useEffect(() => {
-    fetch('/mypage/auctions')
-      .then(res => res.json())
-      .then(data => setAuctions(data))
+    fetch('/mypage/auctions', { credentials: 'include' })
+      .then(async (res) => { // async 추가
+        if (res.status === 401) {
+          const errorData = await res.json();
+          // 쿼리 스트링으로 메시지 전달
+          navigate(`/members/login?msg=${encodeURIComponent(errorData.message)}`);
+          return [];
+        }
+        if (!res.ok) throw new Error('서버 오류');
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) setAuctions(data);
+      })
       .catch(err => console.error(err));
   }, []);
 
