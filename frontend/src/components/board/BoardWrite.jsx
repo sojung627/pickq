@@ -6,7 +6,6 @@ const BoardWrite = () => {
   const { typeCode: initialTypeCode } = useParams();
   const [searchParams] = useSearchParams();
 
-  // 상태 관리
   const [boardTitle, setBoardTitle] = useState('');
   const [boardContent, setBoardContent] = useState('');
   const [selectedTypeCode, setSelectedTypeCode] = useState(initialTypeCode || 'soccer');
@@ -15,7 +14,6 @@ const BoardWrite = () => {
   const from = searchParams.get('from') || '';
   const listPath = from === 'all' ? '/boards' : `/boards/${selectedTypeCode}`;
 
-  // 유효성 메시지 상태
   const [messages, setMessages] = useState({ title: '', content: '' });
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -25,89 +23,50 @@ const BoardWrite = () => {
       ...prev,
       title:
         boardTitle.length > 0 && boardTitle.trim().length < 5
-          ? (
-            <>
-              <i className="bi bi-exclamation-circle mr-1"></i>
-              제목은 5자 이상 입력해주세요.
-            </>
-          )
+          ? (<><i className="bi bi-exclamation-circle mr-1"></i>제목은 5자 이상 입력해주세요.</>)
           : '',
       content:
         boardContent.length > 0 && boardContent.length < 10
-          ? (
-            <>
-              <i className="bi bi-exclamation-circle mr-1"></i>
-              내용은 10자 이상 입력해주세요.
-            </>
-          )
+          ? (<><i className="bi bi-exclamation-circle mr-1"></i>내용은 10자 이상 입력해주세요.</>)
           : boardContent.length > 1000
-          ? (
-            <>
-              <i className="bi bi-exclamation-circle mr-1"></i>
-              내용은 1000자 이내로 입력해주세요.
-            </>
-          )
+          ? (<><i className="bi bi-exclamation-circle mr-1"></i>내용은 1000자 이내로 입력해주세요.</>)
           : '',
     }));
   }, [boardTitle, boardContent]);
 
-  // 글자 수 색상 계산: 0글자이면 초록, 1자 이상이면서 범위 벗어나면 빨간색
   const contentCountColor =
     boardContent.length > 0 && (boardContent.length < 10 || boardContent.length > 1000)
       ? 'text-red-500'
       : 'text-[#7CBD00]';
 
-  // 등록 버튼 활성화 여부
   const isSubmitDisabled =
     boardTitle.trim().length < 5 ||
     boardContent.length < 10 ||
     boardContent.length > 1000;
 
-  // 제목 테두리 색상
   const titleBorderClass =
-    messages.title
-      ? 'border-red-500 focus:ring-red-500'
-      : 'border-gray-200 focus:ring-[#7CBD00]';
+    messages.title ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-[#7CBD00]';
 
-  // 내용 테두리 색상
   const contentBorderClass =
-    messages.content
-      ? 'border-red-500 focus:ring-red-500'
-      : 'border-gray-200 focus:ring-[#7CBD00]';
+    messages.content ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-[#7CBD00]';
 
   // 등록 핸들러
   const handleSubmit = () => {
-    // 제출 시 한 번 더 전체 검증
     const titleValid = boardTitle.trim().length >= 5;
     const contentValid = boardContent.length >= 10 && boardContent.length <= 1000;
 
     if (!titleValid) {
       setMessages(prev => ({
         ...prev,
-        title: (
-          <>
-            <i className="bi bi-exclamation-circle mr-1"></i>
-            제목은 5자 이상 입력해주세요.
-          </>
-        ),
+        title: (<><i className="bi bi-exclamation-circle mr-1"></i>제목은 5자 이상 입력해주세요.</>),
       }));
     }
     if (!contentValid) {
       setMessages(prev => ({
         ...prev,
         content: boardContent.length < 10
-          ? (
-            <>
-              <i className="bi bi-exclamation-circle mr-1"></i>
-              내용은 10자 이상 입력해주세요.
-            </>
-          )
-          : (
-            <>
-              <i className="bi bi-exclamation-circle mr-1"></i>
-              내용은 1000자 이내로 입력해주세요.
-            </>
-          ),
+          ? (<><i className="bi bi-exclamation-circle mr-1"></i>내용은 10자 이상 입력해주세요.</>)
+          : (<><i className="bi bi-exclamation-circle mr-1"></i>내용은 1000자 이내로 입력해주세요.</>),
       }));
     }
     if (!titleValid || !contentValid) return;
@@ -119,8 +78,15 @@ const BoardWrite = () => {
       credentials: 'include',
       body: JSON.stringify({ boardTitle, boardContent }),
     })
-      .then(res => res.json())
+      .then(res => {
+        if (res.status === 401) {
+          window.location.href = '/members/login'; // ✅ 401이면 로그인 페이지로
+          return;
+        }
+        return res.json();
+      })
       .then(data => {
+        if (!data) return;
         if (data.boardIdx) {
           navigate(`/boards/${data.typeCode}/${data.boardIdx}`);
         } else {
@@ -130,11 +96,12 @@ const BoardWrite = () => {
       .catch(() => setErrorMsg('서버 오류가 발생했습니다.'));
   };
 
+  // ✅ 삭제: 컴포넌트 바깥에 있던 fetch 덩어리 제거
+
   return (
     <div className="min-h-[calc(100vh-200px)] bg-white py-8">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
 
-        {/* 상단 헤더 + 뒤로가기 */}
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-[#222222] mb-1">
@@ -152,12 +119,10 @@ const BoardWrite = () => {
           </button>
         </div>
 
-        {/* 카드 */}
         <div className="bg-white border border-gray-100 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)]">
           <div className="p-6 sm:p-8">
             <div id="writeForm">
 
-              {/* 카테고리 */}
               <div className="mb-4">
                 <label htmlFor="categorySelect" className="block text-xs sm:text-sm font-medium text-[#222222] mb-1.5">
                   카테고리
@@ -185,7 +150,6 @@ const BoardWrite = () => {
                 </select>
               </div>
 
-              {/* 제목 */}
               <div className="mb-4 space-y-1.5">
                 <label htmlFor="boardTitle" className="block text-xs sm:text-sm font-medium text-[#222222] mb-1.5">
                   제목
@@ -199,15 +163,11 @@ const BoardWrite = () => {
                   placeholder="제목을 입력하세요 (5자 이상)"
                   maxLength={200}
                 />
-                {/* 제목 에러 메시지 */}
                 {messages.title && (
-                  <p className="text-sm text-red-500 flex items-center">
-                    {messages.title}
-                  </p>
+                  <p className="text-sm text-red-500 flex items-center">{messages.title}</p>
                 )}
               </div>
 
-              {/* 내용 */}
               <div className="mb-5 space-y-1.5">
                 <label htmlFor="boardContent" className="block text-xs sm:text-sm font-medium text-[#222222] mb-1.5">
                   내용
@@ -221,20 +181,15 @@ const BoardWrite = () => {
                     placeholder="내용을 입력해주세요 (10자 ~ 1000자)"
                     maxLength={1100}
                   />
-                  {/* 실시간 글자 수 카운터 (우측 하단) */}
                   <span className={`absolute bottom-3 right-4 text-xs font-semibold ${contentCountColor}`}>
                     {boardContent.length} / 1000
                   </span>
                 </div>
-                {/* 내용 에러 메시지 */}
                 {messages.content && (
-                  <p className="text-sm text-red-500 flex items-center">
-                    {messages.content}
-                  </p>
+                  <p className="text-sm text-red-500 flex items-center">{messages.content}</p>
                 )}
               </div>
 
-              {/* 버튼 */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleSubmit}

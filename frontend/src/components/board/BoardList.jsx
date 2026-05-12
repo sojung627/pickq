@@ -31,9 +31,12 @@ const BoardList = () => {
 
   useEffect(() => {
     fetch("http://localhost:8080/mypage/info", { credentials: "include" })
-      .then(res => res.ok ? res.json() : null)
+      .then(res => {
+        if (res.status === 401) return null; // 비로그인이면 그냥 null
+        return res.json();
+      })
       .then(data => setMember(data))
-      .catch(err => console.error("회원 조회 에러:", err));
+      .catch(() => setMember(null));
 
     fetch("http://localhost:8080/boards/types")
       .then(res => res.json())
@@ -153,7 +156,8 @@ const BoardList = () => {
                         </button>
                       )
                     ) : (
-                      <button type="button" onClick={() => navigate('/members/login')}
+                      <button type="button"
+                        onClick={() => navigate('/members/login?msg=로그인이 필요한 서비스입니다.')}
                         className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs sm:text-sm font-semibold bg-[#222222] text-white hover:bg-[#444444] transition-colors">
                         <i className="bi bi-plus-lg text-[0.8rem]"></i><span>글쓰기</span>
                       </button>

@@ -35,8 +35,8 @@ public class WebConfig implements WebMvcConfigurer {
                 // 로그인이 필요한 경로
                 .addPathPatterns(
                         "/mypage/**",
-                        "/boards/*/new",
-                        "/boards/*/edit"
+                        "/boards/**/new",
+                        "/boards/**/edit"
                 )
                 // 로그인이 필요없는 경로
                 .excludePathPatterns(

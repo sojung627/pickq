@@ -21,6 +21,13 @@ export default function Login() {
             setSaveId(true);
         }
 
+        // 로그인 인터셉터용
+        const params = new URLSearchParams(window.location.search);
+            const msg = params.get('msg');
+            if (msg) {
+                setLoginMsg(msg);
+            }
+
         if (window.naver) {
             const naverLogin = new window.naver.LoginWithNaverId({
                 clientId: "2Rk518jWd9bxOQoKuUnD",
