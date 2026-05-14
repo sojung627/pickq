@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const AuctionList = ({
-  session,
-  auctionList = [],
   selectedCategory,
   statusFilter,
   sortBy,
@@ -11,14 +9,39 @@ const AuctionList = ({
   errorMessage
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [auctionList, setAuctionList] = useState([]);
+  const [session, setSession] = useState(null);
   const sidebarBodyRef = useRef(null);
 
-  // 사이드바 토글 핸들러
+  // 경매 목록 fetch
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedCategory) params.append('category', selectedCategory);
+    if (sortBy) params.append('sortBy', sortBy);
+    if (statusFilter) params.append('statusFilter', statusFilter);
+    if (keyword) params.append('keyword', keyword);
+
+    fetch(`http://localhost:8080/auctions?${params.toString()}`, {
+      credentials: 'include'
+    })
+      .then(res => res.json())
+      .then(data => setAuctionList(data))
+      .catch(err => console.error('경매 목록 fetch 실패:', err));
+  }, [selectedCategory, sortBy, statusFilter, keyword]);
+
+  // 세션 fetch
+  useEffect(() => {
+    fetch('http://localhost:8080/members/api/session', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setSession(data))
+      .catch(() => setSession({}));
+  }, []);
+
+  // 사이드바 토글
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // 카테고리 목록 데이터
   const categories = [
     { code: null, name: '전체', path: '/auctions' },
     { code: 'ball', name: '공/볼', path: '/auctions/category/ball' },
@@ -45,14 +68,16 @@ const AuctionList = ({
 
             {/* 로그인 시: 경매 등록하기 */}
             {session?.loginUser && (
-                <div className="mt-4 sm:mt-0">
-                    <button type="button" onClick={() => window.location.href='/auctions/new'}
-                    className="inline-flex item-center gap-2 rounded-lg bg-[#8BC34A] px-5 py-2 text-sm font-bold text-white hover:bg-[#7CB342] transition-colors shadow-sm">
-                        <span className="text-xl leading-none">+</span>
-                        <span>경매 등록하기</span>
-                    </button>
-                    <pre>{JSON.stringify(session, null, 2)}</pre>
-                </div>
+              <div className="mt-4 sm:mt-0">
+                <button
+                  type="button"
+                  onClick={() => window.location.href = '/auctions/new'}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#8BC34A] px-5 py-2 text-sm font-bold text-white hover:bg-[#7CB342] transition-colors shadow-sm"
+                >
+                  <span className="text-xl leading-none">+</span>
+                  <span>경매 등록하기</span>
+                </button>
+              </div>
             )}
           </div>
         </header>
@@ -62,6 +87,7 @@ const AuctionList = ({
           {/* 왼쪽: 카테고리 사이드바 */}
           <aside className="w-full lg:w-60 lg:flex-shrink-0">
             <div className="sticky top-24 bg-white border border-gray-100 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] overflow-hidden">
+
               {/* Mobile header */}
               <button
                 className="lg:hidden w-full flex items-center justify-between px-4 py-3 border-b border-gray-100 text-sm font-semibold text-[#222222]"
@@ -109,6 +135,7 @@ const AuctionList = ({
 
           {/* 오른쪽: 컨텐츠 영역 */}
           <main className="flex-1">
+
             {/* 검색 폼 */}
             <div className="mb-6">
               <form
@@ -128,7 +155,10 @@ const AuctionList = ({
                     className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm text-[#222222] focus:outline-none focus:ring-1 focus:ring-gray-800"
                   />
                 </div>
-                <button type="submit" className="h-10 px-5 rounded-lg bg-[#222222] text-[#FFFFFF] text-sm font-semibold hover:bg-[#444444] transition-colors whitespace-nowrap">
+                <button
+                  type="submit"
+                  className="h-10 px-5 rounded-lg bg-[#222222] text-[#FFFFFF] text-sm font-semibold hover:bg-[#444444] transition-colors whitespace-nowrap"
+                >
                   검색
                 </button>
               </form>
@@ -144,12 +174,13 @@ const AuctionList = ({
                   {['open', 'closed'].map((filter) => (
                     <a
                       key={filter}
-                      href={selectedCategory
-                        ? `/auctions/category/${selectedCategory}?sortBy=${sortBy || 'latest'}&statusFilter=${filter}`
-                        : `/auctions?sortBy=${sortBy || 'latest'}&statusFilter=${filter}`
+                      href={
+                        selectedCategory
+                          ? `/auctions/category/${selectedCategory}?sortBy=${sortBy || 'latest'}&statusFilter=${filter}`
+                          : `/auctions?sortBy=${sortBy || 'latest'}&statusFilter=${filter}`
                       }
                       className={`inline-flex items-center rounded-full px-3 py-1 text-xs sm:text-sm font-medium border transition-colors ${
-                        (statusFilter === filter || (filter === 'open' && !statusFilter))
+                        statusFilter === filter || (filter === 'open' && !statusFilter)
                           ? 'bg-[#222222] text-white border-[#222222]'
                           : 'bg-white text-[#767676] border-gray-200 hover:border-[#222222] hover:text-[#222222]'
                       }`}
@@ -165,16 +196,17 @@ const AuctionList = ({
                 {[
                   { id: 'latest', label: '📅 최신순' },
                   { id: 'views', label: '👀 조회수순' },
-                  { id: 'deadline', label: '⏰ 마감임박순' }
+                  { id: 'deadline', label: '⏰ 마감임박순' },
                 ].map((sort) => (
                   <a
                     key={sort.id}
-                    href={selectedCategory
-                      ? `/auctions/category/${selectedCategory}?sortBy=${sort.id}&keyword=${keyword || ''}&statusFilter=${statusFilter || 'open'}`
-                      : `/auctions?sortBy=${sort.id}&keyword=${keyword || ''}&statusFilter=${statusFilter || 'open'}`
+                    href={
+                      selectedCategory
+                        ? `/auctions/category/${selectedCategory}?sortBy=${sort.id}&keyword=${keyword || ''}&statusFilter=${statusFilter || 'open'}`
+                        : `/auctions?sortBy=${sort.id}&keyword=${keyword || ''}&statusFilter=${statusFilter || 'open'}`
                     }
                     className={`px-2.5 py-1 rounded transition-colors ${
-                      (sortBy === sort.id || (sort.id === 'latest' && !sortBy))
+                      sortBy === sort.id || (sort.id === 'latest' && !sortBy)
                         ? 'bg-gray-100 font-semibold text-[#222222]'
                         : 'text-[#767676] hover:text-[#222222]'
                     }`}
@@ -189,8 +221,12 @@ const AuctionList = ({
             {auctionList.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {auctionList.map((item) => (
-                  <div key={item.auctionIdx} className={`bg-white ${item.auctionStatusIdx !== 1 ? 'opacity-70' : ''}`}>
+                  <div
+                    key={item.auctionIdx}
+                    className={`bg-white ${item.auctionStatusIdx !== 1 ? 'opacity-70' : ''}`}
+                  >
                     <a href={`/auctions/${item.auctionIdx}`} className="block group">
+
                       {/* 썸네일 */}
                       <div className="relative aspect-square mb-3 overflow-hidden bg-gray-100">
                         <img
@@ -200,19 +236,31 @@ const AuctionList = ({
                         />
                         {/* 상태 배지 */}
                         <div className="absolute left-2 top-2">
-                          {item.auctionStatusIdx === 1 && <span className="inline-flex items-center rounded-full bg-[#222222] px-2 py-0.5 text-[11px] font-medium text-white">진행중</span>}
-                          {item.auctionStatusIdx === 2 && <span className="inline-flex items-center rounded-full bg-gray-800 px-2 py-0.5 text-[11px] font-medium text-white">결정대기</span>}
-                          {item.auctionStatusIdx === 3 && <span className="inline-flex items-center rounded-full bg-gray-500 px-2 py-0.5 text-[11px] font-medium text-white">마감</span>}
-                          {item.auctionStatusIdx === 4 && <span className="inline-flex items-center rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-medium text-white">유찰</span>}
-                          {item.auctionStatusIdx === 5 && <span className="inline-flex items-center rounded-full bg-gray-400 px-2 py-0.5 text-[11px] font-medium text-white">취소</span>}
+                          {item.auctionStatusIdx === 1 && (
+                            <span className="inline-flex items-center rounded-full bg-[#222222] px-2 py-0.5 text-[11px] font-medium text-white">진행중</span>
+                          )}
+                          {item.auctionStatusIdx === 2 && (
+                            <span className="inline-flex items-center rounded-full bg-gray-800 px-2 py-0.5 text-[11px] font-medium text-white">결정대기</span>
+                          )}
+                          {item.auctionStatusIdx === 3 && (
+                            <span className="inline-flex items-center rounded-full bg-gray-500 px-2 py-0.5 text-[11px] font-medium text-white">마감</span>
+                          )}
+                          {item.auctionStatusIdx === 4 && (
+                            <span className="inline-flex items-center rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-medium text-white">유찰</span>
+                          )}
+                          {item.auctionStatusIdx === 5 && (
+                            <span className="inline-flex items-center rounded-full bg-gray-400 px-2 py-0.5 text-[11px] font-medium text-white">취소</span>
+                          )}
                         </div>
                       </div>
+
                       {/* 텍스트 영역 */}
                       <div>
                         <p className="text-xs text-[#767676] mb-1">{item.itemCategoryName}</p>
                         <h3 className="text-sm font-medium text-[#222222] mb-1 line-clamp-1">{item.auctionTitle}</h3>
                         <div className="flex items-center gap-2 text-xs text-[#767676] mt-2 mb-2">
-                          <span>제안 {item.bidCount}건</span> <span>•</span>
+                          <span>제안 {item.bidCount}건</span>
+                          <span>•</span>
                           <span className="timer-display">{item.timeDisplay}</span>
                         </div>
                         <div className="space-y-1">
@@ -230,6 +278,7 @@ const AuctionList = ({
                           </div>
                         </div>
                       </div>
+
                     </a>
                   </div>
                 ))}

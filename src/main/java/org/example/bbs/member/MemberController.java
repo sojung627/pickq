@@ -2,6 +2,7 @@ package org.example.bbs.member;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -119,6 +120,19 @@ public class MemberController {
         session.invalidate(); // 세션 삭제
         response.put("status", "success");
         return response;
+    }
+
+    // 그 외 다른 페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 경매 리스트 페이지 new버튼용
+    @GetMapping("/api/session")
+    public ResponseEntity<Map<String, Object>> getSession(HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        String loginMember = (String) session.getAttribute("loginMember");
+        if (loginMember != null) {
+            result.put("loginUser", loginMember);
+        }
+        return ResponseEntity.ok(result);
     }
 
 }

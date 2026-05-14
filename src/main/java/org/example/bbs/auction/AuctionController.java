@@ -43,20 +43,5 @@ public class AuctionController {
         List<AuctionListDTO> list = auctionService.findAllAuctions(category, sortBy, statusFilter, keyword);
         return ResponseEntity.ok(list);
     }
-//    @GetMapping("/auctions")
-//    public ResponseEntity<Map<String, Object>> getAuctionList(
-//            @RequestParam(required = false) String categoryCode,
-//            @RequestParam(defaultValue = "open") String statusFilter,
-//            @RequestParam(defaultValue = "latest") String sortBy,
-//            @RequestParam(defaultValue = "") String keyword,
-//            @RequestParam(defaultValue = "1") int page) {
-//
-//        Map<String, Object> result = auctionService.getAuctionList(categoryCode, statusFilter, sortBy, keyword, page);
-//        return ResponseEntity.ok(result);
-//    }
-
-
-
-
 
 }
