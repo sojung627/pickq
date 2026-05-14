@@ -25,6 +25,24 @@ public interface AuctionRepository extends JpaRepository<AuctionEntity, Long> {
 
     // 경매 파트 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
+    @Query("SELECT a FROM AuctionEntity a " +
+            "WHERE a.auctionIsDeleted = 'N' " +
+            "AND (:category IS NULL OR a.itemCategory.itemCategoryName = :category) " +
+            "AND (:keyword IS NULL OR a.auctionTitle LIKE %:keyword%) " +
+            "AND (:status = 'open' AND a.auctionStatus.auctionStatusIdx = 1 OR " +
+            "     :status = 'closed' AND a.auctionStatus.auctionStatusIdx > 1 OR " +
+            "     :status IS NULL) " +
+            "ORDER BY " +
+            "CASE WHEN :sortBy = 'views' THEN a.auctionViewCount END DESC, " +
+            "CASE WHEN :sortBy = 'deadline' THEN a.auctionEndAt END ASC, " +
+            "a.auctionRegdate DESC")
+    List<AuctionEntity> findAuctionsByFilters(
+            @Param("category") String category,
+            @Param("sortBy") String sortBy,
+            @Param("status") String status,
+            @Param("keyword") String keyword
+    );
+
 //    @Query("SELECT a FROM AuctionEntity a " +
 //            "JOIN FETCH a.itemCategory " +
 //            "JOIN FETCH a.auctionStatus " +

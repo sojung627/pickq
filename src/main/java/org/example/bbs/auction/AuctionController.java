@@ -32,6 +32,17 @@ public class AuctionController {
     // 경매 파트 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 경매 목록 조회
+    @GetMapping("/auctions")
+    public ResponseEntity<List<AuctionListDTO>> getAuctionList(
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "latest") String sortBy,
+            @RequestParam(defaultValue = "open") String statusFilter,
+            @RequestParam(required = false) String keyword) {
+
+        // 서비스에서 DTO 리스트를 받아와서 반환
+        List<AuctionListDTO> list = auctionService.findAllAuctions(category, sortBy, statusFilter, keyword);
+        return ResponseEntity.ok(list);
+    }
 //    @GetMapping("/auctions")
 //    public ResponseEntity<Map<String, Object>> getAuctionList(
 //            @RequestParam(required = false) String categoryCode,
