@@ -72,8 +72,7 @@ const AuctionList = ({
                 <button
                   type="button"
                   onClick={() => window.location.href = '/auctions/new'}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#8BC34A] px-5 py-2 text-sm font-bold text-white hover:bg-[#7CB342] transition-colors shadow-sm"
-                >
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#8BC34A] px-5 py-2 text-sm font-bold text-white hover:bg-[#7CB342] transition-colors shadow-sm">
                   <span className="text-xl leading-none">+</span>
                   <span>경매 등록하기</span>
                 </button>
@@ -232,8 +231,7 @@ const AuctionList = ({
                         <img
                           src={item.auctionThumbnailImg || '/images/auction/auction_default.png'}
                           alt="썸네일"
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"/>
                         {/* 상태 배지 */}
                         <div className="absolute left-2 top-2">
                           {item.auctionStatusIdx === 1 && (
@@ -272,8 +270,10 @@ const AuctionList = ({
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-[#767676]">최저 제안가</span>
-                            <span className={`text-sm font-semibold ${item.minBidPrice === 0 ? 'text-[#999999]' : 'text-[#222222]'}`}>
-                              {item.minBidPrice === 0 ? '제안 없음' : `${item.minBidPrice?.toLocaleString()}원`}
+                            <span className={`text-sm font-semibold ${(!item.minBidPrice || item.minBidPrice === 0) ? 'text-[#999999]' : 'text-[#222222]'}`}>
+                              {(!item.minBidPrice || item.minBidPrice === 0)
+                                ? '(없음)'
+                                : `${item.minBidPrice.toLocaleString()}원`}
                             </span>
                           </div>
                         </div>

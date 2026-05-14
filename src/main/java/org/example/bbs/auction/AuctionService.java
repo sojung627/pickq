@@ -57,12 +57,12 @@ public class AuctionService {
         return entities.stream().map(entity -> AuctionListDTO.builder()
                 .auctionIdx(entity.getAuctionIdx())
                 .auctionTitle(entity.getAuctionTitle())
-                .itemCategoryName(entity.getItemCategory().getItemCategoryName()) // 연관 객체에서 이름 추출
+                .itemCategoryName(entity.getItemCategory().getItemCategoryName()) // 연관 객체에서 이름 추출용
                 .auctionThumbnailImg(entity.getAuctionThumbnailImg())
                 .auctionStatusIdx(entity.getAuctionStatus().getAuctionStatusIdx().intValue())
                 .auctionTargetPrice(entity.getAuctionTargetPrice())
                 .bidCount(0) // 이건 나중에 Bid 테이블 Count 쿼리로 채우기!
-                .timeDisplay(calculateTime(entity.getAuctionEndAt())) // 시간 계산 로직
+                .timeDisplay(calculateTime(entity.getAuctionEndAt())) // 시간 계산 로직용
                 .build()
         ).toList();
     }
@@ -73,35 +73,5 @@ public class AuctionService {
         return "남은 시간 계산중";
     }
 
-//    @Autowired
-//    private final AuctionListDTO auctionListDTO;
-//
-//    public Map<String, Object> getAuctionList(String categoryCode, String statusFilter, String sortBy, String keyword, int page) {
-//        Sort sort = switch (sortBy) {
-//            case "views" -> Sort.by("auctionViewCount").descending();
-//            case "deadline" -> Sort.by("auctionEndAt").ascending();
-//            default -> Sort.by("auctionRegdate").descending();
-//        };
-//
-//        Pageable pageable = PageRequest.of(page - 1, 12, sort);
-//        Page<AuctionEntity> auctionPage = auctionRepository.findByFilter(categoryCode, statusFilter, keyword, pageable);
-//
-//        Map<String, Object> result = new HashMap<>();
-//        result.put("auctionList", auctionPage.getContent().stream()
-//                .map(a -> AuctionListDTO.builder()
-//                        .auctionIdx(a.getAuctionIdx())
-//                        .auctionTitle(a.getAuctionTitle())
-//                        .auctionThumbnailImg(a.getAuctionThumbnailImg())
-//                        .auctionTargetPrice(a.getAuctionTargetPrice())
-//                        .auctionStatusIdx(a.getAuctionStatus().getAuctionStatusIdx())
-//                        .itemCategoryName(a.getItemCategory().getItemCategoryName())
-//                        .auctionEndAt(a.getAuctionEndAt())
-//                        .bidCount(0L)
-//                        .minBidPrice(0L)
-//                        .build())
-//                .toList());
-//        result.put("totalPages", auctionPage.getTotalPages());
-//        result.put("currentPage", page);
-//        return result;
-//    }
+
 }
