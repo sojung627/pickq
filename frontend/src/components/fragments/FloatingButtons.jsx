@@ -39,16 +39,18 @@ const FloatingButtons = () => {
 
     return (
         <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
-            {/* 맨 위로 이동 버튼 */}
-            <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
-            onClick={scrollToTop}>
-                <i className="bi bi-caret-up"></i>
-            </button>
+            {/* Open API 버튼 */}
 
             {/* 채팅 버튼 */}
             <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
             onClick={openChat}>
                 <i className="bi bi-chat"></i>
+            </button>
+
+            {/* 맨 위로 이동 버튼 */}
+            <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
+            onClick={scrollToTop}>
+                <i className="bi bi-caret-up"></i>
             </button>
 
             {/* 맨 아래로 이동 버튼 */}

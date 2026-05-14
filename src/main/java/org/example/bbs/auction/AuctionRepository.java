@@ -31,29 +31,11 @@ public interface AuctionRepository extends JpaRepository<AuctionEntity, Long> {
             "AND (:keyword IS NULL OR a.auctionTitle LIKE %:keyword%) " +
             "AND (:status = 'open' AND a.auctionStatus.auctionStatusIdx = 1 OR " +
             "     :status = 'closed' AND a.auctionStatus.auctionStatusIdx > 1 OR " +
-            "     :status IS NULL) " +
-            "ORDER BY " +
-            "CASE WHEN :sortBy = 'views' THEN a.auctionViewCount END DESC, " +
-            "CASE WHEN :sortBy = 'deadline' THEN a.auctionEndAt END ASC, " +
-            "a.auctionRegdate DESC")
+            "     :status IS NULL)")
     List<AuctionEntity> findAuctionsByFilters(
             @Param("category") String category,
-            @Param("sortBy") String sortBy,
             @Param("status") String status,
             @Param("keyword") String keyword
     );
-
-//    @Query("SELECT a FROM AuctionEntity a " +
-//            "JOIN FETCH a.itemCategory " +
-//            "JOIN FETCH a.auctionStatus " +
-//            "WHERE a.auctionIsDeleted = 'N' " +
-//            "AND (:categoryCode IS NULL OR a.itemCategory.itemCategoryCode = :categoryCode) " +
-//            "AND (:statusFilter = 'closed' OR a.auctionStatus.auctionStatusIdx = 1) " +
-//            "AND (:keyword IS NULL OR :keyword = '' OR a.auctionTitle LIKE %:keyword%)")
-//    Page<AuctionEntity> findByFilter(
-//            @Param("categoryCode") String categoryCode,
-//            @Param("statusFilter") String statusFilter,
-//            @Param("keyword") String keyword,
-//            Pageable pageable);
 
 }
