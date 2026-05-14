@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,27 +51,40 @@ public class AuctionService {
     // 경매 파트 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     public List<AuctionListDTO> findAllAuctions(String category, String sortBy, String status, String keyword) {
-        // 1. DAO(Repository)를 통해 엔티티 리스트를 가져옴
+        // Entity 리스트 불러오기용
         List<AuctionEntity> entities = auctionRepository.findAuctionsByFilters(category, sortBy, status, keyword);
 
-        // 2. 엔티티를 DTO로 변환해서 반환
+        // 엔티티를 DTO로 변환
         return entities.stream().map(entity -> AuctionListDTO.builder()
                 .auctionIdx(entity.getAuctionIdx())
                 .auctionTitle(entity.getAuctionTitle())
-                .itemCategoryName(entity.getItemCategory().getItemCategoryName()) // 연관 객체에서 이름 추출용
+                .itemCategoryName(entity.getItemCategory().getItemCategoryName())
                 .auctionThumbnailImg(entity.getAuctionThumbnailImg())
                 .auctionStatusIdx(entity.getAuctionStatus().getAuctionStatusIdx().intValue())
                 .auctionTargetPrice(entity.getAuctionTargetPrice())
-                .bidCount(0) // 이건 나중에 Bid 테이블 Count 쿼리로 채우기!
-                .timeDisplay(calculateTime(entity.getAuctionEndAt())) // 시간 계산 로직용
+                .bidCount(0)
+                .auctionEndAt(entity.getAuctionEndAt())  // ← 여기 추가
+                .timeDisplay(calculateTime(entity.getAuctionEndAt()))
                 .build()
         ).toList();
     }
 
     // 남은 시간 계산 로직 예시
     private String calculateTime(LocalDateTime endAt) {
-        // 현재 시간과 비교해서 "3시간 남음" 같은 문자열 반환 로직 작성
-        return "남은 시간 계산중";
+
+        if (endAt == null) return "(날짜 없음)";
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isAfter(endAt)) return "마감";
+
+        long miniutes = ChronoUnit.MINUTES.between(now, endAt);
+        long hours = ChronoUnit.HOURS.between(now, endAt);
+        long days = ChronoUnit.DAYS.between(now, endAt);
+
+        if (miniutes < 60) return miniutes + "분 남음";
+        if (hours < 24) return hours + "시간 남음";
+        return days + "일 남음";
     }
 
 

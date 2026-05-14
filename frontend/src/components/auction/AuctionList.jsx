@@ -197,8 +197,7 @@ const AuctionList = ({
                   { id: 'views', label: '👀 조회수순' },
                   { id: 'deadline', label: '⏰ 마감임박순' },
                 ].map((sort) => (
-                  <a
-                    key={sort.id}
+                  <a key={sort.id}
                     href={
                       selectedCategory
                         ? `/auctions/category/${selectedCategory}?sortBy=${sort.id}&keyword=${keyword || ''}&statusFilter=${statusFilter || 'open'}`
