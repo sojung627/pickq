@@ -45,15 +45,14 @@ const AuctionList = ({
 
             {/* 로그인 시: 경매 등록하기 */}
             {session?.loginUser && (
-              <div>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#7CBD00] px-4 py-2.5 text-m font-semibold text-white hover:bg-[#6BAD00] transition-colors"
-                  onClick={() => window.location.href='/auctions/new'}
-                >
-                  <i className="bi bi-plus-lg text-[16px]"></i> <span>경매 등록하기</span>
-                </button>
-              </div>
+                <div className="mt-4 sm:mt-0">
+                    <button type="button" onClick={() => window.location.href='/auctions/new'}
+                    className="inline-flex item-center gap-2 rounded-lg bg-[#8BC34A] px-5 py-2 text-sm font-bold text-white hover:bg-[#7CB342] transition-colors shadow-sm">
+                        <span className="text-xl leading-none">+</span>
+                        <span>경매 등록하기</span>
+                    </button>
+                    <pre>{JSON.stringify(session, null, 2)}</pre>
+                </div>
             )}
           </div>
         </header>

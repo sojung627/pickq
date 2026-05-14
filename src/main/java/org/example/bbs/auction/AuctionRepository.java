@@ -1,5 +1,7 @@
 package org.example.bbs.auction;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +12,8 @@ import java.util.List;
 @Repository
 public interface AuctionRepository extends JpaRepository<AuctionEntity, Long> {
 
+    // 마이페이지 파트 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
     // 내가 등록한 경매 목록 조회 (삭제되지 않은 것만, 최신순)
     @Query("SELECT a FROM AuctionEntity a " +
             "JOIN FETCH a.itemCategory " +
@@ -18,4 +22,20 @@ public interface AuctionRepository extends JpaRepository<AuctionEntity, Long> {
             "AND a.auctionIsDeleted = 'N' " +
             "ORDER BY a.auctionRegdate DESC")
     List<AuctionEntity> findAllByBuyerMemId(@Param("memId") String memId);
+
+    // 경매 파트 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+//    @Query("SELECT a FROM AuctionEntity a " +
+//            "JOIN FETCH a.itemCategory " +
+//            "JOIN FETCH a.auctionStatus " +
+//            "WHERE a.auctionIsDeleted = 'N' " +
+//            "AND (:categoryCode IS NULL OR a.itemCategory.itemCategoryCode = :categoryCode) " +
+//            "AND (:statusFilter = 'closed' OR a.auctionStatus.auctionStatusIdx = 1) " +
+//            "AND (:keyword IS NULL OR :keyword = '' OR a.auctionTitle LIKE %:keyword%)")
+//    Page<AuctionEntity> findByFilter(
+//            @Param("categoryCode") String categoryCode,
+//            @Param("statusFilter") String statusFilter,
+//            @Param("keyword") String keyword,
+//            Pageable pageable);
+
 }
