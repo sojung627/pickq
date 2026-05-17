@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
-import { ko } from 'flatpickr/dist/l10n/ko.js';
+import { Korean } from 'flatpickr/dist/l10n/ko.js';
 
 // PickQ 테마 flatpickr 커스텀 스타일 주입
 const FLATPICKR_STYLE = `
@@ -177,62 +177,89 @@ const AuctionWrite = () => {
   // flatpickr 달력 초기화
   useEffect(() => {
 
-    if (!endAtRef.current || !decisionRef.current) return;
+      if (!endAtRef.current || !decisionRef.current) return;
 
-    const minEndAt = new Date();
-    minEndAt.setHours(minEndAt.getHours() + 24);
+      try {
 
-    // 경매 종료 달력 세팅
-    endAtInstance.current = flatpickr(endAtRef.current, {
-      locale: ko,
-      enableTime: true,
-      dateFormat: 'Y-m-d H:i',
-      minDate: minEndAt,
+        // 현재 시간 불러오기
+        const minEndAt = new Date();
 
-      onChange: (selectDates, dateStr) => {
+        // 현재시간의 24시간 뒤 생성
+        minEndAt.setHours(minEndAt.getHours() + 24);
 
-        setAuctionEndAt(dateStr);
+        // 경매 종료 달력 세팅
+        endAtInstance.current = flatpickr(endAtRef.current, {
+          locale: Korean,      // 한국어
+          enableTime: true,    // 시간 선택 가능
+          dateFormat: 'Y-m-d H:i', // 년월일 시 분
+          minDate: minEndAt,   // 과거시간 선택 불가
 
-        if (selectDates[0]) {
+          // 경매 종료일 설정
+          onChange: (selectDates, dateStr) => {
 
-          const selectedEndAt = selectDates[0];
+            // 경매 종료일 저장
+            setAuctionEndAt(dateStr);
 
-          // 경매마감일 이후 최소 24시간
-          const minDecision = new Date(selectedEndAt);
-          minDecision.setHours(minDecision.getHours() + 24);
+            // 날짜 설정 시
+            if (selectDates[0]) {
 
-          // 경매마감일 이후 최대 3일
-          const maxDecision = new Date(selectedEndAt);
-          maxDecision.setDate(maxDecision.getDate() + 3);
+              // 구매 결정 종료일 저장
+              const selectedEndAt = selectDates[0];
 
-          if (decisionInstance.current) {
-            decisionInstance.current.set('minDate', minDecision);
-            decisionInstance.current.set('maxDate', maxDecision);
-            decisionInstance.current.element.disabled = false;
-            decisionInstance.current.element.classList.remove('disabled-input');
-            decisionInstance.current.element.placeholder = '날짜와 시간을 선택하세요';
+              // 경매마감일 이후 최소 24시간 이후 구매 결정 종료일
+              const minDecision = new Date(selectedEndAt);
+              minDecision.setHours(minDecision.getHours() + 24);
+
+              // 경매마감일 이후 최대 3일 이후 구매 결정 종료일
+              const maxDecision = new Date(selectedEndAt);
+              maxDecision.setDate(maxDecision.getDate() + 3);
+
+              // 달력이 존재한다면
+              if (decisionInstance.current) {
+
+                // 최소날짜 저장
+                decisionInstance.current.set('minDate', minDecision);
+
+                // 최대 날짜 저장
+                decisionInstance.current.set('maxDate', maxDecision);
+
+                // 버튼 활성화
+                decisionInstance.current.element.disabled = false;
+
+                // 비활성화 스타일 제거
+                decisionInstance.current.element.classList.remove('disabled-input');
+
+                // 안내 문구 변경
+                decisionInstance.current.element.placeholder = '날짜와 시간을 선택하세요';
+              }
+            }
           }
-        }
+        });
+
+        // 구매 결정 달력 생성
+        decisionInstance.current = flatpickr(decisionRef.current, {
+          locale: Korean,
+          enableTime: true,
+          dateFormat: 'Y-m-d H:i',
+
+          onChange: (selectDates, dateStr) => {
+            setAuctionDecisionDeadline(dateStr);
+          }
+        });
+
+      } catch (err) {
+        console.error('flatpickr 초기화 실패:', err);
+        console.log('endAtRef:', endAtRef.current);
+        console.log('decisionRef:', decisionRef.current);
       }
-    });
 
-    // 구매 결정 달력 생성
-    decisionInstance.current = flatpickr(decisionRef.current, {
-      locale: ko,
-      enableTime: true,
-      dateFormat: 'Y-m-d H:i',
+      // 컴포넌트 사라지면 달력들도 사라질 것
+      return () => {
+        if (endAtInstance.current) endAtInstance.current.destroy();
+        if (decisionInstance.current) decisionInstance.current.destroy();
+      };
 
-      onChange: (selectDates, dateStr) => {
-        setAuctionDecisionDeadline(dateStr);
-      }
-    });
-
-    // 컴포넌트 사라지면 달력들도 사라질 것
-    return () => {
-      if (endAtInstance.current) endAtInstance.current.destroy();
-      if (decisionInstance.current) decisionInstance.current.destroy();
-    };
-  }, []);
+    }, []);
 
   // 폼 제출
   const handleSubmit = async (e) => {
