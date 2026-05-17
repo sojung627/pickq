@@ -10,6 +10,7 @@ import MyPageLayout from "./components/layout/MyPageLayout";
 
 /* 경매 */
 import AuctionList from "./components/auction/AuctionList";
+import AuctionWrite from "./components/auction/AuctionWrite";
 
 /* 게시판 */
 import BoardList from "./components/board/BoardList";
@@ -59,6 +60,7 @@ function App() {
 
             {/* 경매 */}
             <Route path="/auctions" element={<AuctionList/> } />
+            <Route path="/auctions/new" element={<AuctionWrite/> } />
 
             {/* 게시판 파트 */}
             <Route path="/boards" element={<BoardList />} />
