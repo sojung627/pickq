@@ -1,21 +1,22 @@
 package org.example.bbs.auction;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.example.bbs.item.ItemCategoryEntity;
+import org.example.bbs.member.MemberEntity;
+import org.example.bbs.member.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
+
+import java.io.File;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,9 @@ public class AuctionService {
     // 마이페이지 파트 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     private final AuctionRepository auctionRepository;
+    private final ItemCategoryRepository  itemCategoryRepository;
+    private final AuctionStatusRepository auctionStatusRepository;
+    private final MemberRepository memberRepository;
 
     public List<AuctionDTO> findAuctionsByMemId(String memId) {
         List<AuctionEntity> entities = auctionRepository.findAllByBuyerMemId(memId);
@@ -106,7 +110,72 @@ public class AuctionService {
 
     // 경매 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
+    @Transactional
+    public void registerAuction(
+            AuctionWriteRequestDTO dto,
+            MultipartFile thumbnailFile,
+            String memId
+    ) throws IOException {
 
+        // 회원 조회
+        MemberEntity buyer = memberRepository.findByMemId(memId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
+        // 카테고리 조회
+        ItemCategoryEntity itemCategory =
+                itemCategoryRepository.findById(dto.getItemCategoryIdx())
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+
+        // 경매 상태 조회 (OPEN = idx 1)
+        AuctionStatusEntity auctionStatus =
+                auctionStatusRepository.findById(1)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("경매 상태를 찾을 수 없습니다."));
+
+        // 썸네일 저장 (선택)
+        String thumbnailPath = null;
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            thumbnailPath = saveFile(thumbnailFile);
+        }
+
+        // 날짜 파싱 (flatpickr 포맷: "yyyy-MM-dd HH:mm")
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime endAt    = LocalDateTime.parse(dto.getAuctionEndAt(), fmt);
+        LocalDateTime decision = LocalDateTime.parse(dto.getAuctionDecisionDeadline(), fmt);
+
+        // 엔티티 빌드 및 저장
+        AuctionEntity auction = AuctionEntity.builder()
+                .buyer(buyer)
+                .itemCategory(itemCategory)
+                .auctionStatus(auctionStatus)
+                .auctionThumbnailImg(thumbnailPath)
+                .auctionTitle(dto.getAuctionTitle())
+                .auctionDesc(dto.getAuctionDesc())
+                .auctionTargetPrice(dto.getAuctionTargetPrice())
+                .auctionEndAt(endAt)
+                .auctionDecisionDeadline(decision)
+                .build();
+
+        auctionRepository.save(auction);
+    }
+
+    // 파일 저장 유틸 메서드
+    private String saveFile(MultipartFile file) throws IOException {
+        String uploadDir = System.getProperty("user.dir") + "/uploads/auction/";
+        File dir = new File(uploadDir);
+        if (!dir.exists()) dir.mkdirs();
+
+        String original  = file.getOriginalFilename();
+        String ext       = (original != null && original.contains("."))
+                ? original.substring(original.lastIndexOf("."))
+                : ".jpg";
+        String savedName = UUID.randomUUID().toString() + ext;
+
+        file.transferTo(new File(uploadDir + savedName));
+        return "/uploads/auction/" + savedName;
+    }
 
 
 

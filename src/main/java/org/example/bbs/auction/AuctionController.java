@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MultipartFile;
+
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
@@ -50,5 +53,39 @@ public class AuctionController {
     // 경매 글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 경매 등록
+    @PostMapping(value = "/auctions", consumes = "multipart/form-data")
+    public ResponseEntity<?> registerAuction(
+            @RequestPart(value = "thumbnailFile", required = false)
+            MultipartFile thumbnailFile,
+            @RequestParam("itemCategoryIdx")         Long   itemCategoryIdx,
+            @RequestParam("auctionTitle")            String auctionTitle,
+            @RequestParam(value = "itemBrand", required = false)
+            String itemBrand,
+            @RequestParam("auctionTargetPrice")      Long   auctionTargetPrice,
+            @RequestParam("auctionEndAt")            String auctionEndAt,
+            @RequestParam("auctionDecisionDeadline") String auctionDecisionDeadline,
+            @RequestParam("auctionDesc")             String auctionDesc,
+            @SessionAttribute(name = "loginMember", required = false)
+            String memId
+    ) throws IOException {
+
+        if (memId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("로그인이 필요합니다.");
+        }
+
+        AuctionWriteRequestDTO dto = AuctionWriteRequestDTO.builder()
+                .itemCategoryIdx(itemCategoryIdx)
+                .auctionTitle(auctionTitle)
+                .itemBrand(itemBrand)
+                .auctionTargetPrice(auctionTargetPrice)
+                .auctionEndAt(auctionEndAt)
+                .auctionDecisionDeadline(auctionDecisionDeadline)
+                .auctionDesc(auctionDesc)
+                .build();
+
+        auctionService.registerAuction(dto, thumbnailFile, memId);
+        return ResponseEntity.ok().build();
+    }
 
 }

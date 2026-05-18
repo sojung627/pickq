@@ -73,6 +73,10 @@ public class AuctionEntity {
     @Column(name = "auction_deldate")
     private LocalDateTime auctionDeldate;
 
+    // 추가
+    @Column(name="auction_item_brand", length=100)
+    private String itemBrand;
+
     @PrePersist
     public void prePersist() {
         if (auctionRegdate == null) auctionRegdate = LocalDateTime.now();
