@@ -228,7 +228,11 @@ const AuctionList = ({
                       {/* 썸네일 */}
                       <div className="relative aspect-square mb-3 overflow-hidden bg-gray-100">
                         <img
-                          src={item.auctionThumbnailImg || '/images/auction/auction_default.png'}
+                          src={
+                             item.auctionThumbnailImg
+                             ? `http://localhost:8080${item.auctionThumbnailImg}`
+                             : '/images/auction/auction_default.png'
+                          }
                           alt="썸네일"
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"/>
                         {/* 상태 배지 */}
