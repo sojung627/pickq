@@ -4,22 +4,31 @@ const AuctionList = ({
   selectedCategory,
   statusFilter,
   sortBy,
-  keyword,
+  keyword: initialKeyword,
   successMessage,
   errorMessage
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [auctionList, setAuctionList] = useState([]);
   const [session, setSession] = useState(null);
+  const [keyword, setKeyword] = useState(initialKeyword || '');
   const sidebarBodyRef = useRef(null);
+
+  const [searchInput, setSearchInput] = useState(keyword || '');
+  const [appliedKeyword, setAppliedKeyword] = useState(keyword || '');
 
   // 경매 목록 fetch
   useEffect(() => {
     const params = new URLSearchParams();
+    console.log(keyword); // 디버깅용
     if (selectedCategory) params.append('category', selectedCategory);
     if (sortBy) params.append('sortBy', sortBy);
     if (statusFilter) params.append('statusFilter', statusFilter);
-    if (keyword) params.append('keyword', keyword);
+    if (appliedKeyword && appliedKeyword.trim() !== '') {
+        params.append('keyword', appliedKeyword.trim());
+    }
+
+    console.log('fetch params:', params.toString()); // 디버깅
 
     fetch(`http://localhost:8080/auctions?${params.toString()}`, {
       credentials: 'include'
@@ -27,7 +36,7 @@ const AuctionList = ({
       .then(res => res.json())
       .then(data => setAuctionList(data))
       .catch(err => console.error('경매 목록 fetch 실패:', err));
-  }, [selectedCategory, sortBy, statusFilter, keyword]);
+  }, [selectedCategory, sortBy, statusFilter, appliedKeyword]);
 
   // 세션 fetch
   useEffect(() => {
@@ -35,7 +44,7 @@ const AuctionList = ({
       .then(res => res.json())
       .then(data => setSession(data))
       .catch(() => setSession({}));
-  }, []);
+  }, [selectedCategory, sortBy, statusFilter, keyword]);
 
   // 사이드바 토글
   const toggleSidebar = () => {
@@ -137,30 +146,26 @@ const AuctionList = ({
 
             {/* 검색 폼 */}
             <div className="mb-6">
-              <form
-                action={selectedCategory ? `/auctions/category/${selectedCategory}` : "/auctions"}
-                method="get"
-                className="flex items-center gap-2"
-              >
-                <input type="hidden" name="sortBy" value={sortBy || ''} />
-                <input type="hidden" name="statusFilter" value={statusFilter || ''} />
+              <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <i className="bi bi-search text-[#767676] text-sm absolute left-3.5 top-1/2 -translate-y-1/2"></i>
                   <input
                     type="text"
-                    name="keyword"
-                    defaultValue={keyword}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') setAppliedKeyword(searchInput); }}
                     placeholder="관심있는 키워드를 검색해보세요."
                     className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm text-[#222222] focus:outline-none focus:ring-1 focus:ring-gray-800"
                   />
                 </div>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={() => setAppliedKeyword(searchInput)}
                   className="h-10 px-5 rounded-lg bg-[#222222] text-[#FFFFFF] text-sm font-semibold hover:bg-[#444444] transition-colors whitespace-nowrap"
                 >
                   검색
                 </button>
-              </form>
+              </div>
             </div>
 
             {/* 상단 카운트 / 정렬 버튼 */}
