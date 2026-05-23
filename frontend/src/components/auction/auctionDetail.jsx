@@ -477,7 +477,7 @@ const AuctionDetail = () => {
                       <div
                         key={bid.bidIdx}
                         onClick={() => handleBidClick(bid)}
-                        className={`p-3 rounded-xl border cursor-pointer transition-colors hover:bg-gray-50 ${selectedBid?.bidIdx === bid.bidIdx && mode === 'bidDetail' ? 'bg-green-50 border-[#7CBD00]' : 'border-gray-100'}`}
+                        className="p-3 rounded-xl border border-gray-100 cursor-pointer transition-colors hover:bg-gray-50"
                       >
                         <div className="flex justify-between mb-1">
                           <div className="font-semibold text-sm flex items-center gap-1">

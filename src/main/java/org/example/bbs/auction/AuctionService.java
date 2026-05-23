@@ -190,6 +190,9 @@ public class AuctionService {
         AuctionEntity auction = auctionRepository.findById(auctionIdx)
                 .orElseThrow(() -> new RuntimeException("경매를 찾을 수 없습니다."));
 
+        // bids 먼저 조회
+        List<BidEntity> bids = bidRepository.findByAuction_AuctionIdxOrderByBidRegdateDesc(auctionIdx);
+
         Map<String, Object> detail = new HashMap<>();
         detail.put("auctionIdx", auction.getAuctionIdx());
         detail.put("auctionTitle", auction.getAuctionTitle());
@@ -204,15 +207,11 @@ public class AuctionService {
         detail.put("itemCategoryIdx", auction.getItemCategory().getItemCategoryIdx());
         detail.put("buyerIdx", auction.getBuyer().getMemIdx());
         detail.put("buyerMemIdMasked", maskMemId(auction.getBuyer().getMemId()));
-        detail.put("bidCount", 0L);
+        detail.put("bidCount", (long) bids.size()); // 이제 bids가 위에 있으므로 정상
         detail.put("minBidPrice", 0L);
         detail.put("timeDisplay", "");
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("detail", detail);
-
-        // 입찰 목록 조회
-        List<BidEntity> bids = bidRepository.findByAuction_AuctionIdxOrderByBidRegdateDesc(auctionIdx);
+        // bidList 변환
         List<Map<String, Object>> bidList = bids.stream().map(bid -> {
             Map<String, Object> b = new HashMap<>();
             b.put("bidIdx", bid.getBidIdx());
@@ -231,9 +230,12 @@ public class AuctionService {
             return b;
         }).collect(Collectors.toList());
 
+        Map<String, Object> result = new HashMap<>();
+        result.put("detail", detail);
         result.put("bidList", bidList);
         return result;
     }
+
 
     private String maskMemId(String memId) {
         if (memId == null || memId.length() <= 2) return memId;
