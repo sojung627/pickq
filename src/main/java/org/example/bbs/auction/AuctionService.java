@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import java.io.File;
@@ -177,7 +179,39 @@ public class AuctionService {
         return "/uploads/auction/" + savedName;
     }
 
+    // 경매 상세보기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
+    public Map<String, Object> getAuctionDetail(Long auctionIdx, String memId) {
+        AuctionEntity auction = auctionRepository.findById(auctionIdx)
+                .orElseThrow(() -> new RuntimeException("경매를 찾을 수 없습니다."));
 
+        Map<String, Object> detail = new HashMap<>();
+        detail.put("auctionIdx", auction.getAuctionIdx());
+        detail.put("auctionTitle", auction.getAuctionTitle());
+        detail.put("auctionDesc", auction.getAuctionDesc());
+        detail.put("auctionThumbnailImg", auction.getAuctionThumbnailImg());
+        detail.put("auctionTargetPrice", auction.getAuctionTargetPrice());
+        detail.put("auctionStatusIdx", auction.getAuctionStatus().getAuctionStatusIdx());
+        detail.put("auctionEndAt", auction.getAuctionEndAt());
+        detail.put("auctionDecisionDeadline", auction.getAuctionDecisionDeadline());
+        detail.put("itemCategoryCode", auction.getItemCategory().getItemCategoryCode());
+        detail.put("itemCategoryName", auction.getItemCategory().getItemCategoryName());
+        detail.put("itemCategoryIdx", auction.getItemCategory().getItemCategoryIdx());
+        detail.put("buyerIdx", auction.getBuyer().getMemIdx());
+        detail.put("buyerMemIdMasked", maskMemId(auction.getBuyer().getMemId()));
+        detail.put("bidCount", 0L);
+        detail.put("minBidPrice", 0L);
+        detail.put("timeDisplay", "");
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("detail", detail);
+        result.put("bidList", List.of());
+        return result;
+    }
+
+    private String maskMemId(String memId) {
+        if (memId == null || memId.length() <= 2) return memId;
+        return memId.charAt(0) + "*".repeat(memId.length() - 2) + memId.charAt(memId.length() - 1);
+    }
 
 }

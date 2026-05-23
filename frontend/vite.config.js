@@ -10,6 +10,7 @@ export default defineConfig({
         '/members/login': { target: 'http://localhost:5173', bypass: (req) => req.url },  // ← 프론트가 처리
         '/members': 'http://localhost:8080',
          '/mypage': 'http://localhost:8080',
+         '/uploads': 'http://localhost:8080'
       }
     }
 })

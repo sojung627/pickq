@@ -88,4 +88,16 @@ public class AuctionController {
         return ResponseEntity.ok().build();
     }
 
+    // 경매 글 상세보기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    @GetMapping("/auctions/{auctionIdx}")
+    public ResponseEntity<Map<String, Object>> getAuctionDetail(
+            @PathVariable Long auctionIdx,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+        Map<String, Object> result = auctionService.getAuctionDetail(auctionIdx, memId);
+        return ResponseEntity.ok(result);
+    }
+
 }

@@ -33,6 +33,7 @@ import MemberProfileUpdate from "./components/memberProfile/MemberProfileUpdate"
 
 /* 마이페이지 경매(auction / bid) */
 import Auctions from "./components/auction/Auctions";
+import AuctionDetail from "./components/auction/AuctionDetail";
 
 /* 고객지원 */
 import Faq from "./components/support/Faq";
@@ -61,6 +62,7 @@ function App() {
             {/* 경매 */}
             <Route path="/auctions" element={<AuctionList/> } />
             <Route path="/auctions/new" element={<AuctionWrite/> } />
+            <Route path="/auctions/:auctionIdx" element={<AuctionDetail/> } />
 
             {/* 게시판 파트 */}
             <Route path="/boards" element={<BoardList />} />
