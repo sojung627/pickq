@@ -65,7 +65,7 @@ const AuctionDetail = () => {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.success) { setSuccessMessage('입찰이 완료되었습니다.'); setMode('list'); }
+        if (data.success) { setMode('list'); }
         else setErrorMessage(data.error || '입찰에 실패했습니다.');
       })
       .catch(() => setErrorMessage('서버 오류가 발생했습니다.'));
