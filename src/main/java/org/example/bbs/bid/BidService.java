@@ -1,9 +1,7 @@
 package org.example.bbs.bid;
 
 import lombok.RequiredArgsConstructor;
-import org.example.bbs.auction.AuctionEntity;
-import org.example.bbs.auction.AuctionRepository;
-import org.example.bbs.auction.ItemCategoryRepository;
+import org.example.bbs.auction.*;
 import org.example.bbs.item.ItemCategoryEntity;
 import org.example.bbs.item.ItemEntity;
 import org.example.bbs.item.ItemRepository;
@@ -15,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -27,6 +26,7 @@ public class BidService {
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
     private final ItemCategoryRepository itemCategoryRepository;
+    private final AuctionStatusRepository auctionStatusRepository;
 
     @Transactional
     public void registerBid(Long auctionIdx, BidRequestDTO dto, MultipartFile imageFile, String memId) throws IOException {
@@ -99,4 +99,60 @@ public class BidService {
         file.transferTo(new File(uploadDir + savedName));
         return "/uploads/bid/" + savedName;
     }
+
+    // 낙찰
+    @Transactional
+    public void winBid(Long auctionIdx, Long bidIdx, String memId) {
+
+        // 경매 조회
+        AuctionEntity auction = auctionRepository.findById(auctionIdx)
+                .orElseThrow(() -> new IllegalArgumentException("경매를 찾을 수 없습니다."));
+
+        // 요청자가 구매자인지 검증
+        if (!auction.getBuyer().getMemId().equals(memId)) {
+            throw new IllegalStateException("낙찰 권한이 없습니다.");
+        }
+
+        // 경매 상태 검증 (진행중 or 결정대기중만 가능)
+        int statusIdx = auction.getAuctionStatus().getAuctionStatusIdx();
+        if (statusIdx != 1 && statusIdx != 2) {
+            throw new IllegalStateException("낙찰 처리할 수 없는 경매 상태입니다.");
+        }
+
+        // 낙찰 입찰 조회
+        BidEntity winBid = bidRepository.findById(bidIdx)
+                .orElseThrow(() -> new IllegalArgumentException("입찰을 찾을 수 없습니다."));
+
+        // 해당 경매의 입찰인지 검증
+        if (!winBid.getAuction().getAuctionIdx().equals(auctionIdx)) {
+            throw new IllegalStateException("해당 경매의 입찰이 아닙니다.");
+        }
+
+        // 6. 낙찰 상태 조회 (bid_status_idx = 2 = 낙찰)
+        BidStatusEntity wonStatus = bidStatusRepository.findById(2)
+                .orElseThrow(() -> new IllegalArgumentException("낙찰 상태를 찾을 수 없습니다."));
+
+        // 7. 유찰 상태 조회 (bid_status_idx = 4 = 유찰)
+        BidStatusEntity lostStatus = bidStatusRepository.findById(4)
+                .orElseThrow(() -> new IllegalArgumentException("유찰 상태를 찾을 수 없습니다."));
+
+        // 8. 낙찰 입찰 상태 변경
+        winBid.setBidStatus(wonStatus);
+
+        // 9. 나머지 입찰 유찰 처리
+        List<BidEntity> allBids = bidRepository.findByAuction_AuctionIdxOrderByBidRegdateDesc(auctionIdx);
+        allBids.stream()
+                .filter(b -> !b.getBidIdx().equals(bidIdx) && b.getBidStatus().getBidStatusIdx() == 1)
+                .forEach(b -> b.setBidStatus(lostStatus));
+
+        // 10. 경매 상태를 마감(3)으로 변경
+        AuctionStatusEntity closedStatus = auctionStatusRepository.findById(3)
+                .orElseThrow(() -> new IllegalArgumentException("경매 상태를 찾을 수 없습니다."));
+        auction.setAuctionStatus(closedStatus);
+    }
+
+
+
+
+
 }

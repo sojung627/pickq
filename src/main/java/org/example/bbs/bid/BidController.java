@@ -16,6 +16,7 @@ public class BidController {
 
     private final BidService bidService;
 
+    // 입찰 띄우기
     @PostMapping(value = "/auctions/{auctionIdx}/bids", consumes = "multipart/form-data")
     public ResponseEntity<Map<String, Object>> registerBid(
             @PathVariable Long auctionIdx,
@@ -54,4 +55,27 @@ public class BidController {
                     .body(Map.of("success", false, "error", "이미지 저장 중 오류가 발생했습니다."));
         }
     }
+
+    // 낙찰
+    @PostMapping("/auctions/{auctionIdx}/bids/{bidIdx}/win")
+    public ResponseEntity<Map<String, Object>> winBid(
+            @PathVariable Long auctionIdx,
+            @PathVariable Long bidIdx,
+            @SessionAttribute(name = "loginMember", required = false) String memId
+    ) {
+        if (memId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "error", "로그인이 필요합니다."));
+        }
+        try {
+            bidService.winBid(auctionIdx, bidIdx, memId);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+
+
 }
