@@ -3,8 +3,8 @@ package org.example.bbs.bid;
 import lombok.RequiredArgsConstructor;
 import org.example.bbs.auction.AuctionEntity;
 import org.example.bbs.auction.AuctionRepository;
+import org.example.bbs.auction.ItemCategoryRepository;
 import org.example.bbs.item.ItemCategoryEntity;
-import org.example.bbs.item.ItemCategoryRepository;
 import org.example.bbs.item.ItemEntity;
 import org.example.bbs.item.ItemRepository;
 import org.example.bbs.member.MemberEntity;
@@ -31,11 +31,11 @@ public class BidService {
     @Transactional
     public void registerBid(Long auctionIdx, BidRequestDTO dto, MultipartFile imageFile, String memId) throws IOException {
 
-        // 1. 로그인 회원 조회
+        // 로그인 회원 조회
         MemberEntity bidder = memberRepository.findByMemId(memId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        // 2. 경매 조회 + 진행중 상태 검증
+        // 경매 조회 + 진행중 상태 검증
         AuctionEntity auction = auctionRepository.findById(auctionIdx)
                 .orElseThrow(() -> new IllegalArgumentException("경매를 찾을 수 없습니다."));
 
@@ -43,22 +43,22 @@ public class BidService {
             throw new IllegalStateException("진행 중인 경매에만 입찰할 수 있습니다.");
         }
 
-        // 3. 구매자 본인은 입찰 불가
+        // 구매자 본인은 입찰 불가
         if (auction.getBuyer().getMemIdx().equals(bidder.getMemIdx())) {
             throw new IllegalStateException("본인 경매에는 입찰할 수 없습니다.");
         }
 
-        // 4. 카테고리 조회
-        ItemCategoryEntity itemCategory = itemCategoryRepository.findById(dto.getItemCategoryIdx().intValue())
+        // 카테고리 조회
+        ItemCategoryEntity itemCategory = itemCategoryRepository.findById((long) dto.getItemCategoryIdx())
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
 
-        // 5. 이미지 저장
+        // 이미지 저장
         String imagePath = null;
         if (imageFile != null && !imageFile.isEmpty()) {
             imagePath = saveFile(imageFile);
         }
 
-        // 6. Item 저장
+        // Item 저장
         ItemEntity item = ItemEntity.builder()
                 .itemName(dto.getItemName())
                 .itemBrand(dto.getItemBrand())
@@ -68,11 +68,11 @@ public class BidService {
                 .build();
         itemRepository.save(item);
 
-        // 7. 입찰 상태 조회 (1 = 일반/진행중)
+        // 입찰 상태 조회 (1 = 일반/진행중)
         BidStatusEntity bidStatus = bidStatusRepository.findById(1)
                 .orElseThrow(() -> new IllegalArgumentException("입찰 상태를 찾을 수 없습니다."));
 
-        // 8. Bid 저장
+        // Bid 저장
         BidEntity bid = BidEntity.builder()
                 .auction(auction)
                 .bidder(bidder)
