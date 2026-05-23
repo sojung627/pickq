@@ -8,10 +8,9 @@ const AuctionDetail = () => {
   const [detail, setDetail] = useState(null);
   const [bidList, setBidList] = useState([]);
   const [selectedBid, setSelectedBid] = useState(null);
-  const [mode, setMode] = useState('list'); // 'list' | 'bidForm' | 'bidDetail'
+  const [mode, setMode] = useState('list');
   const [session, setSession] = useState(null);
 
-  // 입찰 폼 상태
   const [bidForm, setBidForm] = useState({
     itemName: '', itemBrand: '', bidPrice: '', bidQuantity: 1, bidMessage: '', bidImageFile: null
   });
@@ -51,7 +50,14 @@ const AuctionDetail = () => {
   const handleBidSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    Object.entries(bidForm).forEach(([k, v]) => { if (v) formData.append(k, v); });
+    Object.entries(bidForm).forEach(([k, v]) => {
+      if (!v) return;
+      if (k === 'bidPrice') {
+        formData.append(k, String(v).replace(/,/g, ''));
+      } else {
+        formData.append(k, v);
+      }
+    });
     formData.append('itemCategoryIdx', detail.itemCategoryIdx);
 
     fetch(`http://localhost:8080/auctions/${auctionIdx}/bids`, {
@@ -152,7 +158,6 @@ const AuctionDetail = () => {
   return (
     <div className="container mx-auto px-4 py-6" id="auction-page-root">
 
-      {/* 브레드크럼 */}
       <div className="mb-4 flex items-center gap-2 text-xs sm:text-sm text-gray-600">
         <button onClick={() => navigate('/')} className="hover:text-[#7CBD00]">홈</button>
         <span>/</span>
@@ -163,7 +168,6 @@ const AuctionDetail = () => {
         <span className="text-gray-900">경매 상세</span>
       </div>
 
-      {/* 상태 래퍼 */}
       <div className={`relative ${isInactive ? 'opacity-95' : ''}`}>
         <div className={`grid grid-cols-1 lg:grid-cols-2 gap-4 ${isTerminal ? 'pointer-events-none select-none' : ''}`}>
 
@@ -172,22 +176,21 @@ const AuctionDetail = () => {
             <div className={`bg-white shadow-sm rounded-2xl border-0 ${isTerminal ? 'grayscale' : ''}`}>
               <div className="p-4">
 
-                {/* mode == list */}
                 {mode === 'list' && (
                   <>
                     <div className="flex flex-col md:flex-row gap-4">
-                      {/* 썸네일 */}
                       <div className="w-full max-w-[220px]">
                         <div className="aspect-square rounded overflow-hidden bg-gray-100 border border-gray-100">
                           <img
-                            src={detail.auctionThumbnailImg || '/images/auction/auction_default.png'}
+                            src={detail.auctionThumbnailImg
+                              ? `http://localhost:8080${detail.auctionThumbnailImg}`
+                              : '/images/auction/auction_default.png'}
                             className="w-full h-full object-cover" alt="경매 이미지"
                           />
                         </div>
                       </div>
 
                       <div className="flex-1 flex flex-col">
-                        {/* 상태 + 타이머 */}
                         <div className="flex justify-between items-center mb-2 gap-2 flex-wrap">
                           <div className="flex items-center gap-1 flex-wrap">
                             <StatusBadge statusIdx={detail.auctionStatusIdx} />
@@ -230,13 +233,11 @@ const AuctionDetail = () => {
                       </div>
                     </div>
 
-                    {/* 상세 설명 */}
                     <div className="border border-gray-100 rounded p-4 bg-gray-50 mt-4">
                       <h6 className="font-bold mb-2">상세 요청</h6>
                       <p style={{ whiteSpace: 'pre-line', margin: 0 }}>{detail.auctionDesc}</p>
                     </div>
 
-                    {/* 진행중 아닐 때 안내 */}
                     {detail.auctionStatusIdx !== 1 && (
                       <div className="text-center mt-3 p-3 border border-gray-100 rounded text-gray-500">
                         {detail.auctionStatusIdx === 2 && '⏳ 결정 대기중인 경매입니다.'}
@@ -247,11 +248,9 @@ const AuctionDetail = () => {
                       </div>
                     )}
 
-                    {/* 플래시 메시지 */}
                     {successMessage && <div className="mt-2 p-2 bg-green-100 text-green-700 rounded text-sm">{successMessage}</div>}
                     {errorMessage && <div className="mt-2 p-2 bg-red-100 text-red-700 rounded text-sm">{errorMessage}</div>}
 
-                    {/* 버튼 그룹 */}
                     <div className="flex gap-2 flex-wrap mt-3">
                       <button
                         onClick={() => navigate(detail.auctionStatusIdx === 1 ? '/auctions' : '/auctions?statusFilter=closed')}
@@ -280,7 +279,6 @@ const AuctionDetail = () => {
                   </>
                 )}
 
-                {/* mode == bidForm */}
                 {mode === 'bidForm' && (
                   <>
                     <h5 className="font-bold mb-4">💰 입찰하기</h5>
@@ -288,7 +286,15 @@ const AuctionDetail = () => {
 
                       <div className="mb-3">
                         <label className="block text-sm font-semibold mb-1">제안 이미지 <span className="text-red-500">*</span></label>
-                        <input type="file" className="border border-gray-100 rounded p-2 w-full text-sm" accept="image/*" onChange={handleBidImageChange} />
+
+                        {/* 기존 스타일 유지하면서 뒷문구만 투명하게 처리 */}
+                        <input
+                          type="file"
+                          className="border border-gray-100 rounded p-2 w-full text-sm text-transparent file:text-gray-700 file:bg-transparent file:border-0 file:p-0 file:cursor-pointer"
+                          accept="image/*"
+                          onChange={handleBidImageChange}
+                        />
+
                         <div className="text-xs text-gray-500 mt-1">판매할 상품 이미지를 등록해주세요 (필수)</div>
                         {bidPreviewUrl && (
                           <div className="mt-2">
@@ -311,8 +317,20 @@ const AuctionDetail = () => {
 
                       <div className="mb-3">
                         <label className="block text-sm font-semibold mb-1">제안 가격 (₩) <span className="text-red-500">*</span></label>
-                        <input type="text" className="border border-gray-100 rounded p-2 w-full text-sm" placeholder="예: 50,000" required inputMode="numeric"
-                          value={bidForm.bidPrice} onChange={e => setBidForm(p => ({ ...p, bidPrice: e.target.value }))} />
+                        <input
+                          type="text"
+                          className="border border-gray-100 rounded p-2 w-full text-sm"
+                          placeholder="예: 50,000"
+                          required
+                          inputMode="numeric"
+                          value={bidForm.bidPrice}
+                          onChange={e => {
+                            const raw = e.target.value.replace(/,/g, '');
+                            if (!/^\d*$/.test(raw)) return;
+                            const formatted = raw ? Number(raw).toLocaleString() : '';
+                            setBidForm(p => ({ ...p, bidPrice: formatted }));
+                          }}
+                        />
                         <div className="text-xs text-gray-500 mt-1">
                           희망 최대가 {detail.auctionTargetPrice?.toLocaleString()}원 이하, 1000원 단위
                         </div>
@@ -341,7 +359,6 @@ const AuctionDetail = () => {
                   </>
                 )}
 
-                {/* mode == bidDetail */}
                 {mode === 'bidDetail' && selectedBid && (
                   <>
                     <div className="flex justify-between items-center mb-3">
@@ -353,7 +370,9 @@ const AuctionDetail = () => {
 
                     <div className="mb-3">
                       <img
-                        src={selectedBid.itemThumbnailImg || '/images/bid/bid_default.png'}
+                        src={selectedBid.itemThumbnailImg
+                          ? `http://localhost:8080${selectedBid.itemThumbnailImg}`
+                          : '/images/bid/bid_default.png'}
                         className="rounded max-h-[300px] object-cover w-4/5" alt="입찰 이미지"
                       />
                     </div>
@@ -419,14 +438,12 @@ const AuctionDetail = () => {
               </div>
             </div>
           </div>
-          {/* /LEFT */}
 
           {/* ── RIGHT ── */}
           <div className="col-span-1">
             <div className="bg-white shadow-sm border-0 rounded-2xl">
               <div className="p-4">
 
-                {/* 판매자(비구매자) + 진행중 → 입찰하기 */}
                 {detail.auctionStatusIdx === 1 && session?.loginUser && session.loginUser.memIdx !== detail.buyerIdx && (
                   <button
                     className="w-full mb-4 text-white font-bold py-2 rounded"
@@ -437,7 +454,6 @@ const AuctionDetail = () => {
                   </button>
                 )}
 
-                {/* 비회원 */}
                 {detail.auctionStatusIdx === 1 && !session?.loginUser && (
                   <button
                     className="w-full mb-4 text-white font-bold py-2 rounded"
@@ -448,13 +464,11 @@ const AuctionDetail = () => {
                   </button>
                 )}
 
-                {/* 입찰 목록 헤더 */}
                 <div className="flex justify-between items-center mb-2">
                   <h6 className="font-bold mb-0">📋 입찰 목록</h6>
                   <span className="text-gray-500 text-sm">({bidList.length}건)</span>
                 </div>
 
-                {/* 입찰 리스트 */}
                 <div className="border border-gray-100 rounded overflow-hidden">
                   {bidList.length === 0 ? (
                     <div className="text-center p-4 text-gray-500">아직 입찰 제안이 없습니다.</div>
@@ -468,11 +482,10 @@ const AuctionDetail = () => {
                         <div className="flex justify-between mb-1">
                           <div className="font-semibold text-sm flex items-center gap-1">
                             <GradeBadge gradeName={bid.bidderGradeName} />
-                            <a
-                              href={`/profile/${bid.bidderIdx}?from=auction&auctionId=${auctionIdx}`}
+
+                            <a href={`/profile/${bid.bidderIdx}?from=auction&auctionId=${auctionIdx}`}
                               onClick={e => e.stopPropagation()}
-                              className="no-underline text-gray-900 hover:text-[#7CBD00]"
-                            >
+                              className="no-underline text-gray-900 hover:text-[#7CBD00]">
                               {bid.bidderMemIdMasked || '-'}
                             </a>
                             {bid.bidderAverageRating > 0 && (
@@ -489,7 +502,6 @@ const AuctionDetail = () => {
                           <BidStatusBadge statusIdx={bid.bidStatusIdx} statusName={bid.bidStatusName} />
                         </div>
 
-                        {/* 관리 버튼 */}
                         {session?.loginUser && (
                           <div className="mt-2 flex gap-1" onClick={e => e.stopPropagation()}>
                             {canWin(bid) && (
@@ -529,11 +541,9 @@ const AuctionDetail = () => {
               </div>
             </div>
           </div>
-          {/* /RIGHT */}
 
         </div>
 
-        {/* 오버레이 (비진행중) */}
         {detail.auctionStatusIdx !== 1 && (
           <div
             className="absolute inset-0 rounded-xl pointer-events-none flex items-start justify-center pt-3 z-10"
