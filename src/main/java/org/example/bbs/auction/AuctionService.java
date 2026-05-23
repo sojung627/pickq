@@ -63,11 +63,17 @@ public class AuctionService {
     // 경매 파트 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 경매 리스트 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-    
-    public List<AuctionListDTO> findAllAuctions(String category, String sortBy, String status, String keyword) {
-        List<AuctionEntity> entities = auctionRepository.findAuctionsByFilters(category, status, keyword);
 
-        // Java에서 정렬
+    public List<AuctionListDTO> findAllAuctions(String category, String sortBy, String status, String keyword) {
+        List<AuctionEntity> entities;
+
+        if ("closed".equals(status)) {
+            entities = auctionRepository.findClosedAuctions(category, keyword);
+        } else {
+            entities = auctionRepository.findOpenAuctions(category, keyword);
+        }
+
+        // 정렬 로직은 기존 그대로
         if ("views".equals(sortBy)) {
             entities.sort((a, b) -> Long.compare(
                     b.getAuctionViewCount() != null ? b.getAuctionViewCount() : 0,
@@ -82,6 +88,7 @@ public class AuctionService {
         } else {
             entities.sort((a, b) -> b.getAuctionRegdate().compareTo(a.getAuctionRegdate()));
         }
+
         return entities.stream().map(entity -> AuctionListDTO.builder()
                 .auctionIdx(entity.getAuctionIdx())
                 .auctionTitle(entity.getAuctionTitle())
@@ -96,6 +103,38 @@ public class AuctionService {
                 .build()
         ).toList();
     }
+//    public List<AuctionListDTO> findAllAuctions(String category, String sortBy, String status, String keyword) {
+//        List<AuctionEntity> entities = auctionRepository.findAuctionsByFilters(category, status, keyword);
+//
+//        // Java에서 정렬
+//        if ("views".equals(sortBy)) {
+//            entities.sort((a, b) -> Long.compare(
+//                    b.getAuctionViewCount() != null ? b.getAuctionViewCount() : 0,
+//                    a.getAuctionViewCount() != null ? a.getAuctionViewCount() : 0
+//            ));
+//        } else if ("deadline".equals(sortBy)) {
+//            entities.sort((a, b) -> {
+//                if (a.getAuctionEndAt() == null) return 1;
+//                if (b.getAuctionEndAt() == null) return -1;
+//                return a.getAuctionEndAt().compareTo(b.getAuctionEndAt());
+//            });
+//        } else {
+//            entities.sort((a, b) -> b.getAuctionRegdate().compareTo(a.getAuctionRegdate()));
+//        }
+//        return entities.stream().map(entity -> AuctionListDTO.builder()
+//                .auctionIdx(entity.getAuctionIdx())
+//                .auctionTitle(entity.getAuctionTitle())
+//                .itemCategoryName(entity.getItemCategory().getItemCategoryName())
+//                .auctionThumbnailImg(entity.getAuctionThumbnailImg())
+//                .auctionStatusIdx(entity.getAuctionStatus().getAuctionStatusIdx().intValue())
+//                .auctionTargetPrice(entity.getAuctionTargetPrice())
+//                .auctionViewCount(entity.getAuctionViewCount())
+//                .bidCount(0)
+//                .auctionEndAt(entity.getAuctionEndAt())
+//                .timeDisplay(calculateTime(entity.getAuctionEndAt()))
+//                .build()
+//        ).toList();
+//    }
 
     // 남은 시간 계산 로직 예시
     private String calculateTime(LocalDateTime endAt) {
