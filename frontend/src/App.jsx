@@ -12,7 +12,7 @@ import MyPageLayout from "./components/layout/MyPageLayout";
 import AuctionList from "./components/auction/AuctionList";
 import AuctionWrite from "./components/auction/AuctionWrite";
 /* 입찰 */
-import BidDetail from "./components/bid/bidDetail";
+/* import BidDetail from "./components/bid/bidDetail"; */
 
 /* 게시판 */
 import BoardList from "./components/board/BoardList";
@@ -67,7 +67,7 @@ function App() {
             <Route path="/auctions/:auctionIdx" element={<AuctionDetail/> } />
 
             {/* 입찰 */}
-            <Route path="/auctions/:auctionIdx/bids/:bidIdx" element={<BidDetail/> } />
+            {/* <Route path="/auctions/:auctionIdx/bids/:bidIdx" element={<BidDetail/> } /> */}
 
             {/* 게시판 파트 */}
             <Route path="/boards" element={<BoardList />} />

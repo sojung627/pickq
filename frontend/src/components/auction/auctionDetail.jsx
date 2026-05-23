@@ -469,15 +469,15 @@ const AuctionDetail = () => {
                   <span className="text-gray-500 text-sm">({bidList.length}건)</span>
                 </div>
 
-                <div className="border border-gray-100 rounded overflow-hidden">
+                <div className="flex flex-col gap-2">
                   {bidList.length === 0 ? (
-                    <div className="text-center p-4 text-gray-500">아직 입찰 제안이 없습니다.</div>
+                    <div className="text-center p-4 text-gray-500 border border-gray-100 rounded-xl">아직 입찰 제안이 없습니다.</div>
                   ) : (
                     bidList.map((bid) => (
                       <div
                         key={bid.bidIdx}
                         onClick={() => handleBidClick(bid)}
-                        className={`p-3 border-b cursor-pointer transition-colors hover:bg-gray-50 ${selectedBid?.bidIdx === bid.bidIdx && mode === 'bidDetail' ? 'bg-green-50 border-l-4 border-l-[#7CBD00]' : ''}`}
+                        className={`p-3 rounded-xl border cursor-pointer transition-colors hover:bg-gray-50 ${selectedBid?.bidIdx === bid.bidIdx && mode === 'bidDetail' ? 'bg-green-50 border-[#7CBD00]' : 'border-gray-100'}`}
                       >
                         <div className="flex justify-between mb-1">
                           <div className="font-semibold text-sm flex items-center gap-1">
