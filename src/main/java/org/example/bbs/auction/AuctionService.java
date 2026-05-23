@@ -1,6 +1,8 @@
 package org.example.bbs.auction;
 
 import lombok.RequiredArgsConstructor;
+import org.example.bbs.bid.BidEntity;
+import org.example.bbs.bid.BidRepository;
 import org.example.bbs.item.ItemCategoryEntity;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
@@ -31,6 +33,9 @@ public class AuctionService {
     private final ItemCategoryRepository  itemCategoryRepository;
     private final AuctionStatusRepository auctionStatusRepository;
     private final MemberRepository memberRepository;
+   // private final BidEntity bidEntity;
+    private final BidRepository bidRepository;
+
 
     public List<AuctionDTO> findAuctionsByMemId(String memId) {
         List<AuctionEntity> entities = auctionRepository.findAllByBuyerMemId(memId);
@@ -179,7 +184,7 @@ public class AuctionService {
         return "/uploads/auction/" + savedName;
     }
 
-    // 경매 상세보기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    // 경매 상세보기 + 입찰 상세보기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     public Map<String, Object> getAuctionDetail(Long auctionIdx, String memId) {
         AuctionEntity auction = auctionRepository.findById(auctionIdx)
@@ -205,7 +210,28 @@ public class AuctionService {
 
         Map<String, Object> result = new HashMap<>();
         result.put("detail", detail);
-        result.put("bidList", List.of());
+
+        // 입찰 목록 조회
+        List<BidEntity> bids = bidRepository.findByAuction_AuctionIdxOrderByBidRegdateDesc(auctionIdx);
+        List<Map<String, Object>> bidList = bids.stream().map(bid -> {
+            Map<String, Object> b = new HashMap<>();
+            b.put("bidIdx", bid.getBidIdx());
+            b.put("bidderIdx", bid.getBidder().getMemIdx());
+            b.put("bidderMemIdMasked", maskMemId(bid.getBidder().getMemId()));
+            b.put("bidPrice", bid.getBidPrice());
+            b.put("bidQuantity", bid.getBidQuantity());
+            b.put("bidMessage", bid.getBidMessage());
+            b.put("bidStatusIdx", bid.getBidStatus().getBidStatusIdx());
+            b.put("bidStatusName", bid.getBidStatus().getBidStatusName());
+            b.put("bidRegdate", bid.getBidRegdate());
+            b.put("itemName", bid.getItem().getItemName());
+            b.put("itemBrand", bid.getItem().getItemBrand());
+            b.put("itemCategoryName", bid.getItem().getItemCategory().getItemCategoryName());
+            b.put("itemThumbnailImg", bid.getItem().getItemThumbnailImg());
+            return b;
+        }).collect(Collectors.toList());
+
+        result.put("bidList", bidList);
         return result;
     }
 
