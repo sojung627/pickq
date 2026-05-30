@@ -225,11 +225,11 @@ public class AuctionService {
 
     // 경매 상세보기 + 입찰 상세보기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
+    @Transactional(readOnly = true)
     public Map<String, Object> getAuctionDetail(Long auctionIdx, String memId) {
         AuctionEntity auction = auctionRepository.findById(auctionIdx)
                 .orElseThrow(() -> new RuntimeException("경매를 찾을 수 없습니다."));
 
-        // bids 먼저 조회
         List<BidEntity> bids = bidRepository.findByAuction_AuctionIdxOrderByBidRegdateDesc(auctionIdx);
 
         Map<String, Object> detail = new HashMap<>();
@@ -246,16 +246,17 @@ public class AuctionService {
         detail.put("itemCategoryIdx", auction.getItemCategory().getItemCategoryIdx());
         detail.put("buyerIdx", auction.getBuyer().getMemIdx());
         detail.put("buyerMemIdMasked", maskMemId(auction.getBuyer().getMemId()));
-        detail.put("bidCount", (long) bids.size()); // 이제 bids가 위에 있으므로 정상
+        detail.put("bidCount", (long) bids.size());
         detail.put("minBidPrice", 0L);
         detail.put("timeDisplay", "");
 
-        // bidList 변환
         List<Map<String, Object>> bidList = bids.stream().map(bid -> {
             Map<String, Object> b = new HashMap<>();
             b.put("bidIdx", bid.getBidIdx());
             b.put("bidderIdx", bid.getBidder().getMemIdx());
             b.put("bidderMemIdMasked", maskMemId(bid.getBidder().getMemId()));
+            b.put("bidderGradeName", gradeIdxToName(bid.getBidder().getMemGradeIdx()));
+            b.put("bidderAverageRating", 0.0);
             b.put("bidPrice", bid.getBidPrice());
             b.put("bidQuantity", bid.getBidQuantity());
             b.put("bidMessage", bid.getBidMessage());
@@ -274,6 +275,68 @@ public class AuctionService {
         result.put("bidList", bidList);
         return result;
     }
+
+    private String gradeIdxToName(Integer gradeIdx) {
+        if (gradeIdx == null) return "bronze";
+        return switch (gradeIdx) {
+            case 1 -> "bronze";
+            case 2 -> "silver";
+            case 3 -> "gold";
+            case 4 -> "vip";
+            default -> "bronze";
+        };
+    }
+
+//    @Transactional(readOnly = true)
+//    public Map<String, Object> getAuctionDetail(Long auctionIdx, String memId) {
+//        AuctionEntity auction = auctionRepository.findById(auctionIdx)
+//                .orElseThrow(() -> new RuntimeException("경매를 찾을 수 없습니다."));
+//
+//        // bids 먼저 조회
+//        List<BidEntity> bids = bidRepository.findByAuction_AuctionIdxOrderByBidRegdateDesc(auctionIdx);
+//
+//        Map<String, Object> detail = new HashMap<>();
+//        detail.put("auctionIdx", auction.getAuctionIdx());
+//        detail.put("auctionTitle", auction.getAuctionTitle());
+//        detail.put("auctionDesc", auction.getAuctionDesc());
+//        detail.put("auctionThumbnailImg", auction.getAuctionThumbnailImg());
+//        detail.put("auctionTargetPrice", auction.getAuctionTargetPrice());
+//        detail.put("auctionStatusIdx", auction.getAuctionStatus().getAuctionStatusIdx());
+//        detail.put("auctionEndAt", auction.getAuctionEndAt());
+//        detail.put("auctionDecisionDeadline", auction.getAuctionDecisionDeadline());
+//        detail.put("itemCategoryCode", auction.getItemCategory().getItemCategoryCode());
+//        detail.put("itemCategoryName", auction.getItemCategory().getItemCategoryName());
+//        detail.put("itemCategoryIdx", auction.getItemCategory().getItemCategoryIdx());
+//        detail.put("buyerIdx", auction.getBuyer().getMemIdx());
+//        detail.put("buyerMemIdMasked", maskMemId(auction.getBuyer().getMemId()));
+//        detail.put("bidCount", (long) bids.size()); // 이제 bids가 위에 있으므로 정상
+//        detail.put("minBidPrice", 0L);
+//        detail.put("timeDisplay", "");
+//
+//        // bidList 변환
+//        List<Map<String, Object>> bidList = bids.stream().map(bid -> {
+//            Map<String, Object> b = new HashMap<>();
+//            b.put("bidIdx", bid.getBidIdx());
+//            b.put("bidderIdx", bid.getBidder().getMemIdx());
+//            b.put("bidderMemIdMasked", maskMemId(bid.getBidder().getMemId()));
+//            b.put("bidPrice", bid.getBidPrice());
+//            b.put("bidQuantity", bid.getBidQuantity());
+//            b.put("bidMessage", bid.getBidMessage());
+//            b.put("bidStatusIdx", bid.getBidStatus().getBidStatusIdx());
+//            b.put("bidStatusName", bid.getBidStatus().getBidStatusName());
+//            b.put("bidRegdate", bid.getBidRegdate());
+//            b.put("itemName", bid.getItem().getItemName());
+//            b.put("itemBrand", bid.getItem().getItemBrand());
+//            b.put("itemCategoryName", bid.getItem().getItemCategory().getItemCategoryName());
+//            b.put("itemThumbnailImg", bid.getItem().getItemThumbnailImg());
+//            return b;
+//        }).collect(Collectors.toList());
+//
+//        Map<String, Object> result = new HashMap<>();
+//        result.put("detail", detail);
+//        result.put("bidList", bidList);
+//        return result;
+//    }
 
 
     private String maskMemId(String memId) {

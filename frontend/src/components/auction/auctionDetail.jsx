@@ -35,6 +35,7 @@ const AuctionDetail = () => {
   }, [auctionIdx]);
 
   const handleBidClick = (bid) => {
+    console.log('itemThumbnailImg:', bid.itemThumbnailImg);  // 추가
     setSelectedBid(bid);
     setMode('bidDetail');
   };

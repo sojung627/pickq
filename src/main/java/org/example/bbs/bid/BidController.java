@@ -20,7 +20,7 @@ public class BidController {
     @PostMapping(value = "/auctions/{auctionIdx}/bids", consumes = "multipart/form-data")
     public ResponseEntity<Map<String, Object>> registerBid(
             @PathVariable Long auctionIdx,
-            @RequestPart(value = "bidImageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "bidImageFile", required = false) MultipartFile imageFile,
             @RequestParam("itemName") String itemName,
             @RequestParam(value = "itemBrand", required = false) String itemBrand,
             @RequestParam("bidPrice") Long bidPrice,

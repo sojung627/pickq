@@ -18,6 +18,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowCredentials(true);
     }
 
+
     // 이미지용
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

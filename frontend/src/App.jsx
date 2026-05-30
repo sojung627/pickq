@@ -60,7 +60,14 @@ function App() {
             <Route path="/members/signUp" element={<Register />} />
 
             {/* 경매 */}
-            <Route path="/auctions" element={<AuctionList/> } />
+            <Route path="/auctions" element={
+              <AuctionList
+                statusFilter={new URLSearchParams(window.location.search).get('statusFilter') || 'open'}
+                sortBy={new URLSearchParams(window.location.search).get('sortBy') || 'latest'}
+                keyword={new URLSearchParams(window.location.search).get('keyword') || ''}
+                selectedCategory={null}
+              />
+            } />
             <Route path="/auctions/new" element={<AuctionWrite/> } />
             <Route path="/auctions/:auctionIdx" element={<AuctionDetail/> } />
 
