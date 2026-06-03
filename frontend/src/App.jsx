@@ -68,6 +68,17 @@ function App() {
                 selectedCategory={null}
               />
             } />
+
+            {/* 경매 카테고리 */}
+            <Route path="/auctions/category/:category" element={
+              <AuctionList
+                statusFilter={new URLSearchParams(window.location.search).get('statusFilter') || 'open'}
+                sortBy={new URLSearchParams(window.location.search).get('sortBy') || 'latest'}
+                keyword={new URLSearchParams(window.location.search).get('keyword') || ''}
+                selectedCategory={window.location.pathname.split('/').pop()}
+              />
+            } />
+
             <Route path="/auctions/new" element={<AuctionWrite/> } />
             <Route path="/auctions/:auctionIdx" element={<AuctionDetail/> } />
 
