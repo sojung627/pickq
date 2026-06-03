@@ -17,6 +17,7 @@ import BoardList from "./components/board/BoardList";
 import BoardDetail from "./components/board/BoardDetail";
 import BoardWrite from "./components/board/BoardWrite";
 import BoardEdit from "./components/board/BoardEdit"
+import MyPosts from "./components/board/MyPosts"
 
 /* 회원가입 / 로그인 */
 import Register from "./components/members/SignUp";
@@ -96,6 +97,7 @@ function App() {
               <Route path="addresses/new" element={<AddressInsert />} />
               <Route path="addresses/edit" element={<AddressUpdate />} />
               <Route path="profile" element={<MemberProfileUpdate />} />
+              <Route path="boards" element={<MyPosts />} />
             </Route>
 
             {/* 고객지원 파트 */}
