@@ -1,5 +1,6 @@
 package org.example.bbs.bid;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,8 @@ import java.util.Map;
 public class BidController {
 
     private final BidService bidService;
+    private final BidRepository bidRepository;
+    private final BidStatusRepository bidStatusRepository;
 
     // 입찰 띄우기
     @PostMapping(value = "/auctions/{auctionIdx}/bids", consumes = "multipart/form-data")
@@ -74,6 +77,33 @@ public class BidController {
             return ResponseEntity.badRequest()
                     .body(Map.of("success", false, "error", e.getMessage()));
         }
+    }
+
+    // 입찰 취소
+    @PostMapping("/bids/{bidIdx}/cancel")
+    public ResponseEntity<?> cancelBid(
+            @PathVariable Long bidIdx,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
+        }
+
+        BidEntity bid = bidRepository.findById(bidIdx)
+                .orElseThrow(() -> new RuntimeException("입찰을 찾을 수 없습니다."));
+
+        if (!bid.getBidder().getMemId().equals(memId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "본인의 입찰만 취소할 수 있습니다."));
+        }
+
+        BidStatusEntity canceledStatus = bidStatusRepository.findByBidStatusCode("canceled")
+                .orElseThrow(() -> new RuntimeException("취소 상태를 찾을 수 없습니다."));
+
+        bid.setBidStatus(canceledStatus);
+        bidRepository.save(bid);
+
+        return ResponseEntity.ok(Map.of("result", "canceled"));
     }
 
 
