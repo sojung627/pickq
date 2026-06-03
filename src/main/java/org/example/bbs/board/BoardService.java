@@ -322,20 +322,41 @@ public class BoardService {
     // 마이페이지 게시글 리스트 조회 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     public List<BoardListDTO> getMyBoards(String memId) {
-        return boardRepository.findByMember_MemIdAndBoardIsDeletedOrderByBoardRegdateDesc(memId, "N")
+        return boardRepository.findByMemberWithReplyCount(memId)
                 .stream()
-                .map(b -> BoardListDTO.builder()
-                        .boardIdx(b.getBoardIdx())
-                        .boardTitle(b.getBoardTitle())
-                        .boardViewCount(b.getBoardViewCount())
-                        .boardLike(b.getBoardLike())
-                        .boardRegdate(b.getBoardRegdate())
-                        .boardTypeCode(b.getBoardType().getBoardTypeCode())
-                        .boardTypeName(b.getBoardType().getBoardTypeName())
-                        .replyCount(0)
-                        .build())
+                .map(row -> {
+                    BoardEntity b = (BoardEntity) row[0];
+                    long replyCount = (Long) row[1];
+
+                    return BoardListDTO.builder()
+                            .boardIdx(b.getBoardIdx())
+                            .boardTitle(b.getBoardTitle())
+                            .boardViewCount(b.getBoardViewCount())
+                            .boardLike(b.getBoardLike())
+                            .boardRegdate(b.getBoardRegdate())
+                            .boardTypeCode(b.getBoardType().getBoardTypeCode())
+                            .boardTypeName(b.getBoardType().getBoardTypeName())
+                            .replyCount((int) replyCount)
+                            .build();
+                })
                 .toList();
     }
+
+//    public List<BoardListDTO> getMyBoards(String memId) {
+//        return boardRepository.findByMember_MemIdAndBoardIsDeletedOrderByBoardRegdateDesc(memId, "N")
+//                .stream()
+//                .map(b -> BoardListDTO.builder()
+//                        .boardIdx(b.getBoardIdx())
+//                        .boardTitle(b.getBoardTitle())
+//                        .boardViewCount(b.getBoardViewCount())
+//                        .boardLike(b.getBoardLike())
+//                        .boardRegdate(b.getBoardRegdate())
+//                        .boardTypeCode(b.getBoardType().getBoardTypeCode())
+//                        .boardTypeName(b.getBoardType().getBoardTypeName())
+//                        .replyCount(0)
+//                        .build())
+//                .toList();
+//    }
 
 
 }

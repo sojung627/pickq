@@ -35,4 +35,14 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     List<BoardEntity> findByMember_MemIdAndBoardIsDeletedOrderByBoardRegdateDesc(String memId, String boardIsDeleted);
 
+    // 댓글 수
+    @Query("SELECT b, COUNT(r) FROM BoardEntity b " +
+            "JOIN FETCH b.boardType " +
+            "LEFT JOIN ReplyEntity r ON r.board.boardIdx = b.boardIdx " +
+            "AND r.replyIsDeleted = 'N' " +
+            "WHERE b.member.memId = :memId AND b.boardIsDeleted = 'N' " +
+            "GROUP BY b " +
+            "ORDER BY b.boardRegdate DESC")
+    List<Object[]> findByMemberWithReplyCount(@Param("memId") String memId);
+
 }

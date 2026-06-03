@@ -7,4 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ReplyRepository extends JpaRepository<ReplyEntity, Long> {
     // 댓글 리스트
     Page<ReplyEntity> findByBoard_BoardIdx(Long boardIdx, Pageable pageable);
+
+    // 댓글 수
+    long countByBoard_BoardIdxAndReplyIsDeleted(Long boardIdx, String replyIsDeleted);
 }
