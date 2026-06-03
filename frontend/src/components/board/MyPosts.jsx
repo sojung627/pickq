@@ -6,8 +6,12 @@ export default function MyPosts() {
   const [isLoading, setIsLoading] = useState(true);
 
   // 주석: 컴포넌트 마운트 시 백엔드 API에서 데이터 조회
+  // 주석: 컴포넌트 마운트 시 백엔드 API에서 데이터 조회
   useEffect(() => {
-    fetch("/mypage/boards")
+    // 주석: fetch의 두 번째 인자로 객체를 넘겨 credentials를 설정함
+    fetch("http://localhost:8080/mypage/boards", {
+      credentials: "include"
+    })
       .then((response) => {
         if (!response.ok) {
           throw new Error("네트워크 응답이 올바르지 않습니다.");
@@ -23,6 +27,24 @@ export default function MyPosts() {
         setIsLoading(false);
       });
   }, []);
+//   useEffect(() => {
+//     fetch("http://localhost:8080/mypage/boards")
+//       credentials: "include"
+//       .then((response) => {
+//         if (!response.ok) {
+//           throw new Error("네트워크 응답이 올바르지 않습니다.");
+//         }
+//         return response.json();
+//       })
+//       .then((data) => {
+//         setBoards(data);
+//         setIsLoading(false);
+//       })
+//       .catch((error) => {
+//         console.error("데이터를 가져오는 중 오류 발생:", error);
+//         setIsLoading(false);
+//       });
+//   }, []);
 
   // 주석: 날짜 포맷팅 함수 (yyyy-MM-dd HH:mm 형식)
   const formatDate = (dateString) => {

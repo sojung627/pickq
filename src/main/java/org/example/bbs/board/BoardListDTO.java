@@ -15,4 +15,7 @@ public class BoardListDTO {
     private String boardTypeCode;
     private String memId;
     private String memNickname;
+    // 추가
+    private String boardTypeName;
+    private int replyCount;
 }

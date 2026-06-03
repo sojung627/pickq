@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -317,5 +318,24 @@ public class BoardService {
         board.setBoardContent(dto.getBoardContent());
         board.setBoardModdate(LocalDateTime.now());
     }
+
+    // 마이페이지 게시글 리스트 조회 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    public List<BoardListDTO> getMyBoards(String memId) {
+        return boardRepository.findByMember_MemIdAndBoardIsDeletedOrderByBoardRegdateDesc(memId, "N")
+                .stream()
+                .map(b -> BoardListDTO.builder()
+                        .boardIdx(b.getBoardIdx())
+                        .boardTitle(b.getBoardTitle())
+                        .boardViewCount(b.getBoardViewCount())
+                        .boardLike(b.getBoardLike())
+                        .boardRegdate(b.getBoardRegdate())
+                        .boardTypeCode(b.getBoardType().getBoardTypeCode())
+                        .boardTypeName(b.getBoardType().getBoardTypeName())
+                        .replyCount(0)
+                        .build())
+                .toList();
+    }
+
 
 }

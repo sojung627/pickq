@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
@@ -29,5 +30,9 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     @Query("SELECT b FROM BoardEntity b JOIN FETCH b.member JOIN FETCH b.boardType " +
             "WHERE b.boardType.boardTypeCode = :boardTypeCode AND b.boardIdx = :boardIdx AND b.boardIsDeleted = 'N'")
     Optional<BoardEntity> findDetail(@Param("boardTypeCode") String boardTypeCode, @Param("boardIdx") Long boardIdx);
+
+    // 마이페이지 게시글 리스트 조회 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    List<BoardEntity> findByMember_MemIdAndBoardIsDeletedOrderByBoardRegdateDesc(String memId, String boardIsDeleted);
 
 }
