@@ -12,6 +12,9 @@ import MyPageLayout from "./components/layout/MyPageLayout";
 import AuctionList from "./components/auction/AuctionList";
 import AuctionWrite from "./components/auction/AuctionWrite";
 
+/* 입찰 */
+import Mybids from "./components/bid/Mybids";
+
 /* 게시판 */
 import BoardList from "./components/board/BoardList";
 import BoardDetail from "./components/board/BoardDetail";
@@ -92,6 +95,7 @@ function App() {
             {/* 헤더의 마이페이지에서만 뜨는 것들 */}
             <Route path="/mypage" element={<MyPageLayout />}>
               <Route path="auctions" element={<Auctions />} />
+              <Route path="bids" element={<Mybids />} />
               <Route path="info" element={<MemberUpdate />} />
               <Route path="addresses" element={<AddressManagement />} />
               <Route path="addresses/new" element={<AddressInsert />} />
