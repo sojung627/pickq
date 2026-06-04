@@ -13,8 +13,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -149,6 +152,27 @@ public class BidService {
         AuctionStatusEntity closedStatus = auctionStatusRepository.findById(3)
                 .orElseThrow(() -> new IllegalArgumentException("경매 상태를 찾을 수 없습니다."));
         auction.setAuctionStatus(closedStatus);
+    }
+
+    // 마이페이지 입찰 목록 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    public List<Map<String, Object>> getMyBids(String memId) {
+        List<BidEntity> bids = bidRepository.findAllByBidder_MemIdOrderByBidRegdateDesc(memId);
+
+        return bids.stream().map(bid -> {
+            Map<String, Object> b = new HashMap<>();
+            b.put("bidIdx", bid.getBidIdx());
+            b.put("auctionIdx", bid.getAuction().getAuctionIdx());
+            b.put("auctionTitle", bid.getAuction().getAuctionTitle());
+            b.put("itemName", bid.getItem().getItemName());
+            b.put("itemBrand", bid.getItem().getItemBrand());
+            b.put("bidPrice", bid.getBidPrice());
+            b.put("bidQuantity", bid.getBidQuantity());
+            b.put("bidStatusIdx", bid.getBidStatus().getBidStatusIdx());
+            b.put("bidStatusName", bid.getBidStatus().getBidStatusName());
+            b.put("bidRegdate", bid.getBidRegdate());
+            return b;
+        }).collect(Collectors.toList());
     }
 
 

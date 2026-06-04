@@ -15,6 +15,9 @@ import AuctionWrite from "./components/auction/AuctionWrite";
 /* 입찰 */
 import Mybids from "./components/bid/Mybids";
 
+/* 구매 */
+import MyOrders from "./components/order/MyOrders";
+
 /* 게시판 */
 import BoardList from "./components/board/BoardList";
 import BoardDetail from "./components/board/BoardDetail";
@@ -96,6 +99,7 @@ function App() {
             <Route path="/mypage" element={<MyPageLayout />}>
               <Route path="auctions" element={<Auctions />} />
               <Route path="bids" element={<Mybids />} />
+              <Route path="orders" element={<MyOrders />} />
               <Route path="info" element={<MemberUpdate />} />
               <Route path="addresses" element={<AddressManagement />} />
               <Route path="addresses/new" element={<AddressInsert />} />

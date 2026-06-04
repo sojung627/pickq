@@ -106,6 +106,20 @@ public class BidController {
         return ResponseEntity.ok(Map.of("result", "canceled"));
     }
 
+    // 마이페이지 입찰 목록 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    @GetMapping("/mypage/bids")
+    public ResponseEntity<?> getMyBids(HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "로그인이 필요합니다."));
+        }
+
+        return ResponseEntity.ok(bidService.getMyBids(memId));
+    }
+
 
 
 }
