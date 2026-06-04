@@ -42,6 +42,9 @@ import MemberProfileUpdate from "./components/memberProfile/MemberProfileUpdate"
 import Auctions from "./components/auction/Auctions";
 import AuctionDetail from "./components/auction/AuctionDetail";
 
+/* 리뷰 */
+import ReviewManagement from "./components/review/ReviewManagement";
+
 /* 고객지원 */
 import Faq from "./components/support/Faq";
 import Guide from "./components/support/Guide";
@@ -106,6 +109,7 @@ function App() {
               <Route path="addresses/edit" element={<AddressUpdate />} />
               <Route path="profile" element={<MemberProfileUpdate />} />
               <Route path="boards" element={<MyPosts />} />
+              <Route path="reviews" element={<ReviewManagement />} />
             </Route>
 
             {/* 고객지원 파트 */}
