@@ -100,4 +100,28 @@ public class AuctionController {
         return ResponseEntity.ok(result);
     }
 
+    // 경매글 상세보기에서 경매글 취소
+    @PostMapping("/auctions/{auctionIdx}/delete")
+    public ResponseEntity<?> cancelAuction(
+            @PathVariable Long auctionIdx,
+            HttpSession session) {
+
+        // 로그인 유지
+        String memIdx = (String) session.getAttribute("loginMember");
+        if (memIdx == null) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("success", false, "error", "로그인이 필요합니다."));
+        }
+
+        // 서비스 호출
+        boolean result = auctionService.cancelAuction(auctionIdx, memIdx);
+
+        if (!result) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "error", "취소할 수 없는 경매입니다."));
+        }
+
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
 }

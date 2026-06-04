@@ -1,6 +1,7 @@
 package org.example.bbs.auction;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bbs.bid.BidEntity;
 import org.example.bbs.bid.BidRepository;
 import org.example.bbs.item.ItemCategoryEntity;
@@ -22,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -103,38 +105,6 @@ public class AuctionService {
                 .build()
         ).toList();
     }
-//    public List<AuctionListDTO> findAllAuctions(String category, String sortBy, String status, String keyword) {
-//        List<AuctionEntity> entities = auctionRepository.findAuctionsByFilters(category, status, keyword);
-//
-//        // Java에서 정렬
-//        if ("views".equals(sortBy)) {
-//            entities.sort((a, b) -> Long.compare(
-//                    b.getAuctionViewCount() != null ? b.getAuctionViewCount() : 0,
-//                    a.getAuctionViewCount() != null ? a.getAuctionViewCount() : 0
-//            ));
-//        } else if ("deadline".equals(sortBy)) {
-//            entities.sort((a, b) -> {
-//                if (a.getAuctionEndAt() == null) return 1;
-//                if (b.getAuctionEndAt() == null) return -1;
-//                return a.getAuctionEndAt().compareTo(b.getAuctionEndAt());
-//            });
-//        } else {
-//            entities.sort((a, b) -> b.getAuctionRegdate().compareTo(a.getAuctionRegdate()));
-//        }
-//        return entities.stream().map(entity -> AuctionListDTO.builder()
-//                .auctionIdx(entity.getAuctionIdx())
-//                .auctionTitle(entity.getAuctionTitle())
-//                .itemCategoryName(entity.getItemCategory().getItemCategoryName())
-//                .auctionThumbnailImg(entity.getAuctionThumbnailImg())
-//                .auctionStatusIdx(entity.getAuctionStatus().getAuctionStatusIdx().intValue())
-//                .auctionTargetPrice(entity.getAuctionTargetPrice())
-//                .auctionViewCount(entity.getAuctionViewCount())
-//                .bidCount(0)
-//                .auctionEndAt(entity.getAuctionEndAt())
-//                .timeDisplay(calculateTime(entity.getAuctionEndAt()))
-//                .build()
-//        ).toList();
-//    }
 
     // 남은 시간 계산 로직 예시
     private String calculateTime(LocalDateTime endAt) {
@@ -287,61 +257,50 @@ public class AuctionService {
         };
     }
 
-//    @Transactional(readOnly = true)
-//    public Map<String, Object> getAuctionDetail(Long auctionIdx, String memId) {
-//        AuctionEntity auction = auctionRepository.findById(auctionIdx)
-//                .orElseThrow(() -> new RuntimeException("경매를 찾을 수 없습니다."));
-//
-//        // bids 먼저 조회
-//        List<BidEntity> bids = bidRepository.findByAuction_AuctionIdxOrderByBidRegdateDesc(auctionIdx);
-//
-//        Map<String, Object> detail = new HashMap<>();
-//        detail.put("auctionIdx", auction.getAuctionIdx());
-//        detail.put("auctionTitle", auction.getAuctionTitle());
-//        detail.put("auctionDesc", auction.getAuctionDesc());
-//        detail.put("auctionThumbnailImg", auction.getAuctionThumbnailImg());
-//        detail.put("auctionTargetPrice", auction.getAuctionTargetPrice());
-//        detail.put("auctionStatusIdx", auction.getAuctionStatus().getAuctionStatusIdx());
-//        detail.put("auctionEndAt", auction.getAuctionEndAt());
-//        detail.put("auctionDecisionDeadline", auction.getAuctionDecisionDeadline());
-//        detail.put("itemCategoryCode", auction.getItemCategory().getItemCategoryCode());
-//        detail.put("itemCategoryName", auction.getItemCategory().getItemCategoryName());
-//        detail.put("itemCategoryIdx", auction.getItemCategory().getItemCategoryIdx());
-//        detail.put("buyerIdx", auction.getBuyer().getMemIdx());
-//        detail.put("buyerMemIdMasked", maskMemId(auction.getBuyer().getMemId()));
-//        detail.put("bidCount", (long) bids.size()); // 이제 bids가 위에 있으므로 정상
-//        detail.put("minBidPrice", 0L);
-//        detail.put("timeDisplay", "");
-//
-//        // bidList 변환
-//        List<Map<String, Object>> bidList = bids.stream().map(bid -> {
-//            Map<String, Object> b = new HashMap<>();
-//            b.put("bidIdx", bid.getBidIdx());
-//            b.put("bidderIdx", bid.getBidder().getMemIdx());
-//            b.put("bidderMemIdMasked", maskMemId(bid.getBidder().getMemId()));
-//            b.put("bidPrice", bid.getBidPrice());
-//            b.put("bidQuantity", bid.getBidQuantity());
-//            b.put("bidMessage", bid.getBidMessage());
-//            b.put("bidStatusIdx", bid.getBidStatus().getBidStatusIdx());
-//            b.put("bidStatusName", bid.getBidStatus().getBidStatusName());
-//            b.put("bidRegdate", bid.getBidRegdate());
-//            b.put("itemName", bid.getItem().getItemName());
-//            b.put("itemBrand", bid.getItem().getItemBrand());
-//            b.put("itemCategoryName", bid.getItem().getItemCategory().getItemCategoryName());
-//            b.put("itemThumbnailImg", bid.getItem().getItemThumbnailImg());
-//            return b;
-//        }).collect(Collectors.toList());
-//
-//        Map<String, Object> result = new HashMap<>();
-//        result.put("detail", detail);
-//        result.put("bidList", bidList);
-//        return result;
-//    }
-
-
     private String maskMemId(String memId) {
         if (memId == null || memId.length() <= 2) return memId;
         return memId.charAt(0) + "*".repeat(memId.length() - 2) + memId.charAt(memId.length() - 1);
     }
+
+    // 경매 취소
+    // 경매 취소
+    @Transactional
+    public boolean cancelAuction(Long auctionIdx, String memId) {
+
+        AuctionEntity auction = auctionRepository.findById(auctionIdx)
+                .orElse(null);
+        if (auction == null) return false;
+
+        if (!auction.getBuyer().getMemId().equals(memId)) return false;
+
+        if (!auction.getAuctionStatus().getAuctionStatusIdx().equals(1)) return false;
+
+        AuctionStatusEntity cancelStatus = auctionStatusRepository.findById(5)
+                .orElseThrow(() -> {
+                    log.error("[cancelAuction] auction_status_idx=5 not found.");
+                    return new RuntimeException("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                });
+        auction.setAuctionStatus(cancelStatus);
+
+        return true;
+    }
+    
+//    @Transactional
+//    public boolean cancelAuction(Long auctionIdx, Long memIdx) {
+//
+//        AuctionEntity auction = auctionRepository.findById(auctionIdx)
+//                .orElse(null);
+//        if (auction == null) return false;
+//
+//        if (!auction.getBuyer().getMemIdx().equals(memIdx)) return false;
+//
+//        if (!auction.getAuctionStatus().getAuctionStatusIdx().equals(1)) return false;
+//
+//        AuctionStatusEntity cancelStatus = auctionStatusRepository.findById(5)
+//                .orElseThrow(() -> new RuntimeException("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요."));
+//        auction.setAuctionStatus(cancelStatus);
+//
+//        return true;
+//    }
 
 }
