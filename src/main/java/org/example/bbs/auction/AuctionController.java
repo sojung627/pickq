@@ -124,4 +124,26 @@ public class AuctionController {
         return ResponseEntity.ok(Map.of("success", true));
     }
 
+    // 수동 마감
+    @PostMapping("/auctions/{auctionIdx}/close")
+    public ResponseEntity<?> closeAuction(
+            @PathVariable Long auctionIdx,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("success", false, "error", "로그인이 필요합니다."));
+        }
+
+        boolean result = auctionService.closeAuction(auctionIdx, memId);
+
+        if (!result) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "error", "마감할 수 없는 경매입니다."));
+        }
+
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
 }

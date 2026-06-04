@@ -263,7 +263,6 @@ public class AuctionService {
     }
 
     // 경매 취소
-    // 경매 취소
     @Transactional
     public boolean cancelAuction(Long auctionIdx, String memId) {
 
@@ -273,34 +272,38 @@ public class AuctionService {
 
         if (!auction.getBuyer().getMemId().equals(memId)) return false;
 
-        if (!auction.getAuctionStatus().getAuctionStatusIdx().equals(1)) return false;
+        if (!auction.getAuctionStatus().getAuctionStatusCode().equals("open")) return false;
 
-        AuctionStatusEntity cancelStatus = auctionStatusRepository.findById(5)
+        AuctionStatusEntity cancelStatus = auctionStatusRepository.findByAuctionStatusCode("canceled")
                 .orElseThrow(() -> {
-                    log.error("[cancelAuction] auction_status_idx=5 not found.");
+                    log.error("[cancelAuction] CANCELLED 상태를 찾을 수 없습니다.");
                     return new RuntimeException("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
                 });
         auction.setAuctionStatus(cancelStatus);
 
         return true;
     }
-    
-//    @Transactional
-//    public boolean cancelAuction(Long auctionIdx, Long memIdx) {
-//
-//        AuctionEntity auction = auctionRepository.findById(auctionIdx)
-//                .orElse(null);
-//        if (auction == null) return false;
-//
-//        if (!auction.getBuyer().getMemIdx().equals(memIdx)) return false;
-//
-//        if (!auction.getAuctionStatus().getAuctionStatusIdx().equals(1)) return false;
-//
-//        AuctionStatusEntity cancelStatus = auctionStatusRepository.findById(5)
-//                .orElseThrow(() -> new RuntimeException("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요."));
-//        auction.setAuctionStatus(cancelStatus);
-//
-//        return true;
-//    }
+
+    // 수동 마감
+    @Transactional
+    public boolean closeAuction(Long auctionIdx, String memId) {
+
+        AuctionEntity auction = auctionRepository.findById(auctionIdx)
+                .orElse(null);
+        if (auction == null) return false;
+
+        if (!auction.getBuyer().getMemId().equals(memId)) return false;
+
+        if (!auction.getAuctionStatus().getAuctionStatusCode().equals("open")) return false;
+
+        AuctionStatusEntity closeStatus = auctionStatusRepository.findByAuctionStatusCode("closed")
+                .orElseThrow(() -> {
+                    log.error("[closeAuction] CLOSED 상태를 찾을 수 없습니다.");
+                    return new RuntimeException("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                });
+        auction.setAuctionStatus(closeStatus);
+
+        return true;
+    }
 
 }

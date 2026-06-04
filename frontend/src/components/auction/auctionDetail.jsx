@@ -120,6 +120,11 @@ const AuctionDetail = () => {
 
   if (!detail) return <div className="py-20 text-center">로딩 중...</div>;
 
+  console.log('memIdx:', session?.loginUser?.memIdx);
+  console.log('buyerIdx:', detail?.buyerIdx);
+  console.log('타입 memIdx:', typeof session?.loginUser?.memIdx);
+  console.log('타입 buyerIdx:', typeof detail?.buyerIdx);
+
   const isTerminal = detail.auctionStatusIdx >= 3;
   const isInactive = detail.auctionStatusIdx !== 1;
 
@@ -152,7 +157,7 @@ const AuctionDetail = () => {
   };
 
   const canWin = (bid) =>
-    session?.loginUser?.memIdx === detail.buyerIdx &&
+    Number(session?.loginUser?.memIdx) === Number(detail.buyerIdx) &&
     bid.bidStatusIdx === 1 &&
     (detail.auctionStatusIdx === 2 || (detail.auctionStatusIdx === 1 && detail.bidCount > 0));
 
@@ -260,7 +265,7 @@ const AuctionDetail = () => {
                         ← 목록으로
                       </button>
 
-                      {session?.loginUser?.memIdx === detail.buyerIdx && detail.auctionStatusIdx === 1 && (
+                      {Number(session?.loginUser?.memIdx) === Number(detail.buyerIdx) && detail.auctionStatusIdx === 1 && (
                         <>
                           <button onClick={handleCancel} className="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700">
                             구매요청 취소
