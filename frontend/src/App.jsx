@@ -45,6 +45,7 @@ import AuctionDetail from "./components/auction/AuctionDetail";
 /* 리뷰 */
 import ReviewManagement from "./components/review/ReviewManagement";
 import ReviewWrite from "./components/review/ReviewWrite";
+import ReviewDetail from "./components/review/ReviewDetail";
 
 /* 고객지원 */
 import Faq from "./components/support/Faq";
@@ -112,6 +113,7 @@ function App() {
               <Route path="boards" element={<MyPosts />} />
               <Route path="reviews" element={<ReviewManagement />} />
               <Route path="reviews/ReviewWrite" element={<ReviewWrite />} />
+              <Route path="reviews/reviewDetail" element={<ReviewDetail />} />
             </Route>
 
             {/* 고객지원 파트 */}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 
 export default function ReviewManagement() {
-  // 주석: 리뷰 데이터 및 로딩 상태 관리
+  // 리뷰 데이터 및 로딩 상태 관리
   const [reviewList, setReviewList] = useState([]);
   const [receivedReviewList, setReceivedReviewList] = useState([]);
   const [avgRating, setAvgRating] = useState(0.0);
@@ -22,7 +22,7 @@ export default function ReviewManagement() {
       .catch(() => setLoginUser(null));
   }, []);
 
-  // 주석: 컴포넌트 마운트 시 내가 남긴 리뷰와 받은 리뷰 데이터를 단 한 번의 fetch로 가져옴
+  // 컴포넌트 마운트 시 내가 남긴 리뷰와 받은 리뷰 데이터를 단 한 번의 fetch로 가져옴
   useEffect(() => {
     fetch("http://localhost:8080/mypage/reviews/api", {
       credentials: "include"
@@ -45,18 +45,18 @@ export default function ReviewManagement() {
       });
   }, []);
 
-  // 주석: 관리자용 리뷰 삭제 처리 함수 (fetch 비동기 통신 사용)
+  // 관리자용 리뷰 삭제 처리 함수 (fetch 비동기 통신 사용)
   const handleDeleteReview = (reviewIdx) => {
     if (!window.confirm("정말로 이 리뷰를 삭제하시겠습니까?")) return;
 
     fetch(`http://localhost:8080/reviewDelete?reviewIdx=${reviewIdx}`, {
-      method: "POST", // 주석: 기존 타임리프 location.href 방식을 안전한 비동기 POST 방식으로 처리
+      method: "POST",
       credentials: "include"
     })
       .then((response) => {
         if (response.ok) {
           alert("리뷰가 성공적으로 삭제되었습니다.");
-          // 주석: 삭제 완료 후 리스트 최신화를 위해 화면 상태 필터링 처리
+          // 삭제 완료 후 리스트 최신화를 위해 화면 상태 필터링 처리
           setReviewList(reviewList.filter((r) => r.reviewIdx !== reviewIdx));
           setReceivedReviewList(receivedReviewList.filter((r) => r.reviewIdx !== reviewIdx));
         } else {
@@ -68,23 +68,23 @@ export default function ReviewManagement() {
       });
   };
 
-  // 주석: 개별 리뷰의 꽉 찬 별과 빈 별 아이콘을 동적으로 생성하는 헬퍼 렌더러
+  // 개별 리뷰의 꽉 찬 별과 빈 별 아이콘을 동적으로 생성하는 헬퍼 렌더러
   const renderStars = (starCount) => {
     const stars = [];
     const totalStars = 5;
 
-    // 주석: 채워진 별점 렌더링
+    // 채워진 별점 렌더링
     for (let i = 1; i <= starCount; i++) {
       stars.push(<i key={`full-${i}`} className="bi bi-star-fill text-yellow-500"></i>);
     }
-    // 주석: 남은 빈 별점 렌더링
+    // 남은 빈 별점 렌더링
     for (let i = 1; i <= totalStars - starCount; i++) {
       stars.push(<i key={`empty-${i}`} className="bi bi-star text-yellow-500"></i>);
     }
     return stars;
   };
 
-  // 주석: 평균 별점 전용 컴포넌트 단위 동적 별점 계산기 (소수점 처리 포함)
+  // 평균 별점 전용 컴포넌트 단위 동적 별점 계산기 (소수점 처리 포함)
   const renderAverageStars = (avg) => {
     const fullStars = Math.floor(avg);
     const hasHalf = avg - fullStars > 0;
@@ -104,7 +104,7 @@ export default function ReviewManagement() {
     return stars;
   };
 
-  // 주석: 날짜 포맷팅 함수 (yyyy-MM-dd HH:mm 형식)
+  // 날짜 포맷팅 함수 (yyyy-MM-dd HH:mm 형식)
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -121,7 +121,7 @@ export default function ReviewManagement() {
   }
 
   return (
-    /* 주석: 요구사항 조건에 맞추어 기존 <form> 구조를 완전히 <div> 컨테이너로 리팩토링 진행 */
+    /* 요구사항 조건에 맞추어 기존 <form> 구조를 완전히 <div> 컨테이너로 리팩토링 진행 */
     <div className="review">
       {/* 내가 남긴 리뷰 영역 */}
       <div className="border border-gray-200 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.02)] mb-6">
@@ -163,7 +163,7 @@ export default function ReviewManagement() {
                       </p>
                     </div>
                     <div className="text-right text-xs text-yellow-500">
-                      {/* 주석: 별점 루프 함수 호출 */}
+                      {/* 별점 루프 함수 호출 */}
                       <div className="flex items-center gap-0.5 justify-end">
                         {renderStars(review.reviewStar)}
                       </div>
@@ -177,9 +177,7 @@ export default function ReviewManagement() {
                     <button
                       type="button"
                       className="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-xs sm:text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => {
-                        window.location.href = `/mypage/reviews/reviewDetail?reviewIdx=${review.reviewIdx}`;
-                      }}
+                      onClick={() => navigate(`/mypage/reviews/reviewDetail?reviewIdx=${review.reviewIdx}`)}
                     >
                       상세보기
                     </button>
@@ -262,9 +260,7 @@ export default function ReviewManagement() {
                     <button
                       type="button"
                       className="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-xs sm:text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => {
-                        window.location.href = `/mypage/reviews/reviewDetail?reviewIdx=${review.reviewIdx}`;
-                      }}
+                      onClick={() => navigate('/mypage/reviews/reviewDetail?reviewIdx=${review.reviewIdx}')}
                     >
                       상세보기
                     </button>

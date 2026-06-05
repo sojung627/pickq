@@ -103,4 +103,26 @@ public class ReviewController {
         reviewService.saveReview(member.getMemIdx(), bidderIdx, auctionIdx, bidIdx, reviewTitle, content, reviewStar);
         return ResponseEntity.ok(Map.of("message", "리뷰가 등록되었습니다."));
     }
+
+    // 리뷰 상세 페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    @GetMapping("/mypage/reviews/api/detail")
+    public ResponseEntity<?> reviewDetail(
+            @RequestParam Long reviewIdx,
+            HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("loginMember") == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        Map<String, Object> reviewData = reviewRepository.findReviewDetail(reviewIdx);
+
+        if (reviewData == null) {
+            return ResponseEntity.status(404).body(Map.of("message", "리뷰를 찾을 수 없습니다."));
+        }
+
+        return ResponseEntity.ok(Map.of("review", reviewData));
+    }
+
 }

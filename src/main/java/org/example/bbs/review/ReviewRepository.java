@@ -85,4 +85,28 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
             @Param("buyerIdx") Long buyerIdx,
             @Param("searchType") String searchType,
             @Param("keyword") String keyword);
+
+    // 리뷰 상세 페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    @Query(value = """
+    SELECT
+        r.review_idx AS reviewIdx,
+        r.review_title AS reviewTitle,
+        r.review_content AS reviewContent,
+        r.review_star AS reviewStar,
+        r.review_regdate AS reviewRegdate,
+        a.auction_title AS auctionTitle,
+        a.auction_target_price AS auctionTargetPrice,
+        buyer.mem_name AS memName,
+        bidder.mem_name AS bidderName,
+        b.bid_regdate AS bidRegdate
+    FROM review r
+    JOIN auction a ON r.auction_idx = a.auction_idx
+    JOIN bid b ON r.bid_idx = b.bid_idx
+    JOIN member buyer ON r.buyer_idx = buyer.mem_idx
+    JOIN member bidder ON r.bidder_idx = bidder.mem_idx
+    WHERE r.review_idx = :reviewIdx
+      AND r.review_is_deleted = 'N'
+    """, nativeQuery = true)
+    Map<String, Object> findReviewDetail(@Param("reviewIdx") Long reviewIdx);
 }
