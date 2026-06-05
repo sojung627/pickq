@@ -277,14 +277,14 @@ const AuctionList = ({
                               {item.auctionTargetPrice?.toLocaleString()}원
                             </span>
                           </div>
-{/*                           <div className="flex items-center justify-between"> */}
-{/*                             <span className="text-xs text-[#767676]">최저 제안가</span> */}
-{/*                             <span className={`text-sm font-semibold ${(!item.minBidPrice || item.minBidPrice === 0) ? 'text-[#999999]' : 'text-[#222222]'}`}> */}
-{/*                               {(!item.minBidPrice || item.minBidPrice === 0) */}
-{/*                                 ? '(없음)' */}
-{/*                                 : `${item.minBidPrice.toLocaleString()}원`} */}
-{/*                             </span> */}
-{/*                           </div> */}
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-[#767676]">최저 제안가</span>
+                            <span className={`text-sm font-semibold ${(!item.minBidPrice || item.minBidPrice === 0) ? 'text-[#999999]' : 'text-[#222222]'}`}>
+                              {(!item.minBidPrice || item.minBidPrice === 0)
+                                ? '(없음)'
+                                : `${item.minBidPrice.toLocaleString()}원`}
+                            </span>
+                          </div>
                         </div>
                       </div>
 

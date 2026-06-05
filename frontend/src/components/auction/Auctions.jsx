@@ -62,7 +62,7 @@ const Auctions = () => {
             {/* 데스크탑: 헤더 라인 */}
             <div className="hidden md:grid md:grid-cols-[2.8fr_1.6fr_1.3fr_1.1fr_1.3fr_1.4fr_1.5fr] text-[11px] text-gray-500 px-2 pb-2 border-b border-gray-100">
               <span>경매 제목</span> <span>카테고리</span> <span className="text-right">희망 최대가</span>
-              <span className="text-center">입찰 수</span> {/* <span className="text-right">최저 입찰가</span> */}
+              <span className="text-center">입찰 수</span> <span className="text-right">최저 입찰가</span>
               <span className="text-center">상태</span> <span className="text-center">마감일</span>
             </div>
 
@@ -81,9 +81,9 @@ const Auctions = () => {
                   <div className="text-[11px] sm:text-xs text-gray-600">{auction.itemCategoryName}</div>
                   <div className="text-right font-semibold text-[#222222]">{formatPrice(auction.auctionTargetPrice)}</div>
                   <div className="text-center text-gray-700">{auction.bidCount}</div>
-{/*                   <div className={`text-right font-semibold ${!auction.minBidPrice ? 'text-gray-500' : 'text-[#7CBD00]'}`}> */}
-{/*                     {formatPrice(auction.minBidPrice)} */}
-{/*                   </div> */}
+                  <div className={`text-right font-semibold ${!auction.minBidPrice ? 'text-gray-500' : 'text-[#7CBD00]'}`}>
+                    {formatPrice(auction.minBidPrice)}
+                  </div>
                   <div className="text-center">
                     {auction.auctionStatusIdx === 1 ? (
                       <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold" style={{background: '#E6F4D6', color: '#4C7C00'}}>
@@ -138,12 +138,12 @@ const Auctions = () => {
                       <div className="text-gray-400">희망 최대가</div>
                       <div className="font-semibold text-[#222222]">{formatPrice(auction.auctionTargetPrice)}</div>
                     </div>
-{/*                     <div> */}
-{/*                       <div className="text-gray-400">최저 입찰가</div> */}
-{/*                       <div className={`font-semibold ${!auction.minBidPrice ? 'text-gray-500' : 'text-[#7CBD00]'}`}> */}
-{/*                         {formatPrice(auction.minBidPrice)} */}
-{/*                       </div> */}
-{/*                     </div> */}
+                    <div>
+                      <div className="text-gray-400">최저 입찰가</div>
+                      <div className={`font-semibold ${!auction.minBidPrice ? 'text-gray-500' : 'text-[#7CBD00]'}`}>
+                        {formatPrice(auction.minBidPrice)}
+                      </div>
+                    </div>
                     <div>
                       <div className="text-gray-400">입찰 수</div>
                       <div className="text-[#222222]">{auction.bidCount}건</div>

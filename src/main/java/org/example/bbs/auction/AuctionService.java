@@ -13,14 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
+
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -48,6 +46,9 @@ public class AuctionService {
     }
 
     private AuctionDTO convertToDTO(AuctionEntity entity) {
+        List<BidEntity> bids = entity.getBids();
+        OptionalLong minBid = bids.stream().mapToLong(BidEntity::getBidPrice).min();
+
         return AuctionDTO.builder()
                 .auctionIdx(entity.getAuctionIdx())
                 .auctionTitle(entity.getAuctionTitle())
@@ -57,10 +58,32 @@ public class AuctionService {
                 .auctionStatusName(entity.getAuctionStatus().getAuctionStatusName())
                 .auctionEndAt(entity.getAuctionEndAt())
                 .auctionRegdate(entity.getAuctionRegdate())
-                .bidCount((long) entity.getBids().size())
-                .minBidPrice(null)
+                .bidCount((long) bids.size())
+                .minBidPrice(minBid.isPresent() ? minBid.getAsLong() : null)
                 .build();
     }
+
+//    private AuctionDTO convertToDTO(AuctionEntity entity) {
+//        return AuctionDTO.builder()
+//                .auctionIdx(entity.getAuctionIdx())
+//                .auctionTitle(entity.getAuctionTitle())
+//                .itemCategoryName(entity.getItemCategory().getItemCategoryName())
+//                .auctionTargetPrice(entity.getAuctionTargetPrice())
+//                .auctionStatusIdx(entity.getAuctionStatus().getAuctionStatusIdx())
+//                .auctionStatusName(entity.getAuctionStatus().getAuctionStatusName())
+//                .auctionEndAt(entity.getAuctionEndAt())
+//                .auctionRegdate(entity.getAuctionRegdate())
+//                .bidCount((long) entity.getBids().size())
+//                .minBidPrice(entity.getBids().stream()
+//                        .mapToLong(BidEntity::getBidPrice)
+//                        .min()
+//                        .orElse(0L) == 0L ? null :
+//                        entity.getBids().stream()
+//                                .mapToLong(BidEntity::getBidPrice)
+//                                .min()
+//                                .getAsLong())
+//                .build();
+//    }
 
     // 경매 파트 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 

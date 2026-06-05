@@ -17,9 +17,11 @@ public interface AuctionRepository extends JpaRepository<AuctionEntity, Long> {
     // 마이페이지 파트 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 내가 등록한 경매 목록 조회 (삭제되지 않은 것만, 최신순)
+
     @Query("SELECT a FROM AuctionEntity a " +
             "JOIN FETCH a.itemCategory " +
             "JOIN FETCH a.auctionStatus " +
+            "LEFT JOIN FETCH a.bids " +
             "WHERE a.buyer.memId = :memId " +
             "AND a.auctionIsDeleted = 'N' " +
             "ORDER BY a.auctionRegdate DESC")
