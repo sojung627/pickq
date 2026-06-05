@@ -25,4 +25,5 @@ public class AuctionDTO {
     private Long winnerBidPrice;
     private String winnerBidderMemIdMasked;
     private Long winnerBidIdx;
+
 }

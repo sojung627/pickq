@@ -3,10 +3,13 @@ package org.example.bbs.auction;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.bbs.auction.AuctionStatusEntity;
+import org.example.bbs.bid.BidEntity;
 import org.example.bbs.item.ItemCategoryEntity;
 import org.example.bbs.member.MemberEntity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "auction")
@@ -84,4 +87,9 @@ public class AuctionEntity {
         if (auctionViewCount == null) auctionViewCount = 0L;
         if (auctionIsDeleted == null) auctionIsDeleted = "N";
     }
+
+    // bid 연관성 추가
+    @OneToMany(mappedBy = "auction", fetch = FetchType.LAZY)
+    private List<BidEntity> bids = new ArrayList<>();
+
 }

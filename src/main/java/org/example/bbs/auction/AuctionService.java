@@ -35,7 +35,7 @@ public class AuctionService {
     private final ItemCategoryRepository  itemCategoryRepository;
     private final AuctionStatusRepository auctionStatusRepository;
     private final MemberRepository memberRepository;
-   // private final BidEntity bidEntity;
+    // private final BidEntity bidEntity;
     private final BidRepository bidRepository;
 
 
@@ -57,7 +57,7 @@ public class AuctionService {
                 .auctionStatusName(entity.getAuctionStatus().getAuctionStatusName())
                 .auctionEndAt(entity.getAuctionEndAt())
                 .auctionRegdate(entity.getAuctionRegdate())
-                .bidCount(0L)
+                .bidCount((long) entity.getBids().size())
                 .minBidPrice(null)
                 .build();
     }
