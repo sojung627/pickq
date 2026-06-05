@@ -136,7 +136,7 @@ public class MemberController {
     }
 
     // 리뷰 관리자 페이지 버튼용
-    @GetMapping("/members/me")
+    @GetMapping("/me")
     @ResponseBody
     public ResponseEntity<?> getLoginMember(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
