@@ -135,4 +135,25 @@ public class MemberController {
         return ResponseEntity.ok(result);
     }
 
+    // 리뷰 관리자 페이지 버튼용
+    @GetMapping("/members/me")
+    @ResponseBody
+    public ResponseEntity<?> getLoginMember(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("loginMember") == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        String memId = (String) session.getAttribute("loginMember");
+        MemberEntity member = memberRepository.findByMemId(memId).orElseThrow();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("memId", member.getMemId());
+        response.put("memName", member.getMemName());
+        response.put("memRoleIdx", member.getMemRoleIdx());
+
+        return ResponseEntity.ok(response);
+    }
+
 }

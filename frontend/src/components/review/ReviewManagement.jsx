@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 export default function ReviewManagement() {
   // 주석: 리뷰 데이터 및 로딩 상태 관리
@@ -6,11 +7,20 @@ export default function ReviewManagement() {
   const [receivedReviewList, setReceivedReviewList] = useState([]);
   const [avgRating, setAvgRating] = useState(0.0);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // 주석: 임시 세션 로그인 유저 정보 상태 관리 (실제 프로젝트의 Auth context나 글로벌 상태로 대체 가능)
-  const [loginUser, setLoginUser] = useState({
-    memRoleIdx: 2 // 주석: 테스트용 관리자 계정 권한 (일반 유저는 1 등으로 세팅)
-  });
+  // 로그인 유저가 관리자인 경우에만 관리자 페이지로 갈 수 있는 버튼 뜸
+  const [loginUser, setLoginUser] = useState(null); // ← null로 초기화
+
+  useEffect(() => {
+    fetch('/members/me', { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then(data => setLoginUser(data))
+      .catch(() => setLoginUser(null));
+  }, []);
 
   // 주석: 컴포넌트 마운트 시 내가 남긴 리뷰와 받은 리뷰 데이터를 단 한 번의 fetch로 가져옴
   useEffect(() => {
@@ -195,9 +205,7 @@ export default function ReviewManagement() {
           <div className="pt-2">
             <button
               type="button"
-              onClick={() => {
-                window.location.href = "/mypage/reviews/reviewWrite";
-              }}
+              onClick={() => navigate('/mypage/reviews/reviewWrite')}
               className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 bg-[#7CBD00] text-white rounded-md text-sm font-semibold hover:bg-[#6BAD00] cursor-pointer border-none"
             >
               리뷰 남기기
