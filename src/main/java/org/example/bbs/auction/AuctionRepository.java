@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,5 +55,15 @@ public interface AuctionRepository extends JpaRepository<AuctionEntity, Long> {
             @Param("category") String category,
             @Param("keyword") String keyword
     );
+
+    // 경매 시간 자동 처리 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 진행중 & 입찰마감일 지난 것
+    List<AuctionEntity> findByAuctionStatus_AuctionStatusIdxAndAuctionEndAtBefore(
+            Integer auctionStatusIdx, LocalDateTime now);
+
+    // 결정대기중 & 결정마감일 지난 것
+    List<AuctionEntity> findByAuctionStatus_AuctionStatusIdxAndAuctionDecisionDeadlineBefore(
+            Integer auctionStatusIdx, LocalDateTime now);
 
 }
