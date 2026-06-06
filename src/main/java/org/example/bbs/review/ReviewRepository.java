@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
@@ -109,4 +110,9 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
       AND r.review_is_deleted = 'N'
     """, nativeQuery = true)
     Map<String, Object> findReviewDetail(@Param("reviewIdx") Long reviewIdx);
+
+
+
+
+
 }

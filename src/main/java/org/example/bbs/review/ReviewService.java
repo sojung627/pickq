@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
@@ -53,4 +54,5 @@ public class ReviewService {
 
         reviewRepository.save(review);
     }
+
 }
