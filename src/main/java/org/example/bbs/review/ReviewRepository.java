@@ -125,7 +125,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     JOIN member buyer ON r.buyer_idx = buyer.mem_idx
     JOIN member bidder ON r.bidder_idx = bidder.mem_idx
     WHERE r.review_idx = :reviewIdx
-      AND r.review_is_deleted = 'N'
+      
     """, nativeQuery = true)
     Map<String, Object> findReviewDetail(@Param("reviewIdx") Long reviewIdx);
 
