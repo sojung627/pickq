@@ -137,7 +137,7 @@ export default function ReviewManagement() {
                 type="button"
                 className="inline-flex items-center px-4 py-2 rounded-md bg-[#222222] text-white text-xs sm:text-sm font-semibold hover:bg-black"
                 onClick={() => {
-                  window.location.href = "/reviewAdmin";
+                  navigate('/mypage/reviews/reviewAdmin');
                 }}
               >
                 관리자 페이지

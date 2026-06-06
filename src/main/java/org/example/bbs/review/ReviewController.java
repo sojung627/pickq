@@ -143,4 +143,64 @@ public class ReviewController {
         return ResponseEntity.ok(Map.of("review", reviewData));
     }
 
+    // 리뷰 관리자 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 관리자 리뷰 전체 조회
+    @GetMapping("/mypage/reviews/admin/api")
+    public ResponseEntity<?> reviewAdminApi(HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("loginMember") == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        List<Map<String, Object>> activeList = reviewRepository.findAllActiveReviews();
+        List<Map<String, Object>> deletedList = reviewRepository.findAllDeletedReviews();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("activeList", activeList);
+        response.put("deletedList", deletedList);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 삭제 취소 (복구)
+    @GetMapping("/review/reviewCancel")
+    public ResponseEntity<?> reviewCancel(@RequestParam Long reviewIdx, HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("loginMember") == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        reviewService.cancelDelete(reviewIdx);
+        return ResponseEntity.ok(Map.of("message", "복구되었습니다."));
+    }
+
+    // 임시 삭제
+    @PostMapping("/reviewDelete")
+    public ResponseEntity<?> reviewDelete(@RequestParam Long reviewIdx, HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("loginMember") == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        reviewService.tempDelete(reviewIdx);
+        return ResponseEntity.ok(Map.of("message", "임시 삭제되었습니다."));
+    }
+
+    // 영구 삭제
+    @GetMapping("/review/hardDelete")
+    public ResponseEntity<?> hardDelete(@RequestParam Long reviewIdx, HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("loginMember") == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        reviewService.hardDelete(reviewIdx);
+        return ResponseEntity.ok(Map.of("message", "영구 삭제되었습니다."));
+    }
+
 }

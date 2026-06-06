@@ -60,4 +60,28 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
+    // 리뷰 관리자 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 삭제 취소 (복구)
+    @Transactional
+    public void cancelDelete(Long reviewIdx) {
+        ReviewEntity review = reviewRepository.findById(reviewIdx).orElseThrow();
+        review.setReviewIsDeleted("N");
+        review.setReviewDeldate(null);
+    }
+
+    // 임시 삭제
+    @Transactional
+    public void tempDelete(Long reviewIdx) {
+        ReviewEntity review = reviewRepository.findById(reviewIdx).orElseThrow();
+        review.setReviewIsDeleted("Y");
+        review.setReviewDeldate(java.time.LocalDateTime.now());
+    }
+
+    // 영구 삭제
+    @Transactional
+    public void hardDelete(Long reviewIdx) {
+        reviewRepository.deleteById(reviewIdx);
+    }
+
 }

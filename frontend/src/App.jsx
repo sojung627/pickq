@@ -46,6 +46,7 @@ import AuctionDetail from "./components/auction/AuctionDetail";
 import ReviewManagement from "./components/review/ReviewManagement";
 import ReviewWrite from "./components/review/ReviewWrite";
 import ReviewDetail from "./components/review/ReviewDetail";
+import ReviewAdmin from "./components/review/ReviewAdmin";
 
 /* 고객지원 */
 import Faq from "./components/support/Faq";
@@ -114,7 +115,9 @@ function App() {
               <Route path="reviews" element={<ReviewManagement />} />
               <Route path="reviews/ReviewWrite" element={<ReviewWrite />} />
               <Route path="reviews/reviewDetail" element={<ReviewDetail />} />
+              <Route path="reviews/reviewAdmin" element={<ReviewAdmin />} />
             </Route>
+
 
             {/* 고객지원 파트 */}
             <Route path="/support/guide" element={

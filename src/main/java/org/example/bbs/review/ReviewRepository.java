@@ -129,6 +129,41 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     """, nativeQuery = true)
     Map<String, Object> findReviewDetail(@Param("reviewIdx") Long reviewIdx);
 
+    // 리뷰 관리자 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 활성 리뷰 전체
+    @Query(value = """
+    SELECT
+        r.review_idx AS reviewIdx,
+        a.auction_title AS auctionTitle,
+        i.item_name AS itemName,
+        r.review_star AS reviewStar,
+        r.review_regdate AS reviewRegdate
+    FROM review r
+    JOIN auction a ON r.auction_idx = a.auction_idx
+    JOIN bid b ON r.bid_idx = b.bid_idx
+    JOIN item i ON b.item_idx = i.item_idx
+    WHERE r.review_is_deleted = 'N'
+    ORDER BY r.review_regdate DESC
+    """, nativeQuery = true)
+    List<Map<String, Object>> findAllActiveReviews();
+
+    // 임시 삭제 리뷰 전체
+    @Query(value = """
+    SELECT
+        r.review_idx AS reviewIdx,
+        a.auction_title AS auctionTitle,
+        i.item_name AS itemName,
+        r.review_star AS reviewStar,
+        r.review_regdate AS reviewRegdate
+    FROM review r
+    JOIN auction a ON r.auction_idx = a.auction_idx
+    JOIN bid b ON r.bid_idx = b.bid_idx
+    JOIN item i ON b.item_idx = i.item_idx
+    WHERE r.review_is_deleted = 'Y'
+    ORDER BY r.review_regdate DESC
+    """, nativeQuery = true)
+    List<Map<String, Object>> findAllDeletedReviews();
 
 
 
