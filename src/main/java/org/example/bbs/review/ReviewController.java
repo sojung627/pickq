@@ -22,6 +22,24 @@ public class ReviewController {
 
     // 리뷰 매니지먼트 페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
+    // 검색어 없이 미작성 거래 전체 조회
+    @GetMapping("/mypage/reviews/reviewAll")
+    public ResponseEntity<?> reviewAll(HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("loginMember") == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        String memId = (String) session.getAttribute("loginMember");
+        MemberEntity member = memberRepository.findByMemId(memId).orElseThrow();
+
+        // 키워드 없이 전체 조회
+        List<Map<String, Object>> list = reviewService.findAllReviewTargets(member.getMemIdx());
+
+        return ResponseEntity.ok(Map.of("reviewList", list));
+    }
+
     // 리뷰 리스트
     @GetMapping("/mypage/reviews/api")
     public ResponseEntity<?> reviewApi(HttpServletRequest request) {

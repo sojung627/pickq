@@ -14,6 +14,24 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
 
     // 리뷰 매니지먼트 페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
+    // 키워드 없이 낙찰 후 미작성 거래 전체 조회
+    @Query(value = """
+    SELECT 
+        b.bid_idx AS bidIdx,
+        a.auction_idx AS auctionIdx,
+        b.bidder_idx AS bidderIdx,
+        a.auction_title AS auctionTitle,
+        i.item_name AS itemName
+    FROM bid b
+    JOIN auction a ON b.auction_idx = a.auction_idx
+    JOIN item i ON b.item_idx = i.item_idx
+    LEFT JOIN review r ON r.bid_idx = b.bid_idx AND r.review_is_deleted = 'N'
+    WHERE a.buyer_idx = :buyerIdx
+      AND b.bid_status_idx = 2
+      AND r.review_idx IS NULL
+    """, nativeQuery = true)
+    List<Map<String, Object>> findAllReviewTargets(@Param("buyerIdx") Long buyerIdx);
+
     // 내가 남긴 리뷰
     @Query(value = """
     SELECT

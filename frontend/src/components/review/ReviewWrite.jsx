@@ -1,16 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 
 export default function ReviewWrite() {
-  // API 연동 및 상태 데이터 관리
   const [reviewList, setReviewList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSearched, setIsSearched] = useState(false);
 
-  // 검색창 필드 상태 관리
   const [searchType, setSearchType] = useState("");
   const [keyword, setKeyword] = useState("");
 
-  // 리뷰 양식 작성을 위한 데이터 필드 상태 관리
   const [selectedKeys, setSelectedKeys] = useState({
     bidIdx: "",
     auctionIdx: "",
@@ -21,15 +18,22 @@ export default function ReviewWrite() {
   const [reviewStar, setReviewStar] = useState(0);
   const [reviewContent, setReviewContent] = useState("");
 
-  // 하단 작성 폼으로의 자동 부드러운 스크롤 이동을 위한 레퍼런스
   const formRef = useRef(null);
 
-  // 초기 로드 시 전체 거래 목록 조회가 필요할 경우 주석을 해제하여 사용
+  // ✅ 페이지 열리자마자 미작성 거래 전체 불러오기
   useEffect(() => {
-    // fetchInitialTransactions();
+    setIsLoading(true);
+    fetch("http://localhost:8080/mypage/reviews/reviewAll", {
+      credentials: "include"
+    })
+      .then(res => res.json())
+      .then(data => {
+        setReviewList(data.reviewList || []);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
   }, []);
 
-  // 상단 검색 폼 div 액션 처리 함수 (fetch 사용)
   const handleSearch = () => {
     if (!searchType || !keyword.trim()) return;
 
@@ -40,9 +44,7 @@ export default function ReviewWrite() {
       credentials: "include"
     })
       .then((response) => {
-        if (!response.ok) {
-          throw new Error("네트워크 응답이 올바르지 않습니다.");
-        }
+        if (!response.ok) throw new Error("네트워크 응답이 올바르지 않습니다.");
         return response.json();
       })
       .then((data) => {
@@ -55,12 +57,10 @@ export default function ReviewWrite() {
       });
   };
 
-  // 리스트에서 특정 거래 선택 시 하단 작성 폼 활성화 핸들러
   const handleSelectItem = (bidIdx, auctionIdx, bidderIdx) => {
     setSelectedKeys({ bidIdx, auctionIdx, bidderIdx });
     setIsFormVisible(true);
 
-    // 리액트의 렌더링 사이클 이후 돔 요소가 화면에 반영되면 스크롤 동작 지시
     setTimeout(() => {
       if (formRef.current) {
         formRef.current.scrollIntoView({ behavior: "smooth" });
@@ -68,7 +68,6 @@ export default function ReviewWrite() {
     }, 50);
   };
 
-  // 하단 리뷰 등록 div 액션 처리 함수 (fetch 사용)
   const handleSubmitReview = () => {
     if (!isSubmitDisabled) {
       const payload = {
@@ -82,20 +81,21 @@ export default function ReviewWrite() {
 
       fetch("http://localhost:8080/mypage/reviews/reviewWrite", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
         credentials: "include"
       })
         .then((response) => {
           if (response.ok) {
             alert("리뷰 등록이 성공적으로 완료되었습니다.");
-            // 주석: 등록 완료 후 입력 폼 데이터 초기화
             setReviewTitle("");
             setReviewStar(0);
             setReviewContent("");
             setIsFormVisible(false);
+            // ✅ 등록 후 목록 새로고침
+            return fetch("http://localhost:8080/mypage/reviews/reviewAll", { credentials: "include" })
+              .then(res => res.json())
+              .then(data => setReviewList(data.reviewList || []));
           } else {
             alert("리뷰 등록에 실패했습니다.");
           }
@@ -106,10 +106,8 @@ export default function ReviewWrite() {
     }
   };
 
-  // 유효성 검사 분기 로직 정의 (검색 버튼 활성화 조건)
   const isSearchDisabled = !searchType || !keyword.trim();
 
-  // 유효성 검사 분기 로직 정의 (리뷰 제출 버튼 활성화 조건)
   const isSubmitDisabled =
     reviewTitle.trim().length < 5 ||
     reviewContent.trim().length < 10 ||
@@ -118,7 +116,6 @@ export default function ReviewWrite() {
 
   return (
     <div className="space-y-6">
-      {/* 상단 제목 + 검색 박스 카드 */}
       <div className="border border-gray-200 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
         <div className="px-6 py-5 border-b border-gray-100">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900">리뷰 작성하기</h2>
@@ -126,7 +123,6 @@ export default function ReviewWrite() {
         </div>
 
         <div className="px-6 py-5 space-y-4">
-          {/* 기존 검색 <form>을 요구사항 조건에 맞추어 <div> 구조로 전면 변경 완료 */}
           <div className="search-box flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <select
               value={searchType}
@@ -156,7 +152,6 @@ export default function ReviewWrite() {
             </button>
           </div>
 
-          {/* 검색 결과 및 안내 메시지 구문 */}
           {isSearched && keyword && reviewList.length === 0 && (
             <div className="text-xs sm:text-sm text-gray-500">
               "<span>{keyword}</span>"(이)과 관련된 거래가 없습니다
@@ -169,8 +164,9 @@ export default function ReviewWrite() {
             </div>
           )}
 
-          {/* 거래 리스트 컨테이너 */}
-          {(!isSearched || reviewList.length > 0) && (
+          {isLoading ? (
+            <div className="py-6 text-center text-sm text-gray-500">불러오는 중...</div>
+          ) : (
             <div className="mt-2 space-y-3">
               {reviewList.length > 0 ? (
                 <div className="space-y-2">
@@ -198,7 +194,6 @@ export default function ReviewWrite() {
                   ))}
                 </div>
               ) : (
-                /* 기본 거래 목록 데이터가 비어있을 때 명시 */
                 <div className="py-6 text-center text-sm text-gray-500 border border-gray-100 rounded-lg">
                   리뷰할 거래가 없습니다
                 </div>
@@ -233,7 +228,6 @@ export default function ReviewWrite() {
             />
           </div>
 
-          {/* 별점 컴포넌트 구조 매핑 */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-gray-900">별점</label>
             <div id="stars" className="flex gap-1 text-2xl cursor-pointer select-none">
@@ -248,7 +242,6 @@ export default function ReviewWrite() {
             </div>
           </div>
 
-          {/* 내용 및 실시간 자수 카운터 */}
           <div className="space-y-1.5">
             <label htmlFor="reviewContent" className="text-sm font-medium text-gray-900">
               리뷰 내용
@@ -273,7 +266,6 @@ export default function ReviewWrite() {
             </div>
           </div>
 
-          {/* 등록 비동기 액션 처리 버튼 */}
           <div className="pt-2">
             <button
               type="button"
