@@ -1,6 +1,8 @@
 package org.example.bbs.chat;
 
 import lombok.RequiredArgsConstructor;
+import org.example.bbs.member.MemberEntity;
+import org.example.bbs.member.MemberRepository;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -12,10 +14,29 @@ import java.util.Map;
 public class ChatMessageController {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatMessageRepository chatMessageRepository;
+    private final ChatroomRepository chatroomRepository;
+    private final MemberRepository memberRepository;
 
-    // 프론트에서 /app/chat/send 로 발행하면 여기서 받음
     @MessageMapping("/chat/send")
     public void sendMessage(ChatMessageDTO dto) {
+
+        ChatroomEntity chatroom = chatroomRepository.findById(dto.getChatroomIdx())
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+
+        MemberEntity sender = memberRepository.findById(dto.getSenderIdx())
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
+        // DB 저장
+        chatMessageRepository.save(
+                ChatMessageEntity.builder()
+                        .chatroom(chatroom)
+                        .sender(sender)
+                        .messageContent(dto.getMessageContent())
+                        .build()
+        );
+
+        // 브로드캐스트
         messagingTemplate.convertAndSend(
                 "/topic/chatroom/" + dto.getChatroomIdx(),
                 Map.of(

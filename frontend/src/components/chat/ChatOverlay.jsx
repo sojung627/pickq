@@ -12,10 +12,16 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
   useEffect(() => {
     setMessageList([]);
     if (!chatroomIdx) return;
-    fetch(`/chats/${chatroomIdx}/messages`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => setMessageList(data.messageList || []))
-      .catch(() => {});
+    fetch(`/chats/${chatroomIdx}/messages`, {
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();                            // ← 여기서는 res만 처리
+      })
+      .then((data) => setMessageList(data.messageList || []))  // ← data는 여기서
+      .catch((err) => console.error("메시지 로드 실패:", err));
   }, [chatroomIdx]);
 
   useEffect(() => {
@@ -124,26 +130,21 @@ export default function ChatOverlay({ onClose }) {
 
        fetch("/chatRoom", { credentials: "include" })
          .then((res) => {
-           if (!res.ok) return null;   // 401이면 무시
+           if (!res.ok) return null;
            return res.json();
          })
          .then((data) => {
-           if (data) setRoomList(data.roomList || []);
+           if (data) {
+             const normalized = (data.roomList || []).map(room => ({
+               chatroomIdx:  room.chatroomIdx  ?? room.chatroomidx,
+               opponentName: room.opponentName ?? room.opponentname,
+               lastMessage:  room.lastMessage  ?? room.lastmessage,
+             }));
+             setRoomList(normalized);  // ← setRoomList(data.roomList || []) 대신 이걸로
+           }
          })
          .catch(() => {});
      }, []);
-
-//   useEffect(() => {
-//     fetch("/mypage/session", { credentials: "include" })
-//       .then((res) => res.json())
-//       .then((data) => setCurrentUserIdx(data.memIdx))
-//       .catch(() => {});
-//
-//     // 백엔드 생기면 아래 주석 해제
-//     fetch("/chatRoom", { credentials: "include" })
-//       .then((res) => res.json())
-//       .then((data) => setRoomList(data.roomList || []));
-//   }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">

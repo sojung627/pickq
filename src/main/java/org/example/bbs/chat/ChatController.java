@@ -17,6 +17,7 @@ public class ChatController {
 
     private final ChatroomRepository chatroomRepository;
     private final MemberRepository memberRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
     // 채팅방 목록 조회
     @GetMapping("/chatRoom")
@@ -46,8 +47,18 @@ public class ChatController {
             return ResponseEntity.status(401).body(Map.of("message", "로그인이 필요합니다."));
         }
 
-        // 기존 ChatService/ChatRepository 있으면 연결, 없으면 빈 리스트
-        return ResponseEntity.ok(Map.of("messageList", List.of()));
+        List<ChatMessageEntity> messages = chatMessageRepository
+                .findByChatroom_ChatroomIdxOrderBySentAtAsc(chatroomIdx);
+
+        List<Map<String, Object>> messageList = messages.stream()
+                .map(msg -> Map.<String, Object>of(
+                        "senderIdx", msg.getSender().getMemIdx(),
+                        "messageContent", msg.getMessageContent(),
+                        "sentAt", msg.getSentAt().toString()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(Map.of("messageList", messageList));
     }
 
     // 세션 유저 정보 반환
@@ -63,6 +74,5 @@ public class ChatController {
 
         return ResponseEntity.ok(Map.of("memIdx", member.getMemIdx()));
     }
-
 
 }
