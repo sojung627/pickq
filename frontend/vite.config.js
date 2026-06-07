@@ -15,6 +15,7 @@ export default defineConfig({
       '/mypage': 'http://localhost:8080',
       '/uploads': 'http://localhost:8080',
       '/ws-chat': { target: 'http://localhost:8080', ws: true },
+      '/chatRoom': 'http://localhost:8080',
     }
   }
 })
