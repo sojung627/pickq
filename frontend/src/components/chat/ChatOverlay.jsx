@@ -44,7 +44,7 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
   }, [messageList]);
 
   useEffect(() => {
-      if (!chatroomIdx) return;
+      if (!chatroomIdx || !currentUserIdx) return; // currentUserIdx 없으면 연결 안 함
       const socket = new SockJS("/ws-chat");
       const client = new Client({
         webSocketFactory: () => socket,
@@ -52,20 +52,17 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
         onConnect: () => {
           setWebsocketConnected(true);
 
-          // 새 메시지 수신 구독
           client.subscribe(`/topic/chatroom/${chatroomIdx}`, (frame) => {
             const data = JSON.parse(frame.body);
             setMessageList((prev) => [...prev, data]);
           });
 
-          // 읽음 이벤트 수신 구독
-          // 상대방이 채팅방에 입장해 읽음 처리를 완료하면 내 화면의 안읽음 표시를 제거
+          // 상대방이 읽음 처리 완료 시 내가 보낸 메시지의 안읽음 표시 제거
           client.subscribe(`/topic/chatroom/${chatroomIdx}/read`, (frame) => {
             const { readerIdx } = JSON.parse(frame.body);
             setMessageList((prev) =>
               prev.map((msg) =>
-                // 읽은 사람이 내 메시지의 수신자이므로, 내가 보낸 메시지(senderIdx === currentUserIdx)의 isRead를 Y로 갱신
-                Number(msg.senderIdx) !== Number(readerIdx)
+                Number(msg.senderIdx) === Number(currentUserIdx) // 내가 보낸 메시지만 갱신
                   ? { ...msg, isRead: "Y" }
                   : msg
               )
@@ -77,7 +74,7 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
       client.activate();
       stompClientRef.current = client;
       return () => client.deactivate();
-    }, [chatroomIdx]);
+    }, [chatroomIdx, currentUserIdx]); // currentUserIdx 의존성 추가
 
   function handleSend() {
     if (!websocketConnected || !stompClientRef.current) return;
