@@ -37,6 +37,8 @@ import AddressInsert from "./components/memberAddr/memberAddrInsert";
 import AddressUpdate from "./components/memberAddr/memberAddrUpdate";
 /* 회원 프로필 */
 import MemberProfileUpdate from "./components/memberProfile/MemberProfileUpdate";
+/* 요약 프로필 */
+import Profile from "./components/profile/Profile";
 
 /* 마이페이지 경매(auction / bid) */
 import Auctions from "./components/auction/Auctions";
@@ -131,6 +133,9 @@ function App() {
 
             {/* 채팅 */}
             <Route path="/chatRoom" element={<ChatOverlay />} />
+
+            {/* 요약 프로필 */}
+            <Route path="/profile" element={<Profile />} />
 
           </Routes>
 
