@@ -41,32 +41,14 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long> 
           WHERE (c2.buyer_idx = c.buyer_idx AND c2.bidder_idx = c.bidder_idx)
              OR (c2.buyer_idx = c.bidder_idx AND c2.bidder_idx = c.buyer_idx)
       )
-    ORDER BY COALESCE(last_msg.message_idx, 0) DESC
+    ORDER BY CONVERT(
+        CASE
+            WHEN c.buyer_idx = :memIdx THEN bidder.mem_name
+            ELSE buyer.mem_name
+        END USING utf8mb4
+    ) COLLATE utf8mb4_unicode_ci ASC
 """, nativeQuery = true)
     List<Map<String, Object>> findMyRooms(@Param("memIdx") Long memIdx);
-
-//    @Query(value = """
-//    SELECT
-//        c.chatroom_idx AS chatroomIdx,
-//        CASE
-//            WHEN c.buyer_idx = :memIdx THEN bidder.mem_name
-//            ELSE buyer.mem_name
-//        END AS opponentName,
-//        COALESCE(last_msg.message_content, '대화를 시작해보세요') AS lastMessage
-//    FROM chatroom c
-//    JOIN member buyer ON c.buyer_idx = buyer.mem_idx
-//    JOIN member bidder ON c.bidder_idx = bidder.mem_idx
-//    LEFT JOIN (
-//        SELECT chatroom_idx, message_content, message_idx
-//        FROM chatmessage
-//        WHERE message_idx IN (
-//            SELECT MAX(message_idx) FROM chatmessage GROUP BY chatroom_idx
-//        )
-//    ) last_msg ON last_msg.chatroom_idx = c.chatroom_idx
-//    WHERE c.buyer_idx = :memIdx OR c.bidder_idx = :memIdx
-//    ORDER BY COALESCE(last_msg.message_idx, 0) DESC
-//""", nativeQuery = true)
-//    List<Map<String, Object>> findMyRooms(@Param("memIdx") Long memIdx);
 
 
 }
