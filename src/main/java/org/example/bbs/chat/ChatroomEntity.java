@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "chatroom", uniqueConstraints = {
         @UniqueConstraint(
                 name = "ux_chatroom_unique",
-                columnNames = {"auction_idx", "buyer_idx", "bidder_idx"}
+                columnNames = {"buyer_idx", "bidder_idx"}
         )
 })
 @Getter

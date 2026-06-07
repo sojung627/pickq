@@ -17,27 +17,56 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long> 
 
     // 채팅방 쿼리
     @Query(value = """
-        SELECT
-            c.chatroom_idx AS chatroomIdx,
-            CASE
-                WHEN c.buyer_idx = :memIdx THEN bidder.mem_name
-                ELSE buyer.mem_name
-            END AS opponentName,
-            COALESCE(last_msg.message_content, '대화를 시작해보세요') AS lastMessage
-        FROM chatroom c
-        JOIN member buyer ON c.buyer_idx = buyer.mem_idx
-        JOIN member bidder ON c.bidder_idx = bidder.mem_idx
-        LEFT JOIN (
-            SELECT chatroom_idx, message_content
-            FROM chatmessage
-            WHERE message_idx IN (
-                SELECT MAX(message_idx) FROM chatmessage GROUP BY chatroom_idx
-            )
-        ) last_msg ON last_msg.chatroom_idx = c.chatroom_idx
-        WHERE c.buyer_idx = :memIdx OR c.bidder_idx = :memIdx
-        ORDER BY COALESCE(last_msg.message_idx, 0) DESC
-    """, nativeQuery = true)
+    SELECT
+        c.chatroom_idx AS chatroomIdx,
+        CASE
+            WHEN c.buyer_idx = :memIdx THEN bidder.mem_name
+            ELSE buyer.mem_name
+        END AS opponentName,
+        COALESCE(last_msg.message_content, '대화를 시작해보세요') AS lastMessage
+    FROM chatroom c
+    JOIN member buyer ON c.buyer_idx = buyer.mem_idx
+    JOIN member bidder ON c.bidder_idx = bidder.mem_idx
+    LEFT JOIN (
+        SELECT chatroom_idx, message_content, message_idx
+        FROM chatmessage
+        WHERE message_idx IN (
+            SELECT MAX(message_idx) FROM chatmessage GROUP BY chatroom_idx
+        )
+    ) last_msg ON last_msg.chatroom_idx = c.chatroom_idx
+    WHERE (c.buyer_idx = :memIdx OR c.bidder_idx = :memIdx)
+      AND c.chatroom_idx = (
+          SELECT MIN(c2.chatroom_idx)
+          FROM chatroom c2
+          WHERE (c2.buyer_idx = c.buyer_idx AND c2.bidder_idx = c.bidder_idx)
+             OR (c2.buyer_idx = c.bidder_idx AND c2.bidder_idx = c.buyer_idx)
+      )
+    ORDER BY COALESCE(last_msg.message_idx, 0) DESC
+""", nativeQuery = true)
     List<Map<String, Object>> findMyRooms(@Param("memIdx") Long memIdx);
+
+//    @Query(value = """
+//    SELECT
+//        c.chatroom_idx AS chatroomIdx,
+//        CASE
+//            WHEN c.buyer_idx = :memIdx THEN bidder.mem_name
+//            ELSE buyer.mem_name
+//        END AS opponentName,
+//        COALESCE(last_msg.message_content, '대화를 시작해보세요') AS lastMessage
+//    FROM chatroom c
+//    JOIN member buyer ON c.buyer_idx = buyer.mem_idx
+//    JOIN member bidder ON c.bidder_idx = bidder.mem_idx
+//    LEFT JOIN (
+//        SELECT chatroom_idx, message_content, message_idx
+//        FROM chatmessage
+//        WHERE message_idx IN (
+//            SELECT MAX(message_idx) FROM chatmessage GROUP BY chatroom_idx
+//        )
+//    ) last_msg ON last_msg.chatroom_idx = c.chatroom_idx
+//    WHERE c.buyer_idx = :memIdx OR c.bidder_idx = :memIdx
+//    ORDER BY COALESCE(last_msg.message_idx, 0) DESC
+//""", nativeQuery = true)
+//    List<Map<String, Object>> findMyRooms(@Param("memIdx") Long memIdx);
 
 
 }
