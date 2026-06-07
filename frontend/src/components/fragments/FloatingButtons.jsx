@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from  'react';
+import ChatOverlay from "../chat/ChatOverlay";
+
+
 
 const FloatingButtons = () => {
     // 스크롤 유무에 따른 버튼 표시 / 미표시
     const [isVisible, setIsVisible] = useState(false);
+    // 채팅용
+    const [chatOpen, setChatOpen] = useState(false);
         useEffect(() => {
             const toggleVisibility = () => {
               if (window.scrollY > 300) { // 스크롤 300px이상 내렸다면
@@ -34,31 +39,39 @@ const FloatingButtons = () => {
 
     // 채팅 열기
     const openChat = () => {
-        alert("기능 구현 필요");
+        window.open(
+            `/chatRoom`,
+            "chatPopup",
+            "width=400,height=600,resizable=no,scrollbars=no"
+        );
     };
 
     return (
-        <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
-            {/* Open API 버튼 */}
+        <>
+            <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
+                {/* Open API 버튼 */}
 
-            {/* 채팅 버튼 */}
-            <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
-            onClick={openChat}>
-                <i className="bi bi-chat"></i>
-            </button>
+                {/* 채팅 버튼 */}
+                <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
+                onClick={() => setChatOpen(true)}>
+                    <i className="bi bi-chat"></i>
+                </button>
 
-            {/* 맨 위로 이동 버튼 */}
-            <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
-            onClick={scrollToTop}>
-                <i className="bi bi-caret-up"></i>
-            </button>
+                {/* 맨 위로 이동 버튼 */}
+                <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
+                onClick={scrollToTop}>
+                    <i className="bi bi-caret-up"></i>
+                </button>
 
-            {/* 맨 아래로 이동 버튼 */}
-            <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
-            onClick={scrollToBottom}>
-                 <i className="bi bi-caret-down"></i>
-            </button>
-        </div>
+                {/* 맨 아래로 이동 버튼 */}
+                <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
+                onClick={scrollToBottom}>
+                    <i className="bi bi-caret-down"></i>
+                </button>
+            </div>
+
+            {chatOpen && <ChatOverlay onClose={() => setChatOpen(false)} />}
+        </>
     );
 }; // end: return
 

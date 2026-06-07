@@ -54,6 +54,9 @@ import Guide from "./components/support/Guide";
 import Inquiry from "./components/support/Inquiry";
 import SupportLayout from "./components/support/SupportLayout";
 
+/* 채팅 */
+import ChatOverlay from "./components/chat/ChatOverlay";
+
 function App() {
 
   return (
@@ -118,7 +121,6 @@ function App() {
               <Route path="reviews/reviewAdmin" element={<ReviewAdmin />} />
             </Route>
 
-
             {/* 고객지원 파트 */}
             <Route path="/support/guide" element={
               <SupportLayout currentTab="guide"><Guide /></SupportLayout>} />
@@ -126,7 +128,12 @@ function App() {
               <SupportLayout currentTab="faq"><Faq /></SupportLayout>} />
             <Route path="/support/inquiry" element={
               <SupportLayout currentTab="inquiry"><Inquiry /></SupportLayout>} />
+
+            {/* 채팅 */}
+            <Route path="/chatRoom" element={<ChatOverlay />} />
+
           </Routes>
+
         </main>
         {/* 언제나 아래에 떠야 하는 것들 */}
         <FloatingButtons />
