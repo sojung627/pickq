@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     List<ChatMessageEntity> findByChatroom_ChatroomIdxOrderBySentAtAsc(Long chatroomIdx);
 
     // 특정 채팅방에서 상대방(내가 보낸 것 제외)이 보낸 미읽음 메시지를 읽음 처리
+    @Transactional
     @Modifying
     @Query("UPDATE ChatMessageEntity m SET m.isRead = 'Y', m.readAt = CURRENT_TIMESTAMP " +
             "WHERE m.chatroom.chatroomIdx = :chatroomIdx " +

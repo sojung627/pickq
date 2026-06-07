@@ -13,23 +13,28 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
     setMessageList([]);
     if (!chatroomIdx) return;
 
-    fetch(`/chats/${chatroomIdx}/messages`, {
-      credentials: "include",
-      cache: "no-store",
-    })
-      .then((res) => {
+    const loadMessages = async () => {
+      try {
+        // 읽음 처리 후 메시지 조회하여 최신 isRead 상태 반영
+        await fetch(`/chats/${chatroomIdx}/read`, {
+          method: "PATCH",
+          credentials: "include",
+        });
+
+        const res = await fetch(`/chats/${chatroomIdx}/messages`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => setMessageList(data.messageList || []))
-      .catch((err) => console.error("메시지 로드 실패:", err));
+        const data = await res.json();
+        setMessageList(data.messageList || []);
+      } catch (err) {
+        console.error("메시지 로드 실패:", err);
+      }
+    };
 
-    // 채팅방 입장 시 상대방이 보낸 미읽음 메시지를 읽음 처리
-    fetch(`/chats/${chatroomIdx}/read`, {
-      method: "PATCH",
-      credentials: "include",
-    }).catch((err) => console.error("읽음 처리 실패:", err));
-
+    loadMessages();
   }, [chatroomIdx]);
 
   useEffect(() => {
@@ -39,24 +44,40 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
   }, [messageList]);
 
   useEffect(() => {
-    if (!chatroomIdx) return;
-    const socket = new SockJS("/ws-chat");
-    const client = new Client({
-      webSocketFactory: () => socket,
-      debug: () => {},
-      onConnect: () => {
-        setWebsocketConnected(true);
-        client.subscribe(`/topic/chatroom/${chatroomIdx}`, (frame) => {
-          const data = JSON.parse(frame.body);
-          setMessageList((prev) => [...prev, data]);
-        });
-      },
-      onDisconnect: () => setWebsocketConnected(false),
-    });
-    client.activate();
-    stompClientRef.current = client;
-    return () => client.deactivate();
-  }, [chatroomIdx]);
+      if (!chatroomIdx) return;
+      const socket = new SockJS("/ws-chat");
+      const client = new Client({
+        webSocketFactory: () => socket,
+        debug: () => {},
+        onConnect: () => {
+          setWebsocketConnected(true);
+
+          // 새 메시지 수신 구독
+          client.subscribe(`/topic/chatroom/${chatroomIdx}`, (frame) => {
+            const data = JSON.parse(frame.body);
+            setMessageList((prev) => [...prev, data]);
+          });
+
+          // 읽음 이벤트 수신 구독
+          // 상대방이 채팅방에 입장해 읽음 처리를 완료하면 내 화면의 안읽음 표시를 제거
+          client.subscribe(`/topic/chatroom/${chatroomIdx}/read`, (frame) => {
+            const { readerIdx } = JSON.parse(frame.body);
+            setMessageList((prev) =>
+              prev.map((msg) =>
+                // 읽은 사람이 내 메시지의 수신자이므로, 내가 보낸 메시지(senderIdx === currentUserIdx)의 isRead를 Y로 갱신
+                Number(msg.senderIdx) !== Number(readerIdx)
+                  ? { ...msg, isRead: "Y" }
+                  : msg
+              )
+            );
+          });
+        },
+        onDisconnect: () => setWebsocketConnected(false),
+      });
+      client.activate();
+      stompClientRef.current = client;
+      return () => client.deactivate();
+    }, [chatroomIdx]);
 
   function handleSend() {
     if (!websocketConnected || !stompClientRef.current) return;

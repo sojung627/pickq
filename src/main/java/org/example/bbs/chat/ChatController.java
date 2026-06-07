@@ -2,11 +2,12 @@ package org.example.bbs.chat;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class ChatController {
     private final ChatroomRepository chatroomRepository;
     private final MemberRepository memberRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/chatRoom")
     public ResponseEntity<?> getChatRooms(HttpServletRequest request) {
@@ -62,7 +64,7 @@ public class ChatController {
         return ResponseEntity.ok(Map.of("messageList", messageList));
     }
 
-    // 추가: 채팅방 입장 시 상대방 메시지를 읽음 처리하는 API
+    // 채팅 읽음 유무 체크
     @Transactional
     @PatchMapping("/chats/{chatroomIdx}/read")
     public ResponseEntity<?> markAsRead(
@@ -78,6 +80,13 @@ public class ChatController {
         MemberEntity member = memberRepository.findByMemId(memId).orElseThrow();
 
         chatMessageRepository.markMessagesAsRead(chatroomIdx, member.getMemIdx());
+
+        // 읽음 처리 완료 후 같은 채팅방 구독자들에게 읽음 이벤트 브로드캐스트
+        // 상대방(메시지 발신자)의 화면에서 안읽음 표시를 제거하기 위해 전송
+        messagingTemplate.convertAndSend(
+                "/topic/chatroom/" + chatroomIdx + "/read",
+                Map.of("readerIdx", member.getMemIdx())
+        );
 
         return ResponseEntity.ok(Map.of("result", "ok"));
     }
