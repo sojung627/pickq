@@ -7,10 +7,15 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long> {
 
+    // 이미 채팅방이 있으면 채팅 목록 생성 방지(중복 x)
+    Optional<ChatroomEntity> findByBuyer_MemIdxAndBidder_MemIdx(Long buyerMemIdx, Long bidderMemIdx);
+
+    // 채팅방 쿼리
     @Query(value = """
         SELECT
             c.chatroom_idx AS chatroomIdx,
@@ -33,4 +38,6 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long> 
         ORDER BY COALESCE(last_msg.message_idx, 0) DESC
     """, nativeQuery = true)
     List<Map<String, Object>> findMyRooms(@Param("memIdx") Long memIdx);
+
+
 }

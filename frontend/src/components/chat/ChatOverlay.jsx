@@ -111,17 +111,39 @@ export default function ChatOverlay({ onClose }) {
   const [currentUserIdx, setCurrentUserIdx] = useState(null);
   const [roomList, setRoomList] = useState([]);
 
-  useEffect(() => {
-    fetch("/mypage/session", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => setCurrentUserIdx(data.memIdx))
-      .catch(() => {});
+     useEffect(() => {
+       fetch("/mypage/session", { credentials: "include" })
+         .then((res) => {
+           if (!res.ok) return null;   // 401이면 무시
+           return res.json();
+         })
+         .then((data) => {
+           if (data) setCurrentUserIdx(data.memIdx);
+         })
+         .catch(() => {});
 
-    // 백엔드 생기면 아래 주석 해제
-    fetch("/chatRoom", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => setRoomList(data.roomList || []));
-  }, []);
+       fetch("/chatRoom", { credentials: "include" })
+         .then((res) => {
+           if (!res.ok) return null;   // 401이면 무시
+           return res.json();
+         })
+         .then((data) => {
+           if (data) setRoomList(data.roomList || []);
+         })
+         .catch(() => {});
+     }, []);
+
+//   useEffect(() => {
+//     fetch("/mypage/session", { credentials: "include" })
+//       .then((res) => res.json())
+//       .then((data) => setCurrentUserIdx(data.memIdx))
+//       .catch(() => {});
+//
+//     // 백엔드 생기면 아래 주석 해제
+//     fetch("/chatRoom", { credentials: "include" })
+//       .then((res) => res.json())
+//       .then((data) => setRoomList(data.roomList || []));
+//   }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">

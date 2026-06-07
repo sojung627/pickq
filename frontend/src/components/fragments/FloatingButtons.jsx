@@ -1,71 +1,73 @@
-import React, { useState, useEffect } from  'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ChatOverlay from "../chat/ChatOverlay";
 
-
-
 const FloatingButtons = () => {
-    // 스크롤 유무에 따른 버튼 표시 / 미표시
     const [isVisible, setIsVisible] = useState(false);
-    // 채팅용
     const [chatOpen, setChatOpen] = useState(false);
-        useEffect(() => {
-            const toggleVisibility = () => {
-              if (window.scrollY > 300) { // 스크롤 300px이상 내렸다면
-                setIsVisible(true); // 300px 이상이면 보여라
-              } else {
-                setIsVisible(false); // 아니라면 숨겨라
-              }
-          };
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const toggleVisibility = () => {
+            if (window.scrollY > 300) {
+                setIsVisible(true);
+            } else {
+                setIsVisible(false);
+            }
+        };
 
         window.addEventListener('scroll', toggleVisibility);
         return () => window.removeEventListener('scroll', toggleVisibility);
-      }, []);
+    }, []);
 
-    // 맨 위로 이동
     const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth', // 자연스레 넘어가라
-        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // 맨 아래로 이동
     const scrollToBottom = () => {
-        window.scrollTo({
-            top: document.documentElement.scrollHeight, // 아래로 보낼 땐 전체 페이지 계산해야함
-            behavior: 'smooth', // 자연스레 넘어가라
-        });
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
     };
 
-    // 채팅 열기
-    const openChat = () => {
-        window.open(
-            `/chatRoom`,
-            "chatPopup",
-            "width=400,height=600,resizable=no,scrollbars=no"
-        );
+    // 채팅 버튼 클릭 시 로그인 여부 확인 후 분기
+    const handleChatOpen = async () => {
+        try {
+            const res = await fetch('/mypage/session', { credentials: 'include' });
+            if (res.status === 401) {
+                // 비로그인 시 쿼리 파라미터로 메시지 전달
+                navigate('/members/login?msg=로그인이 필요한 서비스입니다.');
+                return;
+            }
+            setChatOpen(true);
+        } catch (error) {
+            // 비로그인 시 쿼리 파라미터로 메시지 전달
+            navigate('/members/login?msg=로그인이 필요한 서비스입니다.');
+        }
     };
 
     return (
         <>
             <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
-                {/* Open API 버튼 */}
-
                 {/* 채팅 버튼 */}
-                <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
-                onClick={() => setChatOpen(true)}>
+                <button
+                    className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
+                    onClick={handleChatOpen}
+                >
                     <i className="bi bi-chat"></i>
                 </button>
 
                 {/* 맨 위로 이동 버튼 */}
-                <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
-                onClick={scrollToTop}>
+                <button
+                    className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
+                    onClick={scrollToTop}
+                >
                     <i className="bi bi-caret-up"></i>
                 </button>
 
                 {/* 맨 아래로 이동 버튼 */}
-                <button className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
-                onClick={scrollToBottom}>
+                <button
+                    className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
+                    onClick={scrollToBottom}
+                >
                     <i className="bi bi-caret-down"></i>
                 </button>
             </div>
@@ -73,6 +75,6 @@ const FloatingButtons = () => {
             {chatOpen && <ChatOverlay onClose={() => setChatOpen(false)} />}
         </>
     );
-}; // end: return
+};
 
 export default FloatingButtons;

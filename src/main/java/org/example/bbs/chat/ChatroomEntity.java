@@ -49,4 +49,18 @@ public class ChatroomEntity {
             this.createdAt = LocalDateTime.now();
         }
     }
+
+    // 추가 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 맨 아래에 정적 팩토리 메서드 추가
+    public static ChatroomEntity of(AuctionEntity auction, MemberEntity buyer, MemberEntity bidder) {
+        return ChatroomEntity.builder()
+                .auction(auction)
+                .buyer(buyer)
+                .bidder(bidder)
+                .build();
+    }
+
+
+
 }

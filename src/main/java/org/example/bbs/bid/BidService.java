@@ -2,6 +2,8 @@ package org.example.bbs.bid;
 
 import lombok.RequiredArgsConstructor;
 import org.example.bbs.auction.*;
+import org.example.bbs.chat.ChatroomEntity;
+import org.example.bbs.chat.ChatroomRepository;
 import org.example.bbs.item.ItemCategoryEntity;
 import org.example.bbs.item.ItemEntity;
 import org.example.bbs.item.ItemRepository;
@@ -30,6 +32,7 @@ public class BidService {
     private final ItemRepository itemRepository;
     private final ItemCategoryRepository itemCategoryRepository;
     private final AuctionStatusRepository auctionStatusRepository;
+    private final ChatroomRepository chatroomRepository;
 
     @Transactional
     public void registerBid(Long auctionIdx, BidRequestDTO dto, MultipartFile imageFile, String memId) throws IOException {
@@ -86,6 +89,16 @@ public class BidService {
                 .bidStatus(bidStatus)
                 .build();
         bidRepository.save(bid);
+
+        // 채팅방 자동 생성 (중복 방지)
+        chatroomRepository.findByBuyer_MemIdxAndBidder_MemIdx(
+                auction.getBuyer().getMemIdx(),
+                bidder.getMemIdx()
+        ).orElseGet(() ->
+                chatroomRepository.save(
+                        ChatroomEntity.of(auction, auction.getBuyer(), bidder)
+                )
+        );
     }
 
     private String saveFile(MultipartFile file) throws IOException {

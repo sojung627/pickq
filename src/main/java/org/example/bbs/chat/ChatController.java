@@ -49,4 +49,20 @@ public class ChatController {
         // 기존 ChatService/ChatRepository 있으면 연결, 없으면 빈 리스트
         return ResponseEntity.ok(Map.of("messageList", List.of()));
     }
+
+    // 세션 유저 정보 반환
+    @GetMapping("/mypage/session")
+    public ResponseEntity<?> getSession(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("loginMember") == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        String memId = (String) session.getAttribute("loginMember");
+        MemberEntity member = memberRepository.findByMemId(memId).orElseThrow();
+
+        return ResponseEntity.ok(Map.of("memIdx", member.getMemIdx()));
+    }
+
+
 }
