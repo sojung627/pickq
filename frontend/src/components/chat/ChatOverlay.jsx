@@ -12,16 +12,24 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
   useEffect(() => {
     setMessageList([]);
     if (!chatroomIdx) return;
+
     fetch(`/chats/${chatroomIdx}/messages`, {
       credentials: "include",
       cache: "no-store",
     })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();                            // ← 여기서는 res만 처리
+        return res.json();
       })
-      .then((data) => setMessageList(data.messageList || []))  // ← data는 여기서
+      .then((data) => setMessageList(data.messageList || []))
       .catch((err) => console.error("메시지 로드 실패:", err));
+
+    // 채팅방 입장 시 상대방이 보낸 미읽음 메시지를 읽음 처리
+    fetch(`/chats/${chatroomIdx}/read`, {
+      method: "PATCH",
+      credentials: "include",
+    }).catch((err) => console.error("읽음 처리 실패:", err));
+
   }, [chatroomIdx]);
 
   useEffect(() => {
@@ -80,6 +88,12 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
           const isMine = Number(msg.senderIdx) === Number(currentUserIdx);
           return (
             <div key={idx} className={`flex mb-2 ${isMine ? "justify-end" : "justify-start"}`}>
+
+              {/* 내가 보낸 메시지 중 상대방이 아직 읽지 않은 경우 말풍선 왼쪽에 표시 */}
+              {isMine && msg.isRead === "N" && (
+                <span className="self-end text-[10px] text-gray-400 mr-1 mb-0.5">안읽음</span>
+              )}
+
               <div className={`px-3 py-2 rounded-2xl text-sm max-w-[70%] ${isMine ? "bg-[#222222] text-white" : "bg-white text-gray-800 border border-gray-100"}`}>
                 {msg.messageContent}
               </div>
@@ -117,34 +131,34 @@ export default function ChatOverlay({ onClose }) {
   const [currentUserIdx, setCurrentUserIdx] = useState(null);
   const [roomList, setRoomList] = useState([]);
 
-     useEffect(() => {
-       fetch("/mypage/session", { credentials: "include" })
-         .then((res) => {
-           if (!res.ok) return null;   // 401이면 무시
-           return res.json();
-         })
-         .then((data) => {
-           if (data) setCurrentUserIdx(data.memIdx);
-         })
-         .catch(() => {});
+  useEffect(() => {
+    fetch("/mypage/session", { credentials: "include" })
+      .then((res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then((data) => {
+        if (data) setCurrentUserIdx(data.memIdx);
+      })
+      .catch(() => {});
 
-       fetch("/chatRoom", { credentials: "include" })
-         .then((res) => {
-           if (!res.ok) return null;
-           return res.json();
-         })
-         .then((data) => {
-           if (data) {
-             const normalized = (data.roomList || []).map(room => ({
-               chatroomIdx:  room.chatroomIdx  ?? room.chatroomidx,
-               opponentName: room.opponentName ?? room.opponentname,
-               lastMessage:  room.lastMessage  ?? room.lastmessage,
-             }));
-             setRoomList(normalized);  // ← setRoomList(data.roomList || []) 대신 이걸로
-           }
-         })
-         .catch(() => {});
-     }, []);
+    fetch("/chatRoom", { credentials: "include" })
+      .then((res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then((data) => {
+        if (data) {
+          const normalized = (data.roomList || []).map(room => ({
+            chatroomIdx:  room.chatroomIdx  ?? room.chatroomidx,
+            opponentName: room.opponentName ?? room.opponentname,
+            lastMessage:  room.lastMessage  ?? room.lastmessage,
+          }));
+          setRoomList(normalized);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
@@ -169,7 +183,7 @@ export default function ChatOverlay({ onClose }) {
                 <div
                   key={room.chatroomIdx}
                   onClick={() => setSelectedRoom(room)}
-                  className={`px-5 py-4 cursor-pointer border-b border-gray-50 transition-colors ${isSelected ? "bg-gray-50 border-l-[3px] border-l-gray-400" : "hover:bg-gray-50"}`}
+                  className={`px-5 py-4 cursor-pointer border-b border-gray-50 transition-colors ${isSelected ? "bg-gray-50 border-l-[5px] border-l-[#7CBD00]" : "hover:bg-gray-50"}`}
                 >
                   <p className={`text-sm font-semibold ${isSelected ? "text-gray-900" : "text-gray-800"}`}>{room.opponentName}</p>
                   <p className="text-xs text-gray-400 mt-0.5 truncate">{room.lastMessage}</p>
@@ -187,7 +201,7 @@ export default function ChatOverlay({ onClose }) {
             </div>
           )}
           <ChatPanel chatroomIdx={selectedRoom?.chatroomIdx} currentUserIdx={currentUserIdx} />
-         </div>
+        </div>
 
       </div>
     </div>

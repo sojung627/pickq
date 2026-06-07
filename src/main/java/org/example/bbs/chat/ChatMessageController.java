@@ -27,8 +27,7 @@ public class ChatMessageController {
         MemberEntity sender = memberRepository.findById(dto.getSenderIdx())
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        // DB 저장
-        chatMessageRepository.save(
+        ChatMessageEntity saved = chatMessageRepository.save(
                 ChatMessageEntity.builder()
                         .chatroom(chatroom)
                         .sender(sender)
@@ -40,9 +39,10 @@ public class ChatMessageController {
         messagingTemplate.convertAndSend(
                 "/topic/chatroom/" + dto.getChatroomIdx(),
                 Map.of(
-                        "chatroomIdx", dto.getChatroomIdx(),
-                        "senderIdx", dto.getSenderIdx(),
-                        "messageContent", dto.getMessageContent()
+                        "chatroomIdx",    dto.getChatroomIdx(),
+                        "senderIdx",      dto.getSenderIdx(),
+                        "messageContent", dto.getMessageContent(),
+                        "isRead",         saved.getIsRead()
                 )
         );
     }

@@ -1,6 +1,7 @@
 package org.example.bbs.chat;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -12,6 +13,15 @@ import java.util.Map;
 public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, Long> {
 
     List<ChatMessageEntity> findByChatroom_ChatroomIdxOrderBySentAtAsc(Long chatroomIdx);
+
+    // 특정 채팅방에서 상대방(내가 보낸 것 제외)이 보낸 미읽음 메시지를 읽음 처리
+    @Modifying
+    @Query("UPDATE ChatMessageEntity m SET m.isRead = 'Y', m.readAt = CURRENT_TIMESTAMP " +
+            "WHERE m.chatroom.chatroomIdx = :chatroomIdx " +
+            "AND m.sender.memIdx != :readerIdx " +
+            "AND m.isRead = 'N'")
+    void markMessagesAsRead(@Param("chatroomIdx") Long chatroomIdx,
+                            @Param("readerIdx") Long readerIdx);
 
     @Query(value = """
     SELECT
@@ -46,5 +56,4 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     ) COLLATE utf8mb4_unicode_ci ASC
 """, nativeQuery = true)
     List<Map<String, Object>> findMyRooms(@Param("memIdx") Long memIdx);
-
 }

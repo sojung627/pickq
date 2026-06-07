@@ -17,7 +17,6 @@ export default function Profile({
       navigate(profileBackUrl);
       return;
     }
-
     navigate(-1);
   };
 
