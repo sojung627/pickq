@@ -8,24 +8,15 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
   const [websocketConnected, setWebsocketConnected] = useState(false);
   const chatContainerRef = useRef(null);
   const stompClientRef = useRef(null);
+  const subscriptionsRef = useRef([]);
 
   useEffect(() => {
     setMessageList([]);
     if (!chatroomIdx) return;
-
     const loadMessages = async () => {
       try {
-        // 읽음 처리 후 메시지 조회하여 최신 isRead 상태 반영
-        await fetch(`/chats/${chatroomIdx}/read`, {
-          method: "PATCH",
-          credentials: "include",
-        });
-
-        const res = await fetch(`/chats/${chatroomIdx}/messages`, {
-          credentials: "include",
-          cache: "no-store",
-        });
-
+        await fetch(`/chats/${chatroomIdx}/read`, { method: "PATCH", credentials: "include" });
+        const res = await fetch(`/chats/${chatroomIdx}/messages`, { credentials: "include", cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setMessageList(data.messageList || []);
@@ -33,7 +24,6 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
         console.error("메시지 로드 실패:", err);
       }
     };
-
     loadMessages();
   }, [chatroomIdx]);
 
@@ -44,37 +34,51 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
   }, [messageList]);
 
   useEffect(() => {
-      if (!chatroomIdx || !currentUserIdx) return; // currentUserIdx 없으면 연결 안 함
-      const socket = new SockJS("/ws-chat");
-      const client = new Client({
-        webSocketFactory: () => socket,
-        debug: () => {},
-        onConnect: () => {
-          setWebsocketConnected(true);
-
-          client.subscribe(`/topic/chatroom/${chatroomIdx}`, (frame) => {
-            const data = JSON.parse(frame.body);
-            setMessageList((prev) => [...prev, data]);
-          });
-
-          // 상대방이 읽음 처리 완료 시 내가 보낸 메시지의 안읽음 표시 제거
-          client.subscribe(`/topic/chatroom/${chatroomIdx}/read`, (frame) => {
-            const { readerIdx } = JSON.parse(frame.body);
-            setMessageList((prev) =>
-              prev.map((msg) =>
-                Number(msg.senderIdx) === Number(currentUserIdx) // 내가 보낸 메시지만 갱신
-                  ? { ...msg, isRead: "Y" }
-                  : msg
-              )
-            );
-          });
-        },
-        onDisconnect: () => setWebsocketConnected(false),
-      });
-      client.activate();
-      stompClientRef.current = client;
-      return () => client.deactivate();
-    }, [chatroomIdx, currentUserIdx]); // currentUserIdx 의존성 추가
+    if (!chatroomIdx || !currentUserIdx) return;
+    subscriptionsRef.current.forEach(sub => sub.unsubscribe());
+    subscriptionsRef.current = [];
+    const socket = new SockJS("/ws-chat");
+    const client = new Client({
+      webSocketFactory: () => socket,
+      debug: () => {},
+      onConnect: () => {
+        setWebsocketConnected(true);
+        const sub1 = client.subscribe(`/topic/chatroom/${chatroomIdx}`, (frame) => {
+          const data = JSON.parse(frame.body);
+          setMessageList((prev) => [...prev, data]);
+           if (Number(data.senderIdx) !== Number(currentUserIdx)) {
+              fetch(`/chats/${chatroomIdx}/read`, { method: "PATCH", credentials: "include" });
+            }
+        });
+        const sub2 = client.subscribe(`/topic/chatroom/${chatroomIdx}/read`, (frame) => {
+          console.log('📨 /read 이벤트 수신:', frame.body);
+          const { readerIdx } = JSON.parse(frame.body);
+          console.log('readerIdx:', readerIdx, '| currentUserIdx:', currentUserIdx);
+          if (Number(readerIdx) === Number(currentUserIdx)) {
+            console.log('⛔ 본인 이벤트라 무시');
+            return;
+          }
+          console.log('✅ 안읽음 제거 실행');
+          setMessageList((prev) =>
+            prev.map((msg) =>
+              Number(msg.senderIdx) === Number(currentUserIdx)
+                ? { ...msg, isRead: "Y" }
+                : msg
+            )
+          );
+        });
+        subscriptionsRef.current = [sub1, sub2];
+      },
+      onDisconnect: () => setWebsocketConnected(false),
+    });
+    client.activate();
+    stompClientRef.current = client;
+    return () => {
+      subscriptionsRef.current.forEach(sub => sub.unsubscribe());
+      subscriptionsRef.current = [];
+      client.deactivate();
+    };
+  }, [chatroomIdx, currentUserIdx]);
 
   function handleSend() {
     if (!websocketConnected || !stompClientRef.current) return;
@@ -92,11 +96,7 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
   }
 
   if (!chatroomIdx) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-sm text-gray-300">
-        채팅방을 선택하세요
-      </div>
-    );
+    return <div className="flex-1 flex items-center justify-center text-sm text-gray-300">채팅방을 선택하세요</div>;
   }
 
   return (
@@ -106,12 +106,9 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
           const isMine = Number(msg.senderIdx) === Number(currentUserIdx);
           return (
             <div key={idx} className={`flex mb-2 ${isMine ? "justify-end" : "justify-start"}`}>
-
-              {/* 내가 보낸 메시지 중 상대방이 아직 읽지 않은 경우 말풍선 왼쪽에 표시 */}
               {isMine && msg.isRead === "N" && (
                 <span className="self-end text-[10px] text-gray-400 mr-1 mb-0.5">안읽음</span>
               )}
-
               <div className={`px-3 py-2 rounded-2xl text-sm max-w-[70%] ${isMine ? "bg-[#222222] text-white" : "bg-white text-gray-800 border border-gray-100"}`}>
                 {msg.messageContent}
               </div>
@@ -119,25 +116,10 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
           );
         })}
       </main>
-
       <footer className="px-4 py-3 bg-white border-t border-gray-100">
         <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={messageContent}
-            onChange={(e) => setMessageContent(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm outline-none focus:border-gray-400 bg-gray-50"
-            placeholder="메시지를 입력하세요"
-            autoComplete="off"
-          />
-          <button
-            type="button"
-            onClick={handleSend}
-            className="px-4 py-2 rounded-full bg-[#222222] text-white text-sm font-medium hover:bg-black transition-colors"
-          >
-            전송
-          </button>
+          <input type="text" value={messageContent} onChange={(e) => setMessageContent(e.target.value)} onKeyDown={handleKeyDown} className="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm outline-none focus:border-gray-400 bg-gray-50" placeholder="메시지를 입력하세요" autoComplete="off" />
+          <button type="button" onClick={handleSend} className="px-4 py-2 rounded-full bg-[#222222] text-white text-sm font-medium hover:bg-black transition-colors">전송</button>
         </div>
       </footer>
     </div>
@@ -151,20 +133,11 @@ export default function ChatOverlay({ onClose }) {
 
   useEffect(() => {
     fetch("/mypage/session", { credentials: "include" })
-      .then((res) => {
-        if (!res.ok) return null;
-        return res.json();
-      })
-      .then((data) => {
-        if (data) setCurrentUserIdx(data.memIdx);
-      })
+      .then((res) => { if (!res.ok) return null; return res.json(); })
+      .then((data) => { if (data) setCurrentUserIdx(data.memIdx); })
       .catch(() => {});
-
     fetch("/chatRoom", { credentials: "include" })
-      .then((res) => {
-        if (!res.ok) return null;
-        return res.json();
-      })
+      .then((res) => { if (!res.ok) return null; return res.json(); })
       .then((data) => {
         if (data) {
           const normalized = (data.roomList || []).map(room => ({
@@ -181,28 +154,16 @@ export default function ChatOverlay({ onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
       <div className="flex w-[750px] h-[500px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-100">
-
-        {/* 왼쪽: 채팅 목록 */}
         <div className="w-[250px] border-r border-gray-100 flex flex-col">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <span className="text-base font-semibold text-gray-900">채팅 목록</span>
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              ✕
-            </button>
+            <button type="button" onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">✕</button>
           </div>
           <div className="flex-1 overflow-auto">
             {roomList.map((room) => {
               const isSelected = selectedRoom?.chatroomIdx === room.chatroomIdx;
               return (
-                <div
-                  key={room.chatroomIdx}
-                  onClick={() => setSelectedRoom(room)}
-                  className={`px-5 py-4 cursor-pointer border-b border-gray-50 transition-colors ${isSelected ? "bg-gray-50 border-l-[5px] border-l-[#7CBD00]" : "hover:bg-gray-50"}`}
-                >
+                <div key={room.chatroomIdx} onClick={() => setSelectedRoom(room)} className={`px-5 py-4 cursor-pointer border-b border-gray-50 transition-colors ${isSelected ? "bg-gray-50 border-l-[5px] border-l-[#7CBD00]" : "hover:bg-gray-50"}`}>
                   <p className={`text-sm font-semibold ${isSelected ? "text-gray-900" : "text-gray-800"}`}>{room.opponentName}</p>
                   <p className="text-xs text-gray-400 mt-0.5 truncate">{room.lastMessage}</p>
                 </div>
@@ -210,8 +171,6 @@ export default function ChatOverlay({ onClose }) {
             })}
           </div>
         </div>
-
-        {/* 오른쪽: 채팅창 */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {selectedRoom && (
             <div className="px-5 py-4 border-b border-gray-100 bg-white">
@@ -220,7 +179,6 @@ export default function ChatOverlay({ onClose }) {
           )}
           <ChatPanel chatroomIdx={selectedRoom?.chatroomIdx} currentUserIdx={currentUserIdx} />
         </div>
-
       </div>
     </div>
   );
