@@ -23,9 +23,10 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long> 
             WHEN c.buyer_idx = :memIdx THEN bidder.mem_name
             ELSE buyer.mem_name
         END AS opponentName,
-        COALESCE(last_msg.message_content, '대화를 시작해보세요') AS lastMessage
+        COALESCE(last_msg.message_content, '대화를 시작해보세요') AS lastMessage,
+        COALESCE(unread.unreadCount, 0) AS unreadCount
     FROM chatroom c
-    JOIN member buyer ON c.buyer_idx = buyer.mem_idx
+    JOIN member buyer  ON c.buyer_idx  = buyer.mem_idx
     JOIN member bidder ON c.bidder_idx = bidder.mem_idx
     LEFT JOIN (
         SELECT chatroom_idx, message_content, message_idx
@@ -34,6 +35,13 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long> 
             SELECT MAX(message_idx) FROM chatmessage GROUP BY chatroom_idx
         )
     ) last_msg ON last_msg.chatroom_idx = c.chatroom_idx
+    LEFT JOIN (
+        SELECT chatroom_idx, COUNT(*) AS unreadCount
+        FROM chatmessage
+        WHERE is_read = 'N'
+          AND sender_idx != :memIdx
+        GROUP BY chatroom_idx
+    ) unread ON unread.chatroom_idx = c.chatroom_idx
     WHERE (c.buyer_idx = :memIdx OR c.bidder_idx = :memIdx)
       AND c.chatroom_idx = (
           SELECT MIN(c2.chatroom_idx)
