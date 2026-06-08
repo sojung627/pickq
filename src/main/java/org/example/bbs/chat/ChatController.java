@@ -103,4 +103,20 @@ public class ChatController {
 
         return ResponseEntity.ok(Map.of("memIdx", member.getMemIdx()));
     }
+
+    // 플로팅 버튼 - 채팅 얼마나 쌓였는지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    @GetMapping("/chats/unread-count")
+    public ResponseEntity<?> getUnreadCount(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("loginMember") == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "로그인이 필요합니다."));
+        }
+        String memId = (String) session.getAttribute("loginMember");
+        MemberEntity member = memberRepository.findByMemId(memId).orElseThrow();
+        long count = chatMessageRepository.countUnreadMessages(member.getMemIdx());
+        return ResponseEntity.ok(Map.of("unreadCount", count));
+    }
+
+
 }

@@ -58,4 +58,16 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     ) COLLATE utf8mb4_unicode_ci ASC
 """, nativeQuery = true)
     List<Map<String, Object>> findMyRooms(@Param("memIdx") Long memIdx);
+
+    // 플로팅 버튼 - 채팅 얼마나 쌓였는지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    @Query("SELECT COUNT(m) FROM ChatMessageEntity m " +
+            "JOIN ChatroomEntity c ON m.chatroom.chatroomIdx = c.chatroomIdx " +
+            "WHERE (c.buyer.memIdx = :memIdx OR c.bidder.memIdx = :memIdx) " +
+            "AND m.sender.memIdx != :memIdx " +
+            "AND m.isRead = 'N'")
+    long countUnreadMessages(@Param("memIdx") Long memIdx);
+
+
+
 }
