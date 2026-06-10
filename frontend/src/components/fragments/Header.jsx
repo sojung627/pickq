@@ -63,7 +63,9 @@ export default function Header() {
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
                 {/* 알림 아이콘 */}
-                <button className="relative p-2 bg-transparent border-none cursor-pointer flex items-center">
+                <button
+                  onClick={() => navigate("/notifications")}
+                  className="relative p-2 bg-transparent border-none cursor-pointer flex items-center">
                   <i className="bi bi-bell text-[22px] text-[#222]"></i>
                   <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                 </button>

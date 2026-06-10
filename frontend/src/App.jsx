@@ -60,6 +60,9 @@ import SupportLayout from "./components/support/SupportLayout";
 /* 채팅 */
 import ChatOverlay from "./components/chat/ChatOverlay";
 
+/* 알림 */
+import NotificationPage from "./components/notification/NotificationPage";
+
 function App() {
 
   return (
@@ -140,6 +143,9 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             {/* 요약 프로필 - 리뷰 */}
             <Route path="/reviews/detail/:reviewIdx" element={<ReviewDetail />} />
+
+            {/* 알림 */}
+            <Route path="/notifications" element={<NotificationPage />} />
 
           </Routes>
 
