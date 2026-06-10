@@ -13,6 +13,7 @@ export default function PwdFind() {
   const [authCode, setAuthCode] = useState("");
   const [authMsg, setAuthMsg] = useState("");
   const [isAuthOk, setIsAuthOk] = useState(false);
+  const [isAuthError, setIsAuthError] = useState(false);
 
   const [newPwd, setNewPwd] = useState("");
   const [newPwdConfirm, setNewPwdConfirm] = useState("");
@@ -61,13 +62,15 @@ export default function PwdFind() {
       .then((result) => {
         if (result === "success") {
           setIsAuthOk(true);
-          setAuthMsg("✔ 인증 되었습니다.");
+          setIsAuthError(false);
         } else {
           setIsAuthOk(false);
+          setIsAuthError(true);
           setAuthMsg("인증번호가 틀렸습니다.");
         }
       })
       .catch(() => {
+        setIsAuthError(true);
         setAuthMsg("예기치 못한 오류가 발생하여 잠시 후 다시 시도해 주세요.");
       });
   };
@@ -94,8 +97,14 @@ export default function PwdFind() {
   const validatePwd = (pwd1, pwd2, samePwd) => {
     const pwdReg = /^[A-Za-z0-9]{5,}$/;
 
+    // 비밀번호 불일치 여부 체크 (확인 칸이 비어있지 않고 서로 다를 때)
+    const isNotMatch = pwd2 !== "" && pwd1 !== pwd2;
+
     if (!pwdReg.test(pwd1)) {
       setPwdMsg({ text: "영문 + 숫자 5글자 이상으로 입력해주세요.", isError: true });
+    } else if (isNotMatch) {
+      // 불일치 시 테두리는 빨간색으로 만들되, 경고 텍스트는 노출하지 않음
+      setPwdMsg({ text: "", isError: true });
     } else {
       setPwdMsg({ text: "", isError: false });
     }
@@ -109,6 +118,7 @@ export default function PwdFind() {
         setPwdConfirmMsg({ text: "✔ 비밀번호가 일치하며 사용 가능합니다.", isError: false });
       }
     } else {
+      // 맨 마지막란(비밀번호 확인)에만 불일치 경고문 노출 및 테두리 에러 처리
       setPwdConfirmMsg({ text: "비밀번호가 일치하지 않습니다.", isError: true });
     }
   };
@@ -226,7 +236,11 @@ export default function PwdFind() {
                       value={authCode}
                       onChange={(e) => setAuthCode(e.target.value)}
                       placeholder="인증번호를 입력하세요"
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7CBD00]"
+                      className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                        isAuthError
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-200 focus:ring-[#7CBD00]"
+                      }`}
                     />
                     <button
                       type="button"
@@ -264,7 +278,7 @@ export default function PwdFind() {
                       onClick={() => setShowPwd(!showPwd)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500"
                     >
-                      <i className={showPwd ? "bi bi-eye-slash" : "bi bi-eye"}></i>
+                      <i className={showPwd ? "bi bi-eye-slash" : "bi bi-eye"} ></i>
                     </span>
                   </div>
                   {pwdMsg.text && (
