@@ -15,8 +15,9 @@ import AuctionWrite from "./components/auction/AuctionWrite";
 /* 입찰 */
 import Mybids from "./components/bid/Mybids";
 
-/* 구매 */
+/* 구매 및 판매 */
 import MyOrders from "./components/order/MyOrders";
+import MySales from "./components/order/MySales";
 
 /* 게시판 */
 import BoardList from "./components/board/BoardList";
@@ -127,6 +128,7 @@ function App() {
               <Route path="reviews/ReviewWrite" element={<ReviewWrite />} />
               <Route path="reviews/reviewDetail" element={<ReviewDetail />} />
               <Route path="reviews/reviewAdmin" element={<ReviewAdmin />} />
+              <Route path="sales" element={<MySales />} />
             </Route>
 
             {/* 고객지원 파트 */}
