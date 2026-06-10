@@ -23,7 +23,7 @@ const FloatingButtons = () => {
 
     // 안읽은 메시지 수 조회 (마운트 시 + 채팅 닫힐 때마다)
     useEffect(() => {
-        fetch('/chats/unread-count', { credentials: 'include' })
+        fetch('http://localhost:8080/chats/unread-count', { credentials: 'include' })
             .then(res => res.ok ? res.json() : null)
             .then(data => { if (data) setUnreadCount(data.unreadCount); })
             .catch(() => {});

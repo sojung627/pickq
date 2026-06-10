@@ -1,10 +1,13 @@
 package org.example.bbs.memberProfile;
 
 import lombok.RequiredArgsConstructor;
+import org.example.bbs.review.ReviewDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -58,4 +61,21 @@ public class MemberProfileController {
         long count = memberProfileService.countByNickname(memNickname);
         return ResponseEntity.ok(count);
     }
+
+    // 프로필 모달 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 프로필 모달용 데이터 조회 (다른 회원 프로필 보기)
+    @GetMapping("/modal/{memIdx}")
+    public ResponseEntity<?> getProfileModal(@PathVariable Long memIdx) {
+        MemberProfileDTO profile = memberProfileService.getProfileModal(memIdx);
+        List<ReviewDTO> reviews = memberProfileService.getReviewsForModal(memIdx);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("profile", profile);
+        result.put("reviews", reviews);
+
+        return ResponseEntity.ok(result);
+    }
+
+
 }

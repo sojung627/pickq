@@ -1,26 +1,37 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Profile from '../profile/Profile';
 
 export default function Header() {
   const navigate = useNavigate();
-  // 로그인 성공 여부에 따라 true/false로 테스트해봐!
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 초기값 false
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [loginUser, setLoginUser] = useState(null);
+  const [loginProfile, setLoginProfile] = useState(null);
+  // 프로필 모달용
+  const [profileData, setProfileData] = useState(null);
+  const [reviewData, setReviewData] = useState([]);
 
   useEffect(() => {
-      fetch("http://localhost:8080/members/auth/check", { credentials: "include" }) // 세션 쿠키 포함!
-          .then(res => res.json())
-          .then(data => setIsLoggedIn(data.isLoggedIn));
-  }, []); // 컴포넌트 마운트될 때 한 번 실행
-
-  // 로그아웃
-  const handleLogout = () => {
-      fetch("http://localhost:8080/members/logout", {
-          method: "POST",
-          credentials: "include"  // 세션 쿠키 포함!
-      })
-      .then(() => {
-          window.location.href = "/"; // 로그인이랑 똑같이 새로 로드!
+    fetch("http://localhost:8080/members/auth/check", { credentials: "include" })
+      .then(res => res.json())
+      .then(data => {
+        setIsLoggedIn(data.isLoggedIn);
+        if (data.isLoggedIn) {
+          setLoginUser(data.member);
+          setLoginProfile(data.profile);
+        }
       });
+  }, []);
+
+  const handleLogout = () => {
+    fetch("http://localhost:8080/members/logout", {
+      method: "POST",
+      credentials: "include"
+    })
+    .then(() => {
+      window.location.href = "/";
+    });
   };
 
   return (
@@ -50,7 +61,6 @@ export default function Header() {
           {/* 우측 액션 (3칸) */}
           <div className="col-span-3 flex justify-end items-center gap-4">
             {isLoggedIn ? (
-              // 로그인 후 (사진 2번: 알림, 마이페이지, 로그아웃)
               <div className="flex items-center gap-3">
                 {/* 알림 아이콘 */}
                 <button className="relative p-2 bg-transparent border-none cursor-pointer flex items-center">
@@ -60,11 +70,26 @@ export default function Header() {
 
                 {/* 마이페이지 아이콘 */}
                 <button
-                  onClick={() => navigate('/mypage')}
+                  onClick={async () => {
+                    const res = await fetch(
+                      `http://localhost:8080/mypage/profile/modal/${loginUser.memIdx}`,
+                      { credentials: "include" }
+                    );
+                    const data = await res.json();
+                    setProfileData(data.profile);
+                    setReviewData(data.reviews);
+                    setIsProfileOpen(true);
+                  }}
                   className="p-2 bg-transparent border-none cursor-pointer flex items-center"
                 >
                   <i className="bi bi-person text-2xl text-[#222]"></i>
                 </button>
+{/*                 <button */}
+{/*                   onClick={() => setIsProfileOpen(true)} */}
+{/*                   className="p-2 bg-transparent border-none cursor-pointer flex items-center" */}
+{/*                 > */}
+{/*                   <i className="bi bi-person text-2xl text-[#222]"></i> */}
+{/*                 </button> */}
 
                 {/* 로그아웃 버튼 */}
                 <button
@@ -76,7 +101,6 @@ export default function Header() {
                 </button>
               </div>
             ) : (
-              // 로그인 전 (사진 1번: 로그인, 회원가입)
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => navigate('/members/login')}
@@ -93,6 +117,25 @@ export default function Header() {
               </div>
             )}
           </div>
+
+          {isProfileOpen && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+              onClick={() => setIsProfileOpen(false)}
+            >
+              <div
+                className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Profile
+                  profile={profileData}
+                  reviews={reviewData}
+                  loginUser={loginUser}
+                  onClose={() => setIsProfileOpen(false)}
+                />
+              </div>
+            </div>
+          )}
 
         </div>
       </div>

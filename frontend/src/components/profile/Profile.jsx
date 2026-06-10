@@ -9,6 +9,7 @@ export default function Profile({
   from,
   auctionId,
   openChatPopup,
+  onClose,
 }) {
   const navigate = useNavigate();
 
@@ -37,20 +38,22 @@ export default function Profile({
     navigate(`/reviews/detail/${reviewIdx}?${params.toString()}`);
   };
 
+  const defaultImg = `/images/profile/profile_default_${(profile?.memIdx % 5) + 1}.png`;
+  console.log("profile:", profile);
+
   return (
-    <section className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <section className="max-w-full mx-auto px-4 py-6">
       <div className="mb-4 md:mb-6">
         <button
-          onClick={handleBack}
+          onClick={onClose}
           className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
         >
-          <span>←</span>
-          <span>뒤로</span>
+          <span>✕</span>
         </button>
       </div>
 
       <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
-        {profile?.maskedMemId} 님의 프로필
+        {profile?.memNickname || profile?.memName} 님의 프로필
       </h1>
 
       <article className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 md:p-6">
@@ -58,19 +61,14 @@ export default function Profile({
 
           <div className="flex flex-col items-center gap-2">
             <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
-
-              {profile?.memImg ? (
-                <img
-                  src={`/images/profile/${profile.memImg}`}
-                  alt="프로필 이미지"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-3xl text-gray-400">
-                  👤
-                </span>
-              )}
-
+              <img
+                src={profile?.memImg
+                  ? `/images/profile/${profile.memImg}`
+                  : defaultImg
+                }
+                alt="프로필 이미지"
+                className="w-full h-full object-cover"
+              />
             </div>
 
             {profileChatroomIdx &&
@@ -102,14 +100,12 @@ export default function Profile({
                 )}
 
               <h2 className="text-lg md:text-xl font-semibold text-gray-900">
-                {profile?.memNickname ||
-                  profile?.maskedMemId}
+                {profile?.memNickname || profile?.maskedMemId}
               </h2>
             </div>
 
             <p className="text-sm md:text-base text-gray-600 leading-relaxed min-h-[2.25rem]">
-              {profile?.memIntro ||
-                "소개글이 아직 없습니다."}
+              {profile?.memIntro || "소개글이 아직 없습니다."}
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-500">
@@ -142,28 +138,22 @@ export default function Profile({
 
         {reviews?.length > 0 ? (
           <div className="space-y-3">
-
             {reviews.map((review) => (
               <article
                 key={review.reviewIdx}
                 className="bg-white rounded-xl border border-gray-200 p-4 md:p-5 hover:shadow-sm transition-shadow"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-
                   <div className="text-sm text-amber-600 font-semibold">
                     ★ {(review.reviewStar ?? 0).toFixed(1)}
                   </div>
-
                   <div className="text-xs text-gray-500">
                     {review.reviewRegdate?.slice(0, 10)}
                   </div>
-
                 </div>
 
                 <button
-                  onClick={() =>
-                    moveReviewDetail(review.reviewIdx)
-                  }
+                  onClick={() => moveReviewDetail(review.reviewIdx)}
                   className="block w-full text-left text-sm md:text-base font-semibold text-gray-900 hover:text-emerald-700 truncate"
                 >
                   {review.reviewTitle}
@@ -171,12 +161,10 @@ export default function Profile({
 
                 <p className="mt-2 text-sm text-gray-600 truncate">
                   거래 상품:{" "}
-                  {review.itemName ||
-                    review.auctionTitle}
+                  {review.itemName || review.auctionTitle}
                 </p>
               </article>
             ))}
-
           </div>
         ) : (
           <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">

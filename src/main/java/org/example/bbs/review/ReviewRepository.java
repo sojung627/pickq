@@ -54,6 +54,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     @Query(value = """
     SELECT
         r.review_idx AS reviewIdx,
+        r.review_title AS reviewTitle,
         a.auction_title AS auctionTitle,
         i.item_name AS itemName,
         r.review_star AS reviewStar,
@@ -165,7 +166,15 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     """, nativeQuery = true)
     List<Map<String, Object>> findAllDeletedReviews();
 
+    // 프로필 모달 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
+    @Query("SELECT AVG(r.reviewStar) FROM ReviewEntity r " +
+            "WHERE r.bidder.memIdx = :memIdx AND r.reviewIsDeleted = 'N'")
+    Double findAvgRatingByBidderIdx(@Param("memIdx") Long memIdx);
+
+    @Query("SELECT COUNT(r) FROM ReviewEntity r " +
+            "WHERE r.bidder.memIdx = :memIdx AND r.reviewIsDeleted = 'N'")
+    Long findReviewCountByBidderIdx(@Param("memIdx") Long memIdx);
 
 
 }

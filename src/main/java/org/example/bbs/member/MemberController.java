@@ -42,13 +42,26 @@ public class MemberController {
     @GetMapping("/auth/check")
     public Map<String, Object> checkLogin(HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
-        HttpSession session = request.getSession(false); // 세션 없으면 null
+        HttpSession session = request.getSession(false);
 
         if (session != null && session.getAttribute("loginMember") != null) {
+            String memId = (String) session.getAttribute("loginMember");
+            MemberEntity member = memberRepository.findByMemId(memId).orElse(null);
+
             response.put("isLoggedIn", true);
+
+            if (member != null) {
+                Map<String, Object> memberInfo = new HashMap<>();
+                memberInfo.put("memIdx", member.getMemIdx());
+                memberInfo.put("memId", member.getMemId());
+                memberInfo.put("memName", member.getMemName());
+                memberInfo.put("memRoleIdx", member.getMemRoleIdx());
+                response.put("member", memberInfo);
+            }
         } else {
             response.put("isLoggedIn", false);
         }
+
         return response;
     }
 

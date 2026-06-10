@@ -21,7 +21,6 @@ const MemberProfileUpdate = () => {
   const [wasModified, setWasModified] = useState(false);
 
   // 2. 초기 데이터 로드
-  // 2. 초기 데이터 로드 부분 수정
   useEffect(() => {
     fetch("http://localhost:8080/mypage/profile/data", { credentials: "include" })
       .then(res => res.json())
