@@ -1,28 +1,28 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams  } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 export default function ReviewDetail() {
   const navigate = useNavigate();
-  // URL 파라미터에서 reviewIdx를 가져옴 (프로젝트 라우터 설정에 맞게 사용)
-  //const { reviewIdx } = useParams();
+  const { reviewIdx: paramIdx } = useParams();
   const [searchParams] = useSearchParams();
-  const reviewIdx = searchParams.get("reviewIdx");
+
+  // 경로 파라미터 우선, 없으면 쿼리스트링에서 읽기 (마이페이지 라우트 대응)
+  const reviewIdx = paramIdx || searchParams.get("reviewIdx");
+
+  // 프로필 모달에서 진입했는지 여부
+  const fromProfile = searchParams.get("fromProfile") === "true";
 
   const [review, setReview] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 컴포넌트 마운트 시 리뷰 상세 데이터를 fetch해오는 이펙트
   useEffect(() => {
-    // URL 파라미터가 없거나 테스트용인 경우 예시 idx 설정 가능
     const currentIdx = reviewIdx || "1";
 
     fetch(`http://localhost:8080/mypage/reviews/api/detail?reviewIdx=${currentIdx}`, {
       credentials: "include"
     })
       .then((response) => {
-        if (!response.ok) {
-          throw new Error("네트워크 응답이 올바르지 않습니다.");
-        }
+        if (!response.ok) throw new Error("네트워크 응답이 올바르지 않습니다.");
         return response.json();
       })
       .then((data) => {
@@ -35,12 +35,10 @@ export default function ReviewDetail() {
       });
   }, [reviewIdx]);
 
-  // 별점 루프를 돌며 동적으로 부트스트랩 스타 아이콘 배열을 반환하는 함수
   const renderStars = (starCount) => {
     const stars = [];
     const totalStars = 5;
     const count = starCount || 0;
-
     for (let i = 1; i <= count; i++) {
       stars.push(<i key={`full-${i}`} className="bi bi-star-fill" style={{ color: "gold" }}></i>);
     }
@@ -50,7 +48,6 @@ export default function ReviewDetail() {
     return stars;
   };
 
-  // 날짜 포맷팅 함수 (yyyy-MM-dd HH:mm 형식)
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -62,7 +59,6 @@ export default function ReviewDetail() {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
-  // 금액에 천 단위 쉼표 추가하는 함수
   const formatPrice = (price) => {
     if (price === undefined || price === null) return "0";
     return price.toLocaleString();
@@ -77,7 +73,9 @@ export default function ReviewDetail() {
   }
 
   return (
-    <div className="space-y-6">
+    // fromProfile일 때만 max-w 제한 + 패딩 추가, 마이페이지는 기존 디자인 유지
+    <div className={fromProfile ? "max-w-xl mx-auto px-4 py-6 space-y-6" : "space-y-6"}>
+
       {/* 상단 제목 카드 */}
       <div className="border border-gray-200 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
         <div className="px-6 py-5 border-b border-gray-100">
@@ -149,7 +147,6 @@ export default function ReviewDetail() {
                   </tr>
                   <tr>
                     <th className="bg-gray-50 px-4 py-2 text-left text-gray-700 font-medium align-top">리뷰 내용</th>
-                    {/* 기존 style 태그의 content-box 커스텀 속성을 Tailwind v4 표준 유틸리티 단축어로 변환 완료 */}
                     <td className="px-4 py-2 text-gray-900 p-2.5 min-h-[100px] align-top whitespace-pre-wrap break-all">
                       {review.reviewContent}
                     </td>
@@ -161,9 +158,8 @@ export default function ReviewDetail() {
         </div>
       </div>
 
-      {/* 아래 버튼 */}
+      {/* 뒤로가기 버튼 */}
       <div>
-        {/* history.go(-1) 구조를 라우터 친화적인 navigate(-1) 비동기 스택 제어로 변경 */}
         <button
           type="button"
           onClick={() => navigate(-1)}
