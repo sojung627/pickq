@@ -67,3 +67,8 @@ logging:
     org.hibernate.orm.jdbc.bind: trace
     # 에러 콘솔 확인용
     org.springframework.web.servlet: DEBUG
+
+solapi:
+  api-key: ${SOLAPI_KEY}
+  api-secret: ${SOLAPI_SECRET_KEY}
+  sender-number: ${SOLAPI_SENDER_NUMBER}

@@ -17,6 +17,7 @@ export default defineConfig({
       '/ws-chat': { target: 'http://localhost:8080', ws: true },
       '/chatRoom': 'http://localhost:8080',
       '/chats': 'http://localhost:8080',
+      '/auth': 'http://localhost:8080',
     }
   }
 })

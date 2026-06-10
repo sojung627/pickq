@@ -1,5 +1,6 @@
 package org.example.bbs.member;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class MemberService {
 
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
+    private final SmsService smsService;
 
     // 회원가입 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -114,6 +116,71 @@ public class MemberService {
             member.setMemDeldate(LocalDateTime.now());
             // save 안 해도 됨 — @Transactional이 변경 감지해서 자동 업데이트
         });
+    }
+
+    // 비밀번호 찾기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 비밀번호 찾기: 아이디 + 전화번호 검증 후 인증번호 SMS 발송
+    @Transactional(readOnly = true)
+    public Map<String, Object> sendPwdFindAuthCode(String memId, String memTel, HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+
+        Optional<MemberEntity> memberOpt = memberRepository.findByMemId(memId);
+
+        // 아이디 존재 여부 검증
+        if (memberOpt.isEmpty()) {
+            result.put("idMsg", "존재하지 않는 아이디입니다.");
+            return result;
+        }
+
+        MemberEntity member = memberOpt.get();
+
+        // 전화번호 일치 여부 검증
+        if (!member.getMemTel().equals(memTel)) {
+            result.put("telMsg", "전화번호가 일치하지 않습니다.");
+            return result;
+        }
+
+        // 6자리 인증번호 생성 후 세션 저장
+        String authCode = String.valueOf((int)(Math.random() * 900000) + 100000);
+        session.setAttribute("pwdFindAuthCode", authCode);
+        session.setAttribute("pwdFindMemId", memId);
+
+        // Solapi SMS 발송
+        smsService.sendAuthCode(memTel, authCode);
+
+        result.put("verifyMsg", "✔️ 인증번호가 발송되었습니다.");
+        return result;
+    }
+
+    // 인증 완료된 세션 기준으로 비밀번호 변경
+    @Transactional
+    public String resetPassword(String authCode, String newPassword, HttpSession session) {
+        if (session == null) return "fail";
+
+        Boolean verified = (Boolean) session.getAttribute("pwdFindVerified");
+        String memId = (String) session.getAttribute("pwdFindMemId");
+
+        // 인증 완료 여부 및 세션 memId 검증
+        if (!Boolean.TRUE.equals(verified) || memId == null) return "fail";
+
+        memberRepository.findByMemId(memId).ifPresent(member -> {
+            member.setMemPwd(passwordEncoder.encode(newPassword));
+        });
+
+        // 비밀번호 변경 후 관련 세션 데이터 제거
+        session.removeAttribute("pwdFindAuthCode");
+        session.removeAttribute("pwdFindMemId");
+        session.removeAttribute("pwdFindVerified");
+
+        return "success";
+    }
+
+    // 새 비밀번호가 현재 비밀번호와 동일한지 확인
+    public boolean isSameAsCurrent(String memId, String newPwd) {
+        return memberRepository.findByMemId(memId)
+                .map(member -> passwordEncoder.matches(newPwd, member.getMemPwd()))
+                .orElse(false);
     }
 
 }

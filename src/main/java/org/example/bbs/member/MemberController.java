@@ -169,4 +169,24 @@ public class MemberController {
         return ResponseEntity.ok(response);
     }
 
+    // 비밀번호 찾기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 아이디 + 전화번호 검증 후 SMS 인증번호 발송
+    @PostMapping("/pwdFind")
+    public Map<String, Object> pwdFind(
+            @RequestParam("memId") String memId,
+            @RequestParam("memTel") String memTel,
+            HttpServletRequest request) {
+        return memberService.sendPwdFindAuthCode(memId, memTel, request.getSession());
+    }
+
+    // 인증 완료 후 새 비밀번호로 변경
+    @PostMapping("/newPwdFind")
+    public String newPwdFind(
+            @RequestParam("authCode") String authCode,
+            @RequestParam("newPassword") String newPassword,
+            HttpServletRequest request) {
+        return memberService.resetPassword(authCode, newPassword, request.getSession(false));
+    }
+
 }
