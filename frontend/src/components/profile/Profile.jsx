@@ -62,9 +62,12 @@ export default function Profile({
           <div className="flex flex-col items-center gap-2">
             <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
               <img
-                src={profile?.memImg
-                  ? `/images/profile/${profile.memImg}`
-                  : defaultImg
+                src={
+                  !profile?.memImg
+                    ? defaultImg
+                    : profile.memImg.startsWith("profile_default_")
+                      ? `/images/profile/${profile.memImg}`
+                      : `http://localhost:8080/uploads/profile/${profile.memImg}`
                 }
                 alt="프로필 이미지"
                 className="w-full h-full object-cover"

@@ -67,6 +67,7 @@ const MemberProfileUpdate = () => {
     try {
       const response = await fetch(`http://localhost:8080/mypage/profile/members/checkNickname`, {
         method: 'POST',
+        credentials: "include",
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ memNickname: nickname })
       });

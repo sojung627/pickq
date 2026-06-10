@@ -1,6 +1,7 @@
 package org.example.bbs.memberProfile;
 
 import lombok.RequiredArgsConstructor;
+import org.example.bbs.grade.GradeRepository;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
 import org.example.bbs.review.ReviewDTO;
@@ -24,6 +25,7 @@ public class MemberProfileService {
     private final MemberProfileRepository memberProfileRepository;
     private final MemberRepository memberRepository;
     private final ReviewRepository reviewRepository;
+    private final GradeRepository gradeRepository;
 
     // 프로필 조회
     public MemberProfileEntity getProfile(String memId) {
@@ -87,6 +89,11 @@ public class MemberProfileService {
         Double avgRating = reviewRepository.findAvgRating(memIdx);
         Long reviewCount = reviewRepository.findReviewCountByBidderIdx(memIdx);
 
+        // gradeName 조회
+        String gradeName = gradeRepository.findById(member.getMemGradeIdx())
+                .map(g -> g.getGradeName())
+                .orElse(null);
+
         return MemberProfileDTO.builder()
                 .memIdx(member.getMemIdx())
                 .memName(member.getMemName())
@@ -96,23 +103,9 @@ public class MemberProfileService {
                 .memImg(profile != null ? profile.getMemImg() : null)
                 .avgRating(avgRating != null ? avgRating : 0.0)
                 .reviewCount(reviewCount != null ? reviewCount : 0L)
-                // gradeName은 grade 테이블 필요 (현재 보류)
+                .gradeName(gradeName)
                 .build();
     }
-
-    // 프로필 모달용 리뷰 목록 반환
-//    public List<ReviewDTO> getReviewsForModal(Long memIdx) {
-//        List<Map<String, Object>> rows = reviewRepository.findReceivedReviews(memIdx);
-//
-//        return rows.stream().map(row -> ReviewDTO.builder()
-//                .reviewIdx(((Number) row.get("reviewIdx")).longValue())
-//                .reviewStar(((Number) row.get("reviewStar")).doubleValue())
-//                .reviewTitle((String) row.get("reviewTitle")) // ReviewDTO에 필드 추가 필요
-//                .reviewRegdate(/* reviewRegdate 변환 */)
-//                .auctionTitle((String) row.get("auctionTitle"))
-//                .build()
-//        ).collect(Collectors.toList());
-//    }
 
     public List<ReviewDTO> getReviewsForModal(Long memIdx) {
         List<Map<String, Object>> rows = reviewRepository.findReceivedReviews(memIdx);
