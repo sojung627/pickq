@@ -1,32 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 const AuctionList = ({
   selectedCategory,
-  statusFilter,
-  sortBy,
-  keyword: initialKeyword,
   successMessage,
   errorMessage
 }) => {
+  // useSearchParams를 활용해 주소창의 쿼리 파라미터를 직접 제어
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // URL에서 상태 필터, 정렬 기준, 키워드 값을 실시간으로 추출 (기본값 설정 포함)
+  const statusFilter = searchParams.get('statusFilter') || 'open';
+  const sortBy = searchParams.get('sortBy') || 'latest';
+  const urlKeyword = searchParams.get('keyword') || '';
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [auctionList, setAuctionList] = useState([]);
   const [session, setSession] = useState(null);
-  const [keyword, setKeyword] = useState(initialKeyword || '');
   const sidebarBodyRef = useRef(null);
 
-  const [searchInput, setSearchInput] = useState(keyword || '');
-  const [appliedKeyword, setAppliedKeyword] = useState(keyword || '');
+  // 입력 필드 관리를 위한 독립된 useState
+  const [searchInput, setSearchInput] = useState(urlKeyword);
 
-  // 경매 목록 fetch
+  // URL의 키워드가 변경되면 입력창 상태도 실시간 동기화
+  useEffect(() => {
+    setSearchInput(urlKeyword);
+  }, [urlKeyword]);
+
+  // 경매 목록 fetch (URL 파라미터 상태가 변경될 때마다 자동 실행)
   useEffect(() => {
     const params = new URLSearchParams();
-    console.log(keyword); // 디버깅용
     if (selectedCategory) params.append('category', selectedCategory);
     if (sortBy) params.append('sortBy', sortBy);
     if (statusFilter) params.append('statusFilter', statusFilter);
-    if (appliedKeyword && appliedKeyword.trim() !== '') {
-        params.append('keyword', appliedKeyword.trim());
+    if (urlKeyword && urlKeyword.trim() !== '') {
+        params.append('keyword', urlKeyword.trim());
     }
 
     console.log('fetch params:', params.toString()); // 디버깅
@@ -37,7 +45,7 @@ const AuctionList = ({
       .then(res => res.json())
       .then(data => setAuctionList(data))
       .catch(err => console.error('경매 목록 fetch 실패:', err));
-  }, [selectedCategory, sortBy, statusFilter, appliedKeyword]);
+  }, [selectedCategory, sortBy, statusFilter, urlKeyword]);
 
   // 세션 fetch
   useEffect(() => {
@@ -45,11 +53,27 @@ const AuctionList = ({
       .then(res => res.json())
       .then(data => setSession(data))
       .catch(() => setSession({}));
-  }, [selectedCategory, sortBy, statusFilter, keyword]);
+  }, [selectedCategory, sortBy, statusFilter, urlKeyword]);
 
   // 사이드바 토글
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // 공통 URL 상태 변경 함수 (필터 클릭 시 페이지 새로고침 없이 상태 및 스타일 동기화)
+  const handleParamChange = (key, value) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set(key, value);
+    } else {
+      newParams.delete(key);
+    }
+    setSearchParams(newParams);
+  };
+
+  // 검색 실행 함수
+  const handleSearch = () => {
+    handleParamChange('keyword', searchInput.trim());
   };
 
   const categories = [
@@ -127,7 +151,7 @@ const AuctionList = ({
                   {categories.map((cat) => (
                     <a
                       key={cat.code || 'all'}
-                      href={`${cat.path}?sortBy=${sortBy || 'latest'}&statusFilter=${statusFilter || 'open'}`}
+                      href={`${cat.path}?sortBy=${sortBy}&statusFilter=${statusFilter}${urlKeyword ? `&keyword=${urlKeyword}` : ''}`}
                       className={`block rounded-lg px-4 py-3 text-sm font-semibold leading-5 transition-colors ${
                         selectedCategory === cat.code
                           ? 'bg-gray-100 text-[#222222] font-semibold'
@@ -154,14 +178,14 @@ const AuctionList = ({
                     type="text"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') setAppliedKeyword(searchInput); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
                     placeholder="관심있는 키워드를 검색해보세요."
                     className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm text-[#222222] focus:outline-none focus:ring-1 focus:ring-gray-800"
                   />
                 </div>
                 <button
                   type="button"
-                  onClick={() => setAppliedKeyword(searchInput)}
+                  onClick={handleSearch}
                   className="h-10 px-5 rounded-lg bg-[#222222] text-[#FFFFFF] text-sm font-semibold hover:bg-[#444444] transition-colors whitespace-nowrap"
                 >
                   검색
@@ -169,7 +193,7 @@ const AuctionList = ({
               </div>
             </div>
 
-            {/* 상단 카운트 / 정렬 버튼 */}
+            {/* 상단 카운트 / 진행 여부 필터 버튼 */}
             <div className="mb-5 pb-3 border-b border-gray-100">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span className="text-xs sm:text-sm text-[#767676]">
@@ -177,46 +201,41 @@ const AuctionList = ({
                 </span>
                 <div className="flex items-center gap-2">
                   {['open', 'closed'].map((filter) => (
-                    <a
+                    <button
                       key={filter}
-                      href={
-                        selectedCategory
-                          ? `/auctions/category/${selectedCategory}?sortBy=${sortBy || 'latest'}&statusFilter=${filter}`
-                          : `/auctions?sortBy=${sortBy || 'latest'}&statusFilter=${filter}`
-                      }
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs sm:text-sm font-medium border transition-colors ${
-                        statusFilter === filter || (filter === 'open' && !statusFilter)
+                      type="button"
+                      onClick={() => handleParamChange('statusFilter', filter)}
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs sm:text-sm font-medium border transition-colors cursor-pointer ${
+                        statusFilter === filter
                           ? 'bg-[#222222] text-white border-[#222222]'
                           : 'bg-white text-[#767676] border-gray-200 hover:border-[#222222] hover:text-[#222222]'
                       }`}
                     >
                       {filter === 'open' ? '진행중' : '마감된 경매'}
-                    </a>
+                    </button>
                   ))}
                 </div>
               </div>
 
-              {/* 정렬 버튼 */}
+              {/* 정렬 필터 버튼 */}
               <div className="flex items-center justify-end gap-1 text-xs sm:text-sm">
                 {[
                   { id: 'latest', label: '📅 최신순' },
                   { id: 'views', label: '👀 조회수순' },
                   { id: 'deadline', label: '⏰ 마감임박순' },
                 ].map((sort) => (
-                  <a key={sort.id}
-                    href={
-                      selectedCategory
-                        ? `/auctions/category/${selectedCategory}?sortBy=${sort.id}&keyword=${keyword || ''}&statusFilter=${statusFilter || 'open'}`
-                        : `/auctions?sortBy=${sort.id}&keyword=${keyword || ''}&statusFilter=${statusFilter || 'open'}`
-                    }
-                    className={`px-2.5 py-1 rounded transition-colors ${
-                      sortBy === sort.id || (sort.id === 'latest' && !sortBy)
+                  <button
+                    key={sort.id}
+                    type="button"
+                    onClick={() => handleParamChange('sortBy', sort.id)}
+                    className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${
+                      sortBy === sort.id
                         ? 'bg-gray-100 font-semibold text-[#222222]'
                         : 'text-[#767676] hover:text-[#222222]'
                     }`}
                   >
                     {sort.label}
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>
