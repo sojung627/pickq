@@ -28,6 +28,7 @@ import MyPosts from "./components/board/MyPosts"
 /* 회원가입 / 로그인 */
 import Register from "./components/members/SignUp";
 import Login from "./components/members/Login";
+import PwdFind from "./components/members/PwdFind";
 
 /* 회원 */
 import MemberUpdate from "./components/members/MemberUpdate";
@@ -76,6 +77,7 @@ function App() {
             {/* 회원 파트 */}
             <Route path="/members/login" element={<Login />} />
             <Route path="/members/signUp" element={<Register />} />
+            <Route path="/members/pwdFind" element={<PwdFind />} />
 
             {/* 경매 */}
             <Route path="/auctions" element={

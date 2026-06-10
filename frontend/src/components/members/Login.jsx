@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
     const [memId, setMemId] = useState('');
@@ -236,11 +236,11 @@ export default function Login() {
                             <div className="space-y-1 text-center text-sm text-gray-600">
                                 <div>
                                     아직 계정이 없으신가요?{" "}
-                                    <a href="/members/signUp" className="text-[#7CBD00] hover:underline font-semibold">회원가입</a>
+                                    <Link to="/members/signUp" className="text-[#7CBD00] hover:underline font-semibold">회원가입</Link>
                                 </div>
                                 <div>
                                     비밀번호를 잊으셨나요?{" "}
-                                    <a href="/members/pwdFind" className="text-[#7CBD00] hover:underline font-semibold">비밀번호 찾기</a>
+                                    <Link to="/members/pwdFind" className="text-[#7CBD00] hover:underline font-semibold">비밀번호 찾기</Link>
                                 </div>
                             </div>
                         </form>
