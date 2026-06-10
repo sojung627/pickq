@@ -23,24 +23,22 @@ public class PaymentEntity {
     @Column(name = "pay_idx")
     private Long payIdx;
 
-    // 낙찰 정보 (FK)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bid_idx", nullable = false)
     private BidEntity bid;
 
-    // 구매자 정보 (FK)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mem_idx", nullable = false)
     private MemberEntity member;
 
     @Column(name = "payment_key", nullable = false, length = 255)
-    private String paymentKey; // 토스 결제 고유 키
+    private String paymentKey;
 
     @Column(name = "order_id", nullable = false, length = 255)
-    private String orderId; // 시스템 주문번호 (UUID 등)
+    private String orderId;
 
     @Column(name = "pay_method", nullable = false, length = 100)
-    private String payMethod; // 결제 수단
+    private String payMethod;
 
     @Column(name = "pay_amount", nullable = false)
     private Long payAmount;
@@ -48,7 +46,7 @@ public class PaymentEntity {
     @Column(name = "pay_status", nullable = false, length = 20)
     private String payStatus; // READY, DONE, CONFIRMED, CANCELED, EXPIRED
 
-    // 배송지 정보 스냅샷
+    // 배송지 스냅샷
     @Column(name = "buyer_name", nullable = false, length = 50)
     private String buyerName;
 
@@ -70,13 +68,24 @@ public class PaymentEntity {
     @Column(name = "canceled_at")
     private LocalDateTime canceledAt;
 
+    // ── 배송 관련 추가 필드 ──────────────────────────────
+    // null = 배송준비중 / SHIPPING = 배송중 / DELIVERED = 구매확정완료
+    @Column(name = "delivery_status", length = 20)
+    private String deliveryStatus;
+
+    @Column(name = "courier_company", length = 50)
+    private String courierCompany;
+
+    @Column(name = "tracking_number", length = 100)
+    private String trackingNumber;
+
+    @Column(name = "shipped_at")
+    private LocalDateTime shippedAt;
+    // ────────────────────────────────────────────────────
+
     @PrePersist
     public void prePersist() {
-        if (this.payRegdate == null) {
-            this.payRegdate = LocalDateTime.now();
-        }
-        if (this.payStatus == null) {
-            this.payStatus = "READY";
-        }
+        if (this.payRegdate == null) this.payRegdate = LocalDateTime.now();
+        if (this.payStatus == null) this.payStatus = "READY";
     }
 }
