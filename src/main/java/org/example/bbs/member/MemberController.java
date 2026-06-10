@@ -17,6 +17,8 @@ public class MemberController {
     // 회원가입 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     private final MemberRepository memberRepository;
+    private final MemberService memberService;
+    private final NaverAuthService naverAuthService;
 
     // 아이디 중복 확인 (DB 연결)
     @GetMapping("/check_id")
@@ -33,9 +35,6 @@ public class MemberController {
     }
 
     // 로그인 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
-    // 로그인 처리
-    private final MemberService memberService;
 
     // 로그인 유무에 따라 헤더 수정
     // 사실상 HomeController.java에 넣어도 되는 애임 -> 즉 로그인에서 에러뜨면 이 코드는 안봐도 됨
@@ -84,20 +83,6 @@ public class MemberController {
 
         return result;
     }
-
-    // 로그인 API ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
-    // 수정할 확률 매우 높음
-    // 네이버 로그인 콜백 (Login.jsx의 callbackUrl 대응)
-    @GetMapping("/naverCallback")
-    public Map<String, Object> naverCallback(
-            @RequestParam("code") String code,
-            @RequestParam("state") String state) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "success");
-        return response;
-    }
-
 
     // 로그아웃 및 탈퇴 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -187,6 +172,40 @@ public class MemberController {
             @RequestParam("newPassword") String newPassword,
             HttpServletRequest request) {
         return memberService.resetPassword(authCode, newPassword, request.getSession(false));
+    }
+
+    // 네이버 로그인 api ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    @GetMapping("/naverCallback")
+    public void naverCallback(
+            @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "state", required = false) String state,
+            @RequestParam(value = "access_token", required = false) String accessToken,
+            HttpServletRequest request,
+            jakarta.servlet.http.HttpServletResponse response) throws Exception {
+
+        // access_token이 직접 오는 경우
+        String token = accessToken;
+
+        // code가 오는 경우 (인가코드 방식) — 추후 확장용
+        if (token == null && code != null) {
+            token = naverAuthService.getAccessToken(code, state);
+        }
+        if (token == null) {
+            response.sendRedirect("/members/login");
+            return;
+        }
+
+        MemberEntity member = naverAuthService.processNaverLoginByToken(token);
+
+        if ("Y".equals(member.getMemIsDeleted())) {
+            response.sendRedirect("/members/login");
+            return;
+        }
+
+        HttpSession session = request.getSession();
+        session.setAttribute("loginMember", member.getMemId());
+        response.sendRedirect("http://localhost:5173");
     }
 
 }

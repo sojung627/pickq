@@ -10,13 +10,16 @@ export default function NotificationPage() {
 
   // 백엔드 API로부터 알림 데이터 로드 (fetch 사용)
   useEffect(() => {
-    fetch("http://localhost:8080/api/notifications", {
-      credentials: "include", // 세션 쿠키 전달이 필요한 경우 유지
+    fetch("/api/notifications", {
+      credentials: "include",
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) return;  // 404 등 에러 응답이면 그냥 빈 배열 유지
+        return res.json();
+      })
       .then((data) => {
-        // 백엔드 데이터 구조에 맞게 세팅 (배열 데이터 가정)
-        setNotifications(data || []);
+        // 배열인지 확인 후 세팅 (백엔드 없을 때도 빈 배열 유지)
+        if (Array.isArray(data)) setNotifications(data);
       })
       .catch((err) => console.error("알림 목록을 불러오는데 실패했습니다:", err));
   }, []);

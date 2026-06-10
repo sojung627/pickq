@@ -13,18 +13,17 @@ export default function SignUp() {
   const [isIdDuplicate, setIsIdDuplicate] = useState(true);
   const [showPwd, setShowPwd] = useState(false);
 
-  // 네이버 SDK 초기화
-  useEffect(() => {
-    if (window.naver) {
-      const naverLogin = new window.naver.LoginWithNaverId({
-        clientId: "2Rk518jWd9bxOQoKuUnD",
-        callbackUrl: "http://172.30.1.94:8080/members/naverCallback",
-        isPopup: false,
-        loginButton: { color: "green", type: 3, height: 60 }
-      });
-      naverLogin.init();
-    }
-  }, []);
+  const handleNaverLogin = () => {
+    const state = Math.random().toString(36).substring(2, 12);
+    const params = new URLSearchParams({
+      response_type: "code",
+      client_id: "2Rk518jWd9bxOQoKuUnD",
+      redirect_uri: "http://localhost:8080/members/naverCallback",
+      state: state,
+    });
+    window.location.href =
+      "https://nid.naver.com/oauth2.0/authorize?" + params.toString();
+  };
 
   // 전화번호 포맷팅
   const formatTel = (val) => {
@@ -114,49 +113,25 @@ export default function SignUp() {
                   formData.emailDomain && formData.agree && !isIdDuplicate && isPwdOk;
 
   useEffect(() => {
-      if (!formData.memPwd) return;
-
-      const pwdReg = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/;
-
-      // 1. 첫번째 비밀번호 형식 오류
-      if (!pwdReg.test(formData.memPwd)) {
-          setPwdMsg({
-              text: (<><i className="bi bi-exclamation-circle mr-1"></i>영문 + 숫자 포함 5글자 이상 입력해주세요.</>),
-              isError: true
-          });
-          return;
-      }
-
-      // 2. 확인란 비어있음
-      if (!formData.memPwdCheck) {
-          setPwdMsg({
-              text: (<><i className="bi bi-exclamation-circle mr-1"></i>비밀번호 확인을 입력해주세요.</>),
-              isError: true
-          });
-          return;
-      }
-
-      // 3. 두 값이 다름 (형식 검사보다 먼저)
-      if (formData.memPwd !== formData.memPwdCheck) {
-          setPwdMsg({
-              text: (<><i className="bi bi-exclamation-circle mr-1"></i>비밀번호가 일치하지 않습니다.</>),
-              isError: true
-          });
-          return;
-      }
-
-      // 4. 확인란 형식 오류
-      if (!pwdReg.test(formData.memPwdCheck)) {
-          setPwdMsg({
-              text: (<><i className="bi bi-exclamation-circle mr-1"></i>영문 + 숫자 포함 5글자 이상 입력해주세요.</>),
-              isError: true
-          });
-          return;
-      }
-
-      // 5. 성공
-      setPwdMsg({ text: "✔ 비밀번호가 일치합니다.", isError: false });
-
+    if (!formData.memPwd) return;
+    const pwdReg = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/;
+    if (!pwdReg.test(formData.memPwd)) {
+      setPwdMsg({ text: (<><i className="bi bi-exclamation-circle mr-1"></i>영문 + 숫자 포함 5글자 이상 입력해주세요.</>), isError: true });
+      return;
+    }
+    if (!formData.memPwdCheck) {
+      setPwdMsg({ text: (<><i className="bi bi-exclamation-circle mr-1"></i>비밀번호 확인을 입력해주세요.</>), isError: true });
+      return;
+    }
+    if (formData.memPwd !== formData.memPwdCheck) {
+      setPwdMsg({ text: (<><i className="bi bi-exclamation-circle mr-1"></i>비밀번호가 일치하지 않습니다.</>), isError: true });
+      return;
+    }
+    if (!pwdReg.test(formData.memPwdCheck)) {
+      setPwdMsg({ text: (<><i className="bi bi-exclamation-circle mr-1"></i>영문 + 숫자 포함 5글자 이상 입력해주세요.</>), isError: true });
+      return;
+    }
+    setPwdMsg({ text: "✔ 비밀번호가 일치합니다.", isError: false });
   }, [formData.memPwd, formData.memPwdCheck]);
 
   return (
@@ -221,7 +196,6 @@ export default function SignUp() {
                   <input
                     type="text"
                     name="memId"
-                    /* ✅ idMsg.isError가 true면 border-red-500, 아니면 border-gray-200 */
                     className={`flex-[2] px-3 py-2 border rounded-lg text-sm outline-none transition-all
                       ${idMsg.isError
                         ? "border-red-500 focus:ring-2 focus:ring-red-500"
@@ -238,7 +212,6 @@ export default function SignUp() {
                     중복확인
                   </button>
                 </div>
-                {/* 에러 메시지 영역 */}
                 <span className={`block text-[11px] mt-1 ${idMsg.isError ? 'text-red-500' : 'text-gray-500'}`}>
                   {idMsg.text}
                 </span>
@@ -251,7 +224,6 @@ export default function SignUp() {
                   <input
                     type={showPwd ? "text" : "password"}
                     name="memPwd"
-                    /* ✅ 비밀번호 에러 시 빨간 테두리 적용 */
                     className={`w-full pl-9 pr-10 py-2 border rounded-lg text-sm outline-none transition-all
                       ${pwdMsg.isError
                         ? "border-red-500 focus:ring-2 focus:ring-red-500"
@@ -271,7 +243,6 @@ export default function SignUp() {
                 <input
                   type={showPwd ? "text" : "password"}
                   name="memPwdCheck"
-                  /* ✅ 비밀번호 확인 창도 똑같이 에러 시 빨간 테두리 */
                   className={`w-full px-3 py-2 border rounded-lg text-sm outline-none transition-all
                     ${pwdMsg.isError
                       ? "border-red-500 focus:ring-2 focus:ring-red-500"
@@ -298,10 +269,31 @@ export default function SignUp() {
                 ✔️ 회원가입 완료
               </button>
 
-              <div className="mt-4">
-                <p className="text-xs text-gray-500 mb-2 text-center">네이버 아이디가 있으신가요?</p>
-                <div id="naverIdLogin" className="flex justify-center"></div>
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-2 bg-white text-gray-500">또는</span>
+                </div>
               </div>
+
+              <div className="mb-5">
+                <p className="text-xs text-gray-500 mb-2 text-center">네이버 아이디로 간편 로그인</p>
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleNaverLogin}
+                    className="w-full flex justify-center cursor-pointer">
+                    <img
+                      src="/images/naver/NAVER_login_Light_KR_white_center_H48.png"
+                      alt="네이버 로그인"
+                      className="w-full h-[48px] object-contain"
+                    />
+                  </button>
+                </div>
+              </div>
+
             </form>
           </div>
         </div>

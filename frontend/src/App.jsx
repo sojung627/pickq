@@ -80,6 +80,7 @@ function App() {
             {/* 회원 파트 */}
             <Route path="/members/login" element={<Login />} />
             <Route path="/members/signUp" element={<Register />} />
+            {/* 비밀번호 api */}
             <Route path="/members/pwdFind" element={<PwdFind />} />
 
             {/* 경매 */}

@@ -13,7 +13,7 @@ export default function Login() {
     const navigate = useNavigate();
     const [welcomeMsg, setWelcomeMsg] = useState('PickQ에 오신 것을 환영합니다.');
 
-    // 1. 초기 로드 및 네이버 SDK
+    // 초기 로드
     useEffect(() => {
         const savedId = localStorage.getItem("savedId");
         if (savedId) {
@@ -28,18 +28,31 @@ export default function Login() {
                 setLoginMsg(msg);
             }
 
-        if (window.naver) {
-            const naverLogin = new window.naver.LoginWithNaverId({
-                clientId: "2Rk518jWd9bxOQoKuUnD",
-                callbackUrl: "http://172.30.1.94:8080/members/naverCallback",
-                isPopup: false,
-                loginButton: { color: "green", type: 3, height: 60 }
-            });
-            naverLogin.init();
-        }
+//         if (window.naver) {
+//             const naverLogin = new window.naver.LoginWithNaverId({
+//                 clientId: "2Rk518jWd9bxOQoKuUnD",
+//                 callbackUrl: "http://localhost:8080/members/naverCallback",
+//                 isPopup: false,
+//                 loginButton: { color: "green", type: 3, height: 30 }
+//             });
+//             naverLogin.init();
+//         }
     }, []);
 
-    // 2. 실시간 타이머 로직
+    // 네이버 로그인
+    const handleNaverLogin = () => {
+        const state = Math.random().toString(36).substring(2, 12);
+        const params = new URLSearchParams({
+            response_type: "code",
+            client_id: "2Rk518jWd9bxOQoKuUnD",
+            redirect_uri: "http://localhost:8080/members/naverCallback",
+            state: state,
+        });
+        window.location.href =
+            "https://nid.naver.com/oauth2.0/authorize?" + params.toString();
+    };
+
+    // 시간 타이머 로직
     useEffect(() => {
         let interval;
         if (remainingSeconds > 0) {
@@ -62,7 +75,7 @@ export default function Login() {
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     };
 
-    // 3. 로그인 제출
+    // 로그인 제출
     const handleLoginSubmit = (e) => {
         e.preventDefault();
         setErrorMsg('');
@@ -101,7 +114,7 @@ export default function Login() {
         });
     };
 
-    // 4. 유효성 검사 (타이머가 돌아가는 중에는 버튼 비활성화)
+    // 유효성 검사 (타이머가 돌아가는 중에는 버튼 비활성화)
     const isValid = memId.trim() !== "" && memPwd.trim() !== "" && remainingSeconds === 0;
 
     return (
@@ -229,7 +242,17 @@ export default function Login() {
                             <div className="mb-5">
                                 <p className="text-xs text-gray-500 mb-2 text-center">네이버 아이디로 간편 로그인</p>
                                 <div className="flex justify-center">
-                                    <div id="naverIdLogin" className="w-full flex justify-center"></div>
+                                    <button
+                                        type="button"
+                                        onClick={handleNaverLogin}
+                                        className="w-full flex justify-center cursor-pointer">
+                                        <img
+                                            src="/images/naver/NAVER_login_Light_KR_white_center_H48.png"
+                                            alt="네이버 로그인"
+                                            className="w-full h-[48px] object-contain"
+                                        />
+                                    </button>
+
                                 </div>
                             </div>
 

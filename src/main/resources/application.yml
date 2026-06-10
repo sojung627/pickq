@@ -72,3 +72,8 @@ solapi:
   api-key: ${SOLAPI_KEY}
   api-secret: ${SOLAPI_SECRET_KEY}
   sender-number: ${SOLAPI_SENDER_NUMBER}
+
+naver:
+  client-id: ${NAVER_CLIENT_ID}
+  client-secret: ${NAVER_CLIENT_SECRET}
+  redirect-uri: http://localhost:8080/members/naverCallback

@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+#naverIdLogin img {
+  height: 40px !important;
+  width: auto !important;
+}
+
 /*:root {
   --text: #6b6375;
   --text-h: #08060d;

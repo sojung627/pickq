@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Profile from '../profile/Profile';
+import NotificationDropdown from '../notification/NotificationDropdown';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -11,6 +12,9 @@ export default function Header() {
   // 프로필 모달용
   const [profileData, setProfileData] = useState(null);
   const [reviewData, setReviewData] = useState([]);
+  // 알림 모달용
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     fetch("http://localhost:8080/members/auth/check", { credentials: "include" })
@@ -33,6 +37,15 @@ export default function Header() {
       window.location.href = "/";
     });
   };
+
+  // 알림 빨간색 점
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    fetch("/api/notifications/unread-count", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => setUnreadCount(data.count || 0))
+      .catch(() => {});
+  }, [isLoggedIn]);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100">
@@ -63,12 +76,20 @@ export default function Header() {
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
                 {/* 알림 아이콘 */}
-                <button
-                  onClick={() => navigate("/notifications")}
-                  className="relative p-2 bg-transparent border-none cursor-pointer flex items-center">
-                  <i className="bi bi-bell text-[22px] text-[#222]"></i>
-                  <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsNotificationOpen((prev) => !prev)}
+                    className="relative p-2 bg-transparent border-none cursor-pointer flex items-center">
+                    <i className="bi bi-bell text-[22px] text-[#222]"></i>
+                    {unreadCount > 0 && (
+                      <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                    )}
+                  </button>
+
+                  {isNotificationOpen && (
+                    <NotificationDropdown onClose={() => setIsNotificationOpen(false)} />
+                  )}
+                </div>
 
                 {/* 마이페이지 아이콘 */}
                 <button
@@ -86,12 +107,6 @@ export default function Header() {
                 >
                   <i className="bi bi-person text-2xl text-[#222]"></i>
                 </button>
-{/*                 <button */}
-{/*                   onClick={() => setIsProfileOpen(true)} */}
-{/*                   className="p-2 bg-transparent border-none cursor-pointer flex items-center" */}
-{/*                 > */}
-{/*                   <i className="bi bi-person text-2xl text-[#222]"></i> */}
-{/*                 </button> */}
 
                 {/* 로그아웃 버튼 */}
                 <button

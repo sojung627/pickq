@@ -6,8 +6,9 @@ export default function PwdFind() {
 
   const [memId, setMemId] = useState("");
   const [memTel, setMemTel] = useState("");
-  const [idMsg, setIdMsg] = useState("");
-  const [telMsg, setTelMsg] = useState("");
+  // const [idMsg, setIdMsg] = useState("");
+  // const [telMsg, setTelMsg] = useState("");
+  const [isInputError, setIsInputError] = useState(false);
   const [verifyMsg, setVerifyMsg] = useState("");
 
   const [authCode, setAuthCode] = useState("");
@@ -30,8 +31,7 @@ export default function PwdFind() {
   };
 
   const handleSendAuth = () => {
-    setIdMsg("");
-    setTelMsg("");
+    setIsInputError(false);
     setVerifyMsg("");
 
     fetch("/members/pwdFind", {
@@ -42,8 +42,10 @@ export default function PwdFind() {
     })
       .then((res) => res.json())
       .then((data) => {
-        setIdMsg(data.idMsg || "");
-        setTelMsg(data.telMsg || "");
+        // 아이디 또는 전화번호 에러 시 공통 에러 상태로 처리
+        if (data.idMsg || data.telMsg) {
+          setIsInputError(true);
+        }
         setVerifyMsg(data.verifyMsg || "");
       })
       .catch(() => {
@@ -183,30 +185,34 @@ export default function PwdFind() {
                   <input
                     type="text"
                     value={memId}
-                    onChange={(e) => setMemId(e.target.value)}
+                    onChange={(e) => { setMemId(e.target.value); setIsInputError(false); }}
                     placeholder="your ID"
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7CBD00]"
+                    className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                      isInputError
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-200 focus:ring-[#7CBD00]"
+                    }`}
                   />
-                  {idMsg && (
-                    <p className="mt-1 text-xs text-red-500">
-                      <i className="bi bi-exclamation-circle mr-1"></i>{idMsg}
-                    </p>
-                  )}
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-[#444444] mb-1">전화번호</label>
-                  <input
-                    type="text"
-                    value={memTel}
-                    onChange={(e) => setMemTel(formatTel(e.target.value))}
-                    placeholder="010-1234-5678"
-                    maxLength={13}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7CBD00]"
-                  />
-                  {telMsg && (
+                 <input
+                   type="text"
+                   value={memTel}
+                   onChange={(e) => { setMemTel(formatTel(e.target.value)); setIsInputError(false); }}
+                   placeholder="010-1234-5678"
+                   maxLength={13}
+                   className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                     isInputError
+                       ? "border-red-500 focus:ring-red-500"
+                       : "border-gray-200 focus:ring-[#7CBD00]"
+                   }`}
+                 />
+                  {isInputError && (
                     <p className="mt-1 text-xs text-red-500">
-                      <i className="bi bi-exclamation-circle mr-1"></i>{telMsg}
+                      <i className="bi bi-exclamation-circle mr-1"></i>
+                      아이디 혹은 전화번호가 틀렸습니다.
                     </p>
                   )}
                 </div>
