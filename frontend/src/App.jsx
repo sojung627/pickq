@@ -136,6 +136,8 @@ function App() {
 
             {/* 요약 프로필 */}
             <Route path="/profile" element={<Profile />} />
+            {/* 요약 프로필 - 리뷰 */}
+            <Route path="/reviews/detail/:reviewIdx" element={<ReviewDetail />} />
 
           </Routes>
 
