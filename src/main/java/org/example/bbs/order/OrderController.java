@@ -15,7 +15,9 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    // ── 판매 내역 조회 ────────────────────────────────────
+    // 마이페이지 - 판매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 판매 내역 조회
     @GetMapping("/mypage/sales")
     public ResponseEntity<List<SalesResponseDTO>> getSales(HttpSession session) {
         // 임시 디버그 - 확인 후 삭제
@@ -27,7 +29,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getSales(memId));
     }
 
-    // ── 운송장 등록 ───────────────────────────────────────
+    // 운송장 등록
     // MySales.jsx → fetch('http://localhost:8080/api/payment/ship')
     @PostMapping("/api/payment/ship")
     public ResponseEntity<SalesResponseDTO> registerShipping(
@@ -46,4 +48,28 @@ public class OrderController {
      * @GetMapping("/mypage/purchases")
      * public ResponseEntity<List<PurchaseResponseDto>> getPurchases(HttpSession session) { ... }
      */
+
+    // 마이페이지 - 구매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    //
+    @GetMapping("/api/mypage/orders")
+    public ResponseEntity<List<PurchaseResponseDTO>> getPurchases(HttpSession session) {
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) return ResponseEntity.status(401).build();
+
+        return ResponseEntity.ok(orderService.getPurchases(memId));
+    }
+
+    // 구매확정
+    @PostMapping("/api/payment/confirm-receipt")
+    public ResponseEntity<PurchaseResponseDTO> confirmReceipt(
+            @RequestBody ConfirmReceiptRequestDTO dto,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) return ResponseEntity.status(401).build();
+
+        return ResponseEntity.ok(orderService.confirmReceipt(dto, memId));
+    }
+
 }

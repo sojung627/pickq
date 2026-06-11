@@ -8,30 +8,26 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class SalesResponseDTO {
+public class PurchaseResponseDTO {
 
     private Long bidIdx;
     private String itemName;
     private Long payAmount;
+    private String payMethod;
+    private String payStatus;
     private LocalDateTime payRegdate;
-    private String buyerName;
-    private String buyerTel;
-    private String buyerAddr;
-    private String buyerZipcode;
     private String deliveryStatus;
     private String courierCompany;
     private String trackingNumber;
 
-    public static SalesResponseDTO from(PaymentEntity p) {
-        return SalesResponseDTO.builder()
+    public static PurchaseResponseDTO from(PaymentEntity p) {
+        return PurchaseResponseDTO.builder()
                 .bidIdx(p.getBid().getBidIdx())
                 .itemName(p.getBid().getAuction().getAuctionTitle())
                 .payAmount(p.getPayAmount())
+                .payMethod(p.getPayMethod())
+                .payStatus(p.getPayStatus())
                 .payRegdate(p.getPayRegdate())
-                .buyerName(p.getBuyerName())
-                .buyerTel(p.getBuyerTel())
-                .buyerAddr(p.getBuyerAddr())
-                .buyerZipcode(p.getBuyerZipcode())
                 .deliveryStatus(p.getDeliveryStatus())
                 .courierCompany(p.getCourierCompany())
                 .trackingNumber(p.getTrackingNumber())

@@ -10,12 +10,8 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
 
-    /**
-     * 판매 내역 조회
-     * PaymentEntity → BidEntity → AuctionEntity → buyer(MemberEntity) 경로에서
-     * auction.buyer = 경매 등록자(구매 요청자) 가 아니라
-     * bid.bidder = 실제 판매자(상품 제안자) 기준으로 조회
-     */
+    // 마이페이지 - 판매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    
     @Query("""
             SELECT p FROM PaymentEntity p
             JOIN FETCH p.bid b
@@ -27,9 +23,7 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             """)
     List<PaymentEntity> findSalesBySellerMemId(@Param("memId") String memId);
 
-    /**
-     * 운송장 등록 시 해당 결제 건 조회 (판매자 본인 검증 포함)
-     */
+    // 운송장 등록 시 해당 결제 건 조회 (판매자 본인 검증 포함)
     @Query("""
             SELECT p FROM PaymentEntity p
             JOIN FETCH p.bid b
@@ -41,4 +35,31 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             @Param("bidIdx") Long bidIdx,
             @Param("memId") String memId
     );
+    
+    // 마이페이지 - 구매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 구매 내역 조회 (payment.member = 구매자 기준)
+    @Query("""
+            SELECT p FROM PaymentEntity p
+            JOIN FETCH p.bid b
+            JOIN FETCH b.auction a
+            JOIN FETCH p.member buyer
+            WHERE buyer.memId = :memId
+            ORDER BY p.payRegdate DESC
+            """)
+    List<PaymentEntity> findPurchasesByBuyerMemId(@Param("memId") String memId);
+
+    // 구매확정용 조회 (구매자 본인 검증 포함)
+    @Query("""
+            SELECT p FROM PaymentEntity p
+            JOIN FETCH p.member buyer
+            JOIN FETCH p.bid b
+            WHERE b.bidIdx = :bidIdx
+              AND buyer.memId = :memId
+            """)
+    Optional<PaymentEntity> findByBidIdxAndBuyerMemId(
+            @Param("bidIdx") Long bidIdx,
+            @Param("memId") String memId
+    );
+    
 }
