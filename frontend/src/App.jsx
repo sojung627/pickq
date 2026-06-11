@@ -18,6 +18,7 @@ import Mybids from "./components/bid/Mybids";
 /* 구매 및 판매 */
 import MyOrders from "./components/order/MyOrders";
 import MySales from "./components/order/MySales";
+import MyPayments from "./components/order/MyPayments";
 
 /* 게시판 */
 import BoardList from "./components/board/BoardList";
@@ -129,6 +130,7 @@ function App() {
               <Route path="reviews/reviewDetail" element={<ReviewDetail />} />
               <Route path="reviews/reviewAdmin" element={<ReviewAdmin />} />
               <Route path="sales" element={<MySales />} />
+              <Route path="payments" element={<MyPayments />} />
             </Route>
 
             {/* 고객지원 파트 */}

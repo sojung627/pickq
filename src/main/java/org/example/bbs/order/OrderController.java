@@ -16,7 +16,6 @@ public class OrderController {
     private final OrderService orderService;
 
     // ── 판매 내역 조회 ────────────────────────────────────
-    // MySales.jsx → fetch('http://localhost:8080/mypage/sales')
     @GetMapping("/mypage/sales")
     public ResponseEntity<List<SalesResponseDTO>> getSales(HttpSession session) {
         // 임시 디버그 - 확인 후 삭제

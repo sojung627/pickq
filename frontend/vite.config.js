@@ -12,6 +12,7 @@ export default defineConfig({
       '/api': 'http://localhost:8080',
       '/members/login': { target: 'http://localhost:5173', bypass: (req) => req.url },
       '/members': 'http://localhost:8080',
+      '/mypage/sales': { target: 'http://localhost:5173', bypass: (req) => req.url },
       '/mypage': 'http://localhost:8080',
       '/uploads': 'http://localhost:8080',
       '/ws-chat': { target: 'http://localhost:8080', ws: true },
