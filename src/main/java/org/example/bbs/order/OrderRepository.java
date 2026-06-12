@@ -28,7 +28,9 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
     @Query("""
             SELECT p FROM PaymentEntity p
             JOIN FETCH p.bid b
+            JOIN FETCH b.auction a
             JOIN FETCH b.bidder seller
+            JOIN FETCH p.member buyer
             WHERE b.bidIdx = :bidIdx
               AND seller.memId = :memId
             """)
@@ -56,6 +58,8 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             SELECT p FROM PaymentEntity p
             JOIN FETCH p.member buyer
             JOIN FETCH p.bid b
+            JOIN FETCH b.auction a
+            JOIN FETCH b.bidder seller
             WHERE b.bidIdx = :bidIdx
               AND buyer.memId = :memId
             """)
