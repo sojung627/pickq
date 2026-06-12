@@ -69,4 +69,15 @@ public class OrderController {
         return ResponseEntity.ok(orderService.confirmReceipt(dto, memId));
     }
 
+    // 마이페이지 - 결제 대기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 결제 대기 낙찰 건 조회
+    @GetMapping("/api/mypage/pending-bids")
+    public ResponseEntity<List<PendingBidResponseDTO>> getPendingBids(HttpSession session) {
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) return ResponseEntity.status(401).build();
+
+        return ResponseEntity.ok(orderService.getPendingBids(memId));
+    }
+
 }

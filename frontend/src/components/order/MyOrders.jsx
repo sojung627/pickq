@@ -95,7 +95,33 @@ export default function MyOrders() {
     };
   };
 
-  // 주석: 구매내역 + 판매내역을 같이 불러와서 하나의 리스트로 합치는 함수
+  // 결제 대기 낙찰 건(PendingBidResponseDTO) -> 화면용 거래 객체로 정규화
+  const mapPending = (b) => ({
+    orderIdx: b.bidIdx,
+    bidIdx: b.bidIdx,
+    auctionTitle: b.auctionTitle,
+    itemName: null,
+    userRole: "BUYER",
+    orderAmount: b.bidPrice,
+    paymentStatusName: "결제대기",
+    shippingStatusName: "배송전",
+    shippingStatusCode: null,
+    orderStatusCode: "CREATED",
+    orderStatusName: "결제대기",
+    courierCompany: null,
+    trackingNumber: null,
+    orderRegdate: b.bidRegdate,
+    sellerMemIdMasked: b.sellerMemId ?? null,
+    buyerMemIdMasked: b.buyerMemId ?? null,
+    auctionIdx: b.auctionIdx,
+    sellerIdx: null,
+    reviewIdx: null,
+    paidAt: null,
+    shippedAt: null,
+    confirmedAt: null,
+  });
+
+  // 주석: 구매내역 + 판매내역 + 결제 대기 낙찰 건을 같이 불러와서 하나의 리스트로 합치는 함수
   const fetchOrders = () => {
     setIsLoading(true);
 
@@ -106,11 +132,15 @@ export default function MyOrders() {
       fetch("http://localhost:8080/api/mypage/sales", { credentials: "include" }).then((res) =>
         res.ok ? res.json() : []
       ),
+      fetch("http://localhost:8080/api/mypage/pending-bids", { credentials: "include" }).then((res) =>
+        res.ok ? res.json() : []
+      ),
     ])
-      .then(([purchases, sales]) => {
+      .then(([purchases, sales, pendingBids]) => {
         const merged = [
           ...(purchases || []).map(mapPurchase),
           ...(sales || []).map(mapSale),
+          ...(pendingBids || []).map(mapPending),
         ];
 
         // 주석: 최신 거래가 위로 오도록 정렬
@@ -343,22 +373,6 @@ export default function MyOrders() {
 
                 {/* 하단 버튼 영역 */}
                 <div className="mt-3 flex justify-end gap-2">
-                  {/* 결제대기 버튼 (BUYER & CREATED)
-                      TODO: 현재 구매내역 API는 결제 완료건만 반환하므로 이 분기는 사실상 동작하지 않음.
-                      추후 결제 대기중인 낙찰건을 내려주는 API가 생기면 다시 활성화 */}
-                  {order.userRole === "BUYER" && order.orderStatusCode === "CREATED" && order.auctionIdx && (
-                    <button
-                      type="button"
-                      className="px-3 py-1.5 rounded-lg bg-[#7CBD00] text-white text-[11px] sm:text-xs font-semibold hover:bg-[#6AA500]"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/payment/pay?auctionIdx=${order.auctionIdx}`);
-                      }}
-                    >
-                      결제하기
-                    </button>
-                  )}
-
                   {/* 배송시작 버튼 (SELLER & PAID) */}
                   {order.userRole === "SELLER" && order.orderStatusCode === "PAID" && (
                     <button

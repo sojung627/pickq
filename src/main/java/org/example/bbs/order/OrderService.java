@@ -1,6 +1,7 @@
 package org.example.bbs.order;
 
 import lombok.RequiredArgsConstructor;
+import org.example.bbs.bid.BidRepository;
 import org.example.bbs.order.SalesResponseDTO;
 import org.example.bbs.order.ShipRequestDTO;
 import org.example.bbs.payment.PaymentEntity;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final BidRepository bidRepository;
 
     // 마이페이지 - 판매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -85,6 +87,17 @@ public class OrderService {
         payment.setConfirmedAt(LocalDateTime.now());
 
         return PurchaseResponseDTO.from(payment);
+    }
+
+    // 마이페이지 - 결제 대기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 결제 대기 낙찰 건 조회 (낙찰됐지만 아직 결제 안 된 건)
+    @Transactional(readOnly = true)
+    public List<PendingBidResponseDTO> getPendingBids(String memId) {
+        return bidRepository.findPendingBidsByBuyerMemId(memId)
+                .stream()
+                .map(PendingBidResponseDTO::from)
+                .collect(Collectors.toList());
     }
 
 }
