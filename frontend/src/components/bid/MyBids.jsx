@@ -170,7 +170,7 @@ export default function MyBids() {
                   {/* 가격 정보 */}
                   <div className="flex justify-between items-center text-[11px] text-gray-600">
                     <div>
-                      <div class="text-gray-400">제안 가격</div>
+                      <div className="text-gray-400">제안 가격</div>
                       <div className="font-semibold text-[#222222]">
                         {formatPrice(bid.bidPrice)}
                       </div>

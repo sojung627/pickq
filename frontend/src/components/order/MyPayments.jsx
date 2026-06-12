@@ -92,7 +92,7 @@ export default function MyPayments() {
 
                                     {/* 데스크탑 뷰 */}
                                     <div className="hidden md:grid md:grid-cols-[2.5fr_1.5fr_1.5fr_1.5fr_1.5fr_1.5fr_2.2fr_2fr] items-center text-xs sm:text-sm gap-2">
-                                        <div className="truncate text-[#222222]">{payment.itemName}</div>
+                                        <div className="truncate text-[#222222]">{payment.itemName ?? '-'}</div>
                                         <div className="text-right font-semibold text-[#222222]">{payment.payAmount?.toLocaleString()}원</div>
                                         <div className="text-gray-700">{payment.payMethod}</div>
                                         <div className="text-gray-700">{payment.payStatus}</div>

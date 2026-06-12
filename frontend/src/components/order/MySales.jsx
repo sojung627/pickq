@@ -10,7 +10,7 @@ export default function MySales() {
     const [trackingNumber, setTrackingNumber] = useState('');
 
     const fetchSales = () => {
-        fetch('/mypage/sales', { credentials: 'include', cache: 'no-store' })
+        fetch('/api/mypage/sales', { credentials: 'include', cache: 'no-store' })
             .then(res => {
                 if (!res.ok) {
                     setSales([]);
@@ -167,16 +167,6 @@ export default function MySales() {
                                                 className="px-3 py-1.5 rounded-lg bg-[#7CBD00] text-white text-[11px] sm:text-xs font-semibold hover:bg-[#6BAD00] transition-colors">
                                                 운송장 입력
                                             </button>
-                                        )}
-                                        {sale.deliveryStatus === 'SHIPPING' && (
-                                            <span className="inline-flex items-center rounded-lg bg-blue-50 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-blue-600">
-                                                배송중
-                                            </span>
-                                        )}
-                                        {sale.deliveryStatus === 'DELIVERED' && (
-                                            <span className="inline-flex items-center rounded-lg bg-gray-100 px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-gray-700">
-                                                구매확정 완료
-                                            </span>
                                         )}
                                     </div>
                                 </div>

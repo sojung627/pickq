@@ -11,12 +11,13 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
 
     // 마이페이지 - 판매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-    
+
     @Query("""
             SELECT p FROM PaymentEntity p
             JOIN FETCH p.bid b
             JOIN FETCH b.auction a
             JOIN FETCH b.bidder seller
+            JOIN FETCH p.member buyer
             WHERE seller.memId = :memId
               AND p.payStatus = 'DONE'
             ORDER BY p.payRegdate DESC
@@ -35,7 +36,7 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             @Param("bidIdx") Long bidIdx,
             @Param("memId") String memId
     );
-    
+
     // 마이페이지 - 구매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 구매 내역 조회 (payment.member = 구매자 기준)
@@ -43,6 +44,7 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             SELECT p FROM PaymentEntity p
             JOIN FETCH p.bid b
             JOIN FETCH b.auction a
+            JOIN FETCH b.bidder seller
             JOIN FETCH p.member buyer
             WHERE buyer.memId = :memId
             ORDER BY p.payRegdate DESC
@@ -61,5 +63,5 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             @Param("bidIdx") Long bidIdx,
             @Param("memId") String memId
     );
-    
+
 }

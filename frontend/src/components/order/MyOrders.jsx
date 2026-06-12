@@ -52,11 +52,14 @@ export default function MyOrders() {
       courierCompany: p.courierCompany,
       trackingNumber: p.trackingNumber,
       orderRegdate: p.payRegdate,
-      sellerMemIdMasked: null,
-      buyerMemIdMasked: null,
+      sellerMemIdMasked: p.sellerMemId ?? null,
+      buyerMemIdMasked: p.buyerMemId ?? null,
       auctionIdx: null,
       sellerIdx: null,
       reviewIdx: null,
+      paidAt: p.paidAt,
+      shippedAt: p.shippedAt,
+      confirmedAt: p.confirmedAt,
     };
   };
 
@@ -81,11 +84,14 @@ export default function MyOrders() {
       courierCompany: s.courierCompany,
       trackingNumber: s.trackingNumber,
       orderRegdate: s.payRegdate,
-      sellerMemIdMasked: null,
-      buyerMemIdMasked: s.buyerName,
+      sellerMemIdMasked: s.sellerMemId ?? null,
+      buyerMemIdMasked: s.buyerMemId ?? null,
       auctionIdx: null,
       sellerIdx: null,
       reviewIdx: null,
+      paidAt: s.paidAt,
+      shippedAt: s.shippedAt,
+      confirmedAt: s.confirmedAt,
     };
   };
 

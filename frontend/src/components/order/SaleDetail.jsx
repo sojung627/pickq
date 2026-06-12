@@ -205,7 +205,7 @@ export default function SaleDetail() {
             타임라인
           </h3>
           <div className="space-y-1 text-xs text-gray-600">
-            <div>주문 생성: <span>{fmt(order.orderRegdate)}</span></div>
+            <div>주문 생성:<span>{fmt(order.orderRegdate)}</span></div>
             <div>결제 완료: <span>{fmt(order.paidAt)}</span></div>
             <div>배송 시작: <span>{fmt(order.shippedAt)}</span></div>
             <div>구매확정: <span>{fmt(order.confirmedAt)}</span></div>

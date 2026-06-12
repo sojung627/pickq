@@ -22,6 +22,15 @@ public class SalesResponseDTO {
     private String courierCompany;
     private String trackingNumber;
 
+    // 거래 상대 정보
+    private String buyerMemId;
+    private String sellerMemId;
+
+    // 타임라인 날짜
+    private LocalDateTime paidAt;
+    private LocalDateTime shippedAt;
+    private LocalDateTime confirmedAt;
+
     public static SalesResponseDTO from(PaymentEntity p) {
         return SalesResponseDTO.builder()
                 .bidIdx(p.getBid().getBidIdx())
@@ -35,6 +44,11 @@ public class SalesResponseDTO {
                 .deliveryStatus(p.getDeliveryStatus())
                 .courierCompany(p.getCourierCompany())
                 .trackingNumber(p.getTrackingNumber())
+                .buyerMemId(p.getMember().getMemId())
+                .sellerMemId(p.getBid().getBidder().getMemId())
+                .paidAt(p.getPayRegdate())
+                .shippedAt(p.getShippedAt())
+                .confirmedAt(p.getConfirmedAt())
                 .build();
     }
 }
