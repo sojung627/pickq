@@ -1,70 +1,175 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function MyOrders() {
-  // 주석: 주문 목록 및 상태 관리
+  const navigate = useNavigate();
+
+  // 주석: 합쳐진 전체 거래 목록 (구매 + 판매)
   const [orders, setOrders] = useState([]);
   const [viewType, setViewType] = useState("all"); // 주석: 'all', 'buy', 'sell'
   const [isLoading, setIsLoading] = useState(true);
 
-  // 주석: 동적 헤더 타이틀 및 설명 상태 관리
-  const [headerInfo, setHeaderInfo] = useState({
-    pageTitle: "나의 거래",
-    pageDescription: "발생한 거래의 결제/배송 상태를 확인할 수 있습니다.",
-    emptyMessage: "거래 내역이 없습니다."
-  });
-
   // 주석: 토스트 및 알림 메시지 상태 관리
   const [toast, setToast] = useState({ success: null, error: null });
 
-  // 주석: viewType 필터 정보가 바뀔 때마다 데이터를 백엔드에서 fetch해오는 효과
-  useEffect(() => {
+  // 주석: 배송 상태 코드 -> 한글 라벨
+  const getShippingName = (deliveryStatus) => {
+    if (!deliveryStatus) return "배송준비중";
+    if (deliveryStatus === "SHIPPING") return "배송중";
+    if (deliveryStatus === "DELIVERED") return "배송완료";
+    return deliveryStatus;
+  };
+
+  // 주석: 주문 상태 코드 -> 한글 라벨
+  const getStatusName = (statusCode) => {
+    if (statusCode === "CREATED") return "결제대기";
+    if (statusCode === "PAID") return "결제완료";
+    if (statusCode === "SHIPPED") return "배송중";
+    if (statusCode === "CONFIRMED") return "거래완료";
+    return "결제대기";
+  };
+
+  // 주석: 구매내역(PurchaseResponseDTO) -> 화면용 거래 객체로 정규화
+  // TODO: 백엔드에 실제 거래(order) 식별자, auctionIdx, sellerIdx, reviewIdx가 추가되면
+  //       아래 null 처리된 필드들을 채워서 리뷰 작성 / 결제 이동 기능을 완성할 것
+  const mapPurchase = (p) => {
+    let orderStatusCode = "PAID";
+    if (p.payStatus === "CONFIRMED") orderStatusCode = "CONFIRMED";
+    else if (p.deliveryStatus === "SHIPPING") orderStatusCode = "SHIPPED";
+
+    return {
+      orderIdx: p.bidIdx,
+      bidIdx: p.bidIdx,
+      auctionTitle: p.itemName,
+      itemName: null,
+      userRole: "BUYER",
+      orderAmount: p.payAmount,
+      paymentStatusName: p.payStatus === "CONFIRMED" ? "구매확정" : "결제완료",
+      shippingStatusName: getShippingName(p.deliveryStatus),
+      shippingStatusCode: p.deliveryStatus,
+      orderStatusCode,
+      orderStatusName: getStatusName(orderStatusCode),
+      courierCompany: p.courierCompany,
+      trackingNumber: p.trackingNumber,
+      orderRegdate: p.payRegdate,
+      sellerMemIdMasked: null,
+      buyerMemIdMasked: null,
+      auctionIdx: null,
+      sellerIdx: null,
+      reviewIdx: null,
+    };
+  };
+
+  // 주석: 판매내역(SalesResponseDTO) -> 화면용 거래 객체로 정규화
+  const mapSale = (s) => {
+    let orderStatusCode = "PAID";
+    if (s.deliveryStatus === "DELIVERED") orderStatusCode = "CONFIRMED";
+    else if (s.deliveryStatus === "SHIPPING") orderStatusCode = "SHIPPED";
+
+    return {
+      orderIdx: s.bidIdx,
+      bidIdx: s.bidIdx,
+      auctionTitle: s.itemName,
+      itemName: null,
+      userRole: "SELLER",
+      orderAmount: s.payAmount,
+      paymentStatusName: "결제완료",
+      shippingStatusName: getShippingName(s.deliveryStatus),
+      shippingStatusCode: s.deliveryStatus,
+      orderStatusCode,
+      orderStatusName: getStatusName(orderStatusCode),
+      courierCompany: s.courierCompany,
+      trackingNumber: s.trackingNumber,
+      orderRegdate: s.payRegdate,
+      sellerMemIdMasked: null,
+      buyerMemIdMasked: s.buyerName,
+      auctionIdx: null,
+      sellerIdx: null,
+      reviewIdx: null,
+    };
+  };
+
+  // 주석: 구매내역 + 판매내역을 같이 불러와서 하나의 리스트로 합치는 함수
+  const fetchOrders = () => {
     setIsLoading(true);
 
-    // 주석: 탭에 맞는 컨트롤러 API URL 매핑 (전체, 구매, 판매)
-    let url = "http://localhost:8080/mypage/orders/api";
-    if (viewType === "buy") url = "http://localhost:8080/mypage/orders/api/buy";
-    if (viewType === "sell") url = "http://localhost:8080/mypage/orders/api/sell";
+    Promise.all([
+      fetch("http://localhost:8080/api/mypage/orders", { credentials: "include" }).then((res) =>
+        res.ok ? res.json() : []
+      ),
+      fetch("http://localhost:8080/api/mypage/sales", { credentials: "include" }).then((res) =>
+        res.ok ? res.json() : []
+      ),
+    ])
+      .then(([purchases, sales]) => {
+        const merged = [
+          ...(purchases || []).map(mapPurchase),
+          ...(sales || []).map(mapSale),
+        ];
 
-    fetch(url, {
-      credentials: "include"
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("네트워크 응답이 올바르지 않습니다.");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        // 주석: 백엔드에서 전달하는 data 구조에 맞춰 매핑 설정 필요
-        setOrders(data.orders || []);
-        setHeaderInfo({
-          pageTitle: data.pageTitle || "나의 거래",
-          pageDescription: data.pageDescription || "발생한 거래의 결제/배송 상태를 확인할 수 있습니다.",
-          emptyMessage: data.emptyMessage || "거래 내역이 없습니다."
+        // 주석: 최신 거래가 위로 오도록 정렬
+        merged.sort((a, b) => {
+          if (!a.orderRegdate) return 1;
+          if (!b.orderRegdate) return -1;
+          return new Date(b.orderRegdate) - new Date(a.orderRegdate);
         });
+
+        setOrders(merged);
         setIsLoading(false);
       })
       .catch((err) => {
         console.error("데이터 로드 실패:", err);
         setIsLoading(false);
       });
-  }, [viewType]);
+  };
+
+  // 주석: 최초 1회만 전체 데이터를 불러오고, 탭 전환은 클라이언트에서 필터링으로 처리
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  // 주석: 현재 선택된 탭(viewType)에 맞춰 화면에 보여줄 목록 필터링
+  const displayOrders = orders.filter((order) => {
+    if (viewType === "buy") return order.userRole === "BUYER";
+    if (viewType === "sell") return order.userRole === "SELLER";
+    return true;
+  });
+
+  // 주석: 탭별 헤더 타이틀/설명/빈 목록 안내 문구
+  const headerInfo = {
+    all: {
+      pageTitle: "나의 거래",
+      pageDescription: "발생한 거래의 결제/배송 상태를 확인할 수 있습니다.",
+      emptyMessage: "거래 내역이 없습니다.",
+    },
+    buy: {
+      pageTitle: "나의 구매 내역",
+      pageDescription: "내가 구매한 거래의 결제/배송 상태를 확인할 수 있습니다.",
+      emptyMessage: "구매 내역이 없습니다.",
+    },
+    sell: {
+      pageTitle: "나의 판매 내역",
+      pageDescription: "내가 판매한 거래의 결제/배송 상태를 확인할 수 있습니다.",
+      emptyMessage: "판매 내역이 없습니다.",
+    },
+  }[viewType];
 
   // 주석: 구매확정 div 이벤트 핸들러 (form 태그 대신 fetch 사용)
-  const handleConfirmOrder = (e, orderIdx) => {
+  const handleConfirmOrder = (e, bidIdx) => {
     e.stopPropagation(); // 주석: 카드 전체 클릭 이벤트(상세보기 이동) 전파 차단
 
     if (!window.confirm("구매확정을 진행하시겠습니까?")) return;
 
-    fetch(`http://localhost:8080/mypage/orders/${orderIdx}/confirm`, {
+    fetch("http://localhost:8080/api/payment/confirm-receipt", {
       method: "POST",
-      credentials: "include"
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bidIdx }),
     })
       .then((response) => {
         if (response.ok) {
           setToast({ success: "구매확정이 완료되었습니다.", error: null });
-          // 주석: 상태 변경 성공 후 리스트 재갱신 처리 추가 가능
-          setViewType(viewType);
+          fetchOrders();
         } else {
           setToast({ success: null, error: "구매확정 처리에 실패했습니다." });
         }
@@ -73,6 +178,12 @@ export default function MyOrders() {
         console.error("구매확정 요청 에러:", err);
         setToast({ success: null, error: "서버 통신 중 에러가 발생했습니다." });
       });
+  };
+
+  // 주석: 카드를 누르면 거래 상세 페이지(SaleDetail.jsx)로 이동
+  //       이미 정규화해둔 order 객체를 state로 같이 넘겨서, SaleDetail에서 별도 API 호출 없이 바로 표시
+  const goToDetail = (order) => {
+    navigate(`/mypage/orders/${order.orderIdx}`, { state: { order } });
   };
 
   // 주석: 금액에 천 단위 쉼표 추가하는 함수
@@ -142,7 +253,7 @@ export default function MyOrders() {
       <div className="px-4 py-4 sm:px-6 sm:py-5">
         {isLoading ? (
           <div className="py-10 text-center text-sm text-gray-500">로딩 중...</div>
-        ) : orders.length === 0 ? (
+        ) : displayOrders.length === 0 ? (
           /* 주석: 데이터가 비어있을 때 */
           <div className="py-10 text-center text-sm text-gray-400 border border-dashed border-gray-200 rounded-lg">
             <span>{headerInfo.emptyMessage}</span>
@@ -150,13 +261,11 @@ export default function MyOrders() {
         ) : (
           /* 주석: 데이터가 있을 때 반복문 매핑 */
           <div className="space-y-3">
-            {orders.map((order) => (
+            {displayOrders.map((order) => (
               <div
-                key={order.orderIdx}
+                key={`${order.userRole}-${order.orderIdx}`}
                 className="cursor-pointer rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 sm:px-5 sm:py-4 hover:border-[#7CBD00] transition-colors"
-                onClick={() => {
-                  window.location.href = `/mypage/orders/${order.orderIdx}`;
-                }}
+                onClick={() => goToDetail(order)}
               >
                 {/* 제목 + 상태 */}
                 <div className="mb-3 flex items-center justify-between gap-3">
@@ -173,17 +282,17 @@ export default function MyOrders() {
 
                     {order.userRole === "BUYER" && (
                       <div className="mt-1 text-[11px] text-[#999999]">
-                        판매자 <span>{order.sellerMemIdMasked}</span>
+                        판매자 <span>{order.sellerMemIdMasked || "-"}</span>
                       </div>
                     )}
                     {order.userRole === "SELLER" && (
                       <div className="mt-1 text-[11px] text-[#999999]">
-                        구매자 <span>{order.buyerMemIdMasked}</span>
+                        구매자 <span>{order.buyerMemIdMasked || "-"}</span>
                       </div>
                     )}
                     {order.userRole === "BOTH" && (
                       <div className="mt-1 text-[11px] text-[#999999]">
-                        상대방 <span>{order.sellerMemIdMasked}</span>
+                        상대방 <span>{order.sellerMemIdMasked || "-"}</span>
                       </div>
                     )}
                   </div>
@@ -228,14 +337,16 @@ export default function MyOrders() {
 
                 {/* 하단 버튼 영역 */}
                 <div className="mt-3 flex justify-end gap-2">
-                  {/* 결제대기 버튼 (BUYER & CREATED) */}
-                  {order.userRole === "BUYER" && order.orderStatusCode === "CREATED" && (
+                  {/* 결제대기 버튼 (BUYER & CREATED)
+                      TODO: 현재 구매내역 API는 결제 완료건만 반환하므로 이 분기는 사실상 동작하지 않음.
+                      추후 결제 대기중인 낙찰건을 내려주는 API가 생기면 다시 활성화 */}
+                  {order.userRole === "BUYER" && order.orderStatusCode === "CREATED" && order.auctionIdx && (
                     <button
                       type="button"
                       className="px-3 py-1.5 rounded-lg bg-[#7CBD00] text-white text-[11px] sm:text-xs font-semibold hover:bg-[#6AA500]"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.location.href = `/payment/pay?auctionIdx=${order.auctionIdx}`;
+                        navigate(`/payment/pay?auctionIdx=${order.auctionIdx}`);
                       }}
                     >
                       결제하기
@@ -249,7 +360,7 @@ export default function MyOrders() {
                       className="px-3 py-1.5 rounded-lg bg-[#222222] text-white text-[11px] sm:text-xs font-semibold hover:bg-[#444444]"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.location.href = "/mypage/sales";
+                        navigate("/mypage/sales");
                       }}
                     >
                       배송시작
@@ -262,16 +373,19 @@ export default function MyOrders() {
                       role="button"
                       tabIndex={0}
                       className="px-3 py-1.5 rounded-lg bg-[#7CBD00] text-white text-[11px] sm:text-xs font-semibold hover:bg-[#6AA500] inline-block text-center cursor-pointer"
-                      onClick={(e) => handleConfirmOrder(e, order.orderIdx)}
+                      onClick={(e) => handleConfirmOrder(e, order.bidIdx)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") handleConfirmOrder(e, order.orderIdx);
+                        if (e.key === "Enter" || e.key === " ") handleConfirmOrder(e, order.bidIdx);
                       }}
                     >
                       구매확정
                     </div>
                   )}
 
-                  {/* 리뷰 작성 가능 상태 */}
+                  {/* 리뷰 작성 가능 상태
+                      TODO: 구매내역 API에 auctionIdx, sellerIdx, reviewIdx가 추가되면
+                      아래 블록을 다시 활성화해서 리뷰 작성/완료 상태를 보여줄 것
+
                   {order.userRole === "BUYER" && order.orderStatusCode === "CONFIRMED" && !order.reviewIdx && (
                     <a
                       href={`/mypage/reviews/reviewWrite(auctionIdx=${order.auctionIdx}, bidIdx=${order.bidIdx}, bidderIdx=${order.sellerIdx})`}
@@ -281,13 +395,12 @@ export default function MyOrders() {
                       리뷰 작성하기
                     </a>
                   )}
-
-                  {/* 리뷰 작성 완료 상태 */}
                   {order.userRole === "BUYER" && order.orderStatusCode === "CONFIRMED" && order.reviewIdx && (
                     <span className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-[11px] sm:text-xs font-semibold">
                       리뷰 작성 완료
                     </span>
                   )}
+                  */}
 
                   {/* 상세보기 상시 버튼 */}
                   <button
@@ -295,7 +408,7 @@ export default function MyOrders() {
                     className="px-3 py-1.5 rounded-lg border border-gray-200 text-[11px] sm:text-xs text-gray-700 bg-white hover:bg-gray-50"
                     onClick={(e) => {
                       e.stopPropagation();
-                      window.location.href = `/mypage/orders/${order.orderIdx}`;
+                      goToDetail(order);
                     }}
                   >
                     상세보기

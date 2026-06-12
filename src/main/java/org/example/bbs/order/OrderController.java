@@ -18,11 +18,8 @@ public class OrderController {
     // 마이페이지 - 판매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 판매 내역 조회
-    @GetMapping("/mypage/sales")
+    @GetMapping("/api/mypage/sales")
     public ResponseEntity<List<SalesResponseDTO>> getSales(HttpSession session) {
-        // 임시 디버그 - 확인 후 삭제
-        session.getAttributeNames().asIterator()
-                .forEachRemaining(k -> System.out.println("세션키: " + k + " = " + session.getAttribute(k)));
         String memId = (String) session.getAttribute("loginMember");
         if (memId == null) return ResponseEntity.status(401).build();
 
@@ -36,7 +33,7 @@ public class OrderController {
             @RequestBody ShipRequestDTO dto,
             HttpSession session) {
 
-        String memId = (String) session.getAttribute("memId");
+        String memId = (String) session.getAttribute("loginMember");
         if (memId == null) return ResponseEntity.status(401).build();
 
         return ResponseEntity.ok(orderService.registerShipping(dto, memId));

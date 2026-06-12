@@ -10,7 +10,7 @@ export default function MySales() {
     const [trackingNumber, setTrackingNumber] = useState('');
 
     const fetchSales = () => {
-        fetch('/mypage/sales', { credentials: 'include' })
+        fetch('/mypage/sales', { credentials: 'include', cache: 'no-store' })
             .then(res => {
                 if (!res.ok) {
                     setSales([]);
