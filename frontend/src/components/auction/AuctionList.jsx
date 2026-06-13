@@ -281,7 +281,7 @@ const AuctionList = ({
                       </div>
 
                       {/* 텍스트 영역 */}
-                      <div>
+                      <div className="text-left">
                         <p className="text-xs text-[#767676] mb-1">{item.itemCategoryName}</p>
                         <h3 className="text-sm font-medium text-[#222222] mb-1 line-clamp-1">{item.auctionTitle}</h3>
                         <div className="flex items-center gap-2 text-xs text-[#767676] mt-2 mb-2">
@@ -300,7 +300,7 @@ const AuctionList = ({
                             <span className="text-xs text-[#767676]">최저 제안가</span>
                             <span className={`text-sm font-semibold ${(!item.minBidPrice || item.minBidPrice === 0) ? 'text-[#999999]' : 'text-[#222222]'}`}>
                               {(!item.minBidPrice || item.minBidPrice === 0)
-                                ? '(없음)'
+                                ? '제안 없음'
                                 : `${item.minBidPrice.toLocaleString()}원`}
                             </span>
                           </div>

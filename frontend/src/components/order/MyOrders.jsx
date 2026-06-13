@@ -372,8 +372,24 @@ export default function MyOrders() {
                 </div>
 
                 {/* 하단 버튼 영역 */}
+                {/* 하단 버튼 영역 - div 하나로 통합 */}
                 <div className="mt-3 flex justify-end gap-2">
-                  {/* 배송시작 버튼 (SELLER & PAID) */}
+
+                  {/* 결제하기 */}
+                  {order.userRole === "BUYER" && order.orderStatusCode === "CREATED" && order.auctionIdx && (
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 rounded-lg bg-[#7CBD00] text-white text-[11px] sm:text-xs font-semibold hover:bg-[#6AA500]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/payment/pay?bidIdx=${order.bidIdx}`);
+                      }}
+                    >
+                      결제하기
+                    </button>
+                  )}
+
+                  {/* 배송시작 */}
                   {order.userRole === "SELLER" && order.orderStatusCode === "PAID" && (
                     <button
                       type="button"
@@ -387,7 +403,7 @@ export default function MyOrders() {
                     </button>
                   )}
 
-                  {/* 주석: 기존 form 태그 구조를 지우고 요구사항에 맞춰 div 이벤트 기반 비동기 fetch로 변경 완료 */}
+                  {/* 구매확정 */}
                   {order.userRole === "BUYER" && order.shippingStatusCode === "SHIPPING" && (
                     <div
                       role="button"
@@ -402,27 +418,7 @@ export default function MyOrders() {
                     </div>
                   )}
 
-                  {/* 리뷰 작성 가능 상태
-                      TODO: 구매내역 API에 auctionIdx, sellerIdx, reviewIdx가 추가되면
-                      아래 블록을 다시 활성화해서 리뷰 작성/완료 상태를 보여줄 것
-
-                  {order.userRole === "BUYER" && order.orderStatusCode === "CONFIRMED" && !order.reviewIdx && (
-                    <a
-                      href={`/mypage/reviews/reviewWrite(auctionIdx=${order.auctionIdx}, bidIdx=${order.bidIdx}, bidderIdx=${order.sellerIdx})`}
-                      className="px-3 py-1.5 rounded-lg bg-[#222222] text-white text-[11px] sm:text-xs font-semibold hover:bg-[#444444]"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      리뷰 작성하기
-                    </a>
-                  )}
-                  {order.userRole === "BUYER" && order.orderStatusCode === "CONFIRMED" && order.reviewIdx && (
-                    <span className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-[11px] sm:text-xs font-semibold">
-                      리뷰 작성 완료
-                    </span>
-                  )}
-                  */}
-
-                  {/* 상세보기 상시 버튼 */}
+                  {/* 상세보기 */}
                   <button
                     type="button"
                     className="px-3 py-1.5 rounded-lg border border-gray-200 text-[11px] sm:text-xs text-gray-700 bg-white hover:bg-gray-50"
@@ -432,10 +428,10 @@ export default function MyOrders() {
                     }}
                   >
                     상세보기
-                    </button>
-                </div>
+                  </button>
 
-              </div>
+                </div>
+               </div>
             ))}
           </div>
         )}
