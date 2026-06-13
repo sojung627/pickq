@@ -176,5 +176,12 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
             "WHERE r.bidder.memIdx = :memIdx AND r.reviewIsDeleted = 'N'")
     Long findReviewCountByBidderIdx(@Param("memIdx") Long memIdx);
 
+    // 등급 및 페널티 추가 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    @Query("SELECT COUNT(r) FROM ReviewEntity r WHERE r.bidder.memIdx = :memIdx AND r.reviewIsDeleted = 'N'")
+    long countByBidder_MemIdx(@Param("memIdx") Long memIdx);
+
+    @Query("SELECT AVG(r.reviewStar) FROM ReviewEntity r WHERE r.bidder.memIdx = :memIdx AND r.reviewIsDeleted = 'N'")
+    Double findAvgStarByBidderIdx(@Param("memIdx") Long memIdx);
 
 }

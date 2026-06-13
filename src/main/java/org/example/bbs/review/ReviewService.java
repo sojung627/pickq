@@ -5,8 +5,10 @@ import org.example.bbs.auction.AuctionEntity;
 import org.example.bbs.auction.AuctionRepository;
 import org.example.bbs.bid.BidEntity;
 import org.example.bbs.bid.BidRepository;
+import org.example.bbs.grade.GradeService;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
+import org.example.bbs.memberPenalty.PenaltyService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,8 @@ public class ReviewService {
     private final BidRepository bidRepository;
     private final AuctionRepository auctionRepository;
     private final MemberRepository memberRepository;
+    private final PenaltyService penaltyService;
+    private final GradeService gradeService;
 
     // 리뷰 매니지먼트 페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -58,6 +62,15 @@ public class ReviewService {
                 .build();
 
         reviewRepository.save(review);
+
+        // 리뷰 작성자 크레딧 +10
+        penaltyService.applyReviewWrite(buyerIdx);
+
+        // 별점 받은 판매자 크레딧 조정
+        penaltyService.applyStarReceived(bidderIdx, reviewStar);
+
+        // 판매자 등급 재계산
+        gradeService.recalculateGrade(bidderIdx);
     }
 
     // 리뷰 관리자 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
