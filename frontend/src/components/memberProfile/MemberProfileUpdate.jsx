@@ -31,11 +31,11 @@ const MemberProfileUpdate = () => {
         ];
 
         const getFixedDefaultImg = (id) => {
-          const index = (id ?? 0) % defaultImages.length;
-          return defaultImages[index];
+          const num = (Number(id ?? 0) % 5) + 1;
+          return `profile_default_${num}.png`;
         };
 
-        const initialImg = data.memImg || getFixedDefaultImg(data.memId);  // memId 필드명 확인 필요
+        const initialImg = data.memImg || getFixedDefaultImg(data.memIdx);  // memId 필드명 확인 필요
 
         if (!initialImg) {
           console.error('initialImg가 undefined입니다. data:', data);
