@@ -9,4 +9,5 @@ public class ChatMessageDTO {
     private Long chatroomIdx;
     private Long senderIdx;
     private String messageContent;
+    private Long memIdx;
 }

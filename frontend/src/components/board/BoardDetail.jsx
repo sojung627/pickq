@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import Profile from '../profile/Profile';
 
 const BoardDetail = () => {
   const { boardTypeCode, boardIdx } = useParams();
@@ -18,6 +19,7 @@ const BoardDetail = () => {
   const [replyContent, setReplyContent] = useState('');
   const [childReplyContent, setChildReplyContent] = useState('');
   const [likedReplies, setLikedReplies] = useState(new Set()); // 좋아요 누른 댓글 추적
+  const [profileModal, setProfileModal] = useState(null);
 
   const fetchReplies = () => {
     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
@@ -45,6 +47,14 @@ const BoardDetail = () => {
     setEditContent(content);
   };
   const toggleReplyForm = (rid) => setReplyFormId(replyFormId === rid ? null : rid);
+
+  const openProfileModal = (memIdx) => {
+    if (!memIdx) return;
+    fetch(`http://localhost:8080/mypage/profile/modal/${memIdx}`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setProfileModal(data))
+      .catch(err => console.error('프로필 조회 에러:', err));
+  };
 
   useEffect(() => {
     fetch("http://localhost:8080/mypage/info", { credentials: "include" })
@@ -208,7 +218,12 @@ const BoardDetail = () => {
                 <div className="flex items-center gap-4 text-[#767676]">
                   <div className="flex items-center gap-2">
                     <i className="bi bi-person-circle text-[14px]"></i>
-                    <span>{board.memNickname || board.memId}</span>
+                    <span
+                      className="cursor-pointer hover:text-[#7CBD00]"
+                      onClick={() => openProfileModal(board.memIdx)}
+                    >
+                      {board.memNickname || board.memId}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1 text-[#999999]">
                     <i className="bi bi-clock-history text-[13px]"></i>
@@ -315,7 +330,12 @@ const BoardDetail = () => {
                               <i className="bi bi-person-fill text-[#a7a7a7]"></i>
                             </div>
                             <div>
-                              <div className="text-[13px] font-semibold text-[#222222]">{r.memNickname || r.memId}</div>
+                              <div
+                                className="text-[13px] font-semibold text-[#222222] cursor-pointer hover:text-[#7CBD00]"
+                                onClick={() => openProfileModal(r.memIdx)}
+                              >
+                                {r.memNickname || r.memId}
+                              </div>
                               <div className="text-[11px] text-[#a7a7a7]">
                                 {r.replyRegdate ? r.replyRegdate.split('T')[0] : ''}
                               </div>
@@ -430,6 +450,25 @@ const BoardDetail = () => {
           )}
         </div>
       </div>
+
+      {profileModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setProfileModal(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <Profile
+              profile={profileModal.profile}
+              reviews={profileModal.reviews}
+              loginUser={member}
+              onClose={() => setProfileModal(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

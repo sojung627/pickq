@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
+import Profile from "../profile/Profile";
 
 function ChatPanel({ chatroomIdx, currentUserIdx }) {
   const [messageList, setMessageList] = useState([]);
@@ -144,6 +145,7 @@ export default function ChatOverlay({ onClose }) {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [currentUserIdx, setCurrentUserIdx] = useState(null);
   const [roomList, setRoomList] = useState([]);
+  const [profileModal, setProfileModal] = useState(null);
 
   useEffect(() => {
     fetch("/mypage/session", { credentials: "include" })
@@ -157,6 +159,7 @@ export default function ChatOverlay({ onClose }) {
         if (data) {
           const normalized = (data.roomList || []).map(room => ({
             chatroomIdx:  room.chatroomIdx  ?? room.chatroomidx,
+            opponentIdx:  room.opponentIdx  ?? room.opponentidx,
             opponentName: room.opponentName ?? room.opponentname,
             lastMessage:  room.lastMessage  ?? room.lastmessage,
             unreadCount:  room.unreadCount  ?? room.unreadcount ?? 0, // 추가: 방별 읽지 않은 메시지 수
@@ -178,6 +181,14 @@ export default function ChatOverlay({ onClose }) {
       )
     );
   }
+
+  const openProfileModal = (memIdx) => {
+    if (!memIdx) return;
+    fetch(`/mypage/profile/modal/${memIdx}`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setProfileModal(data))
+      .catch(err => console.error('프로필 조회 에러:', err));
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
@@ -224,12 +235,35 @@ export default function ChatOverlay({ onClose }) {
         <div className="flex-1 flex flex-col overflow-hidden">
           {selectedRoom && (
             <div className="px-5 py-4 border-b border-gray-100 bg-white">
-              <span className="text-sm font-semibold text-gray-900">{selectedRoom.opponentName}</span>
+              <span
+                className="text-sm font-semibold text-gray-900 cursor-pointer hover:text-[#7CBD00]"
+                onClick={() => openProfileModal(selectedRoom.opponentIdx)}
+              >
+                {selectedRoom.opponentName}
+              </span>
             </div>
           )}
           <ChatPanel chatroomIdx={selectedRoom?.chatroomIdx} currentUserIdx={currentUserIdx} />
         </div>
       </div>
+
+      {profileModal && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
+          onClick={() => setProfileModal(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Profile
+              profile={profileModal.profile}
+              reviews={profileModal.reviews}
+              onClose={() => setProfileModal(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

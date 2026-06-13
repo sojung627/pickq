@@ -20,6 +20,10 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long> 
     SELECT
         c.chatroom_idx AS chatroomIdx,
         CASE
+            WHEN c.buyer_idx = :memIdx THEN bidder.mem_idx
+            ELSE buyer.mem_idx
+        END AS opponentIdx,
+        CASE
             WHEN c.buyer_idx = :memIdx THEN bidder.mem_name
             ELSE buyer.mem_name
         END AS opponentName,

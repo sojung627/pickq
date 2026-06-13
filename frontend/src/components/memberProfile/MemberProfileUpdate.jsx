@@ -171,13 +171,13 @@ const MemberProfileUpdate = () => {
 
       <form onSubmit={handleSubmit} className="px-6 py-6 sm:py-7 space-y-6">
         {/* 이미지 섹션 */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <div className="flex-shrink-0 w-full sm:w-auto flex justify-center sm:justify-start">
-            <div className="w-[140px] h-[140px] sm:w-36 sm:h-36 aspect-square rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
+        <div className="flex items-start gap-6">
+          <div className="flex-shrink-0">
+            <div className="w-[140px] h-[140px] aspect-square rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
               {previewUrl && <img src={previewUrl} alt="프로필" className="w-full h-full object-cover" />}
             </div>
           </div>
-          <div className="flex-1 text-center sm:text-left">
+          <div className="flex-1 min-w-0">
             <label className="text-base sm:text-lg font-medium text-gray-900 block">프로필 이미지</label>
             <p className="text-sm text-gray-500 mb-3">JPG, PNG 파일 (최대 100MB)</p>
             <button type="button" onClick={() => fileInputRef.current.click()} className="inline-flex items-center px-4 py-2.5 border border-gray-300 rounded-md text-sm sm:text-base text-gray-700 hover:bg-gray-50 cursor-pointer">
