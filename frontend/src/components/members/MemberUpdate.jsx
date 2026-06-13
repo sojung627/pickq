@@ -6,12 +6,13 @@ const MemberUpdate = () => {
     memTel: '', memBday: '', newPwd: '', newPwdConfirm: '',
   });
   const [initialValues, setInitialValues] = useState({});
-  const [gradeName, setGradeName] = useState('골드');
+  const [gradeName, setGradeName] = useState('');
   const [memLoginType, setMemLoginType] = useState('LOCAL');
   const [pwdMsg, setPwdMsg] = useState({ text: '', color: 'text-gray-500' });
   const [showPwd, setShowPwd] = useState(false);
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
   const [updateMsg, setUpdateMsg] = useState({ text: '', color: '' });
+  const [memPenalty, setMemPenalty] = useState(0);
 
   useEffect(() => {
     fetch("http://localhost:8080/mypage/info", { credentials: "include" })
@@ -28,8 +29,9 @@ const MemberUpdate = () => {
         };
         setFormData(loaded);
         setInitialValues(loaded);
-        setGradeName(data.gradeName || '골드');
+        setGradeName(data.gradeName || '');
         setMemLoginType(data.memLoginType || 'LOCAL');
+        setMemPenalty(data.memPenalty ?? 0);
       });
   }, []);
 
@@ -133,6 +135,23 @@ const MemberUpdate = () => {
     });
   }, [formData, initialValues]);
 
+  const gradeStyle = {
+    vip:    'bg-purple-500',
+    gold:   'bg-yellow-500',
+    silver: 'bg-gray-400',
+    bronze: 'bg-orange-400',
+    normal: 'bg-gray-300 text-gray-700',
+  };
+
+  const penaltyLabel =
+    memPenalty >= 50 ? ' 🚫 이용정지' :
+    memPenalty >= 30 ? ' ⚠️ 입찰정지' :
+    memPenalty >= 10 ? ' ⚠️ 경고' : '';
+
+  const penaltyColor =
+    memPenalty >= 30 ? 'text-red-500' :
+    memPenalty >= 10 ? 'text-orange-400' : 'text-gray-400';
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="border border-gray-100 bg-white rounded-xl shadow-sm">
@@ -151,8 +170,13 @@ const MemberUpdate = () => {
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-900">회원등급</label>
               <div className="flex items-center gap-2 h-10">
-                <span className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-500 text-white text-xs font-semibold">
-                  {gradeName}
+                {gradeName && (
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-white text-xs font-semibold ${gradeStyle[gradeName] || 'bg-gray-300 text-gray-700'}`}>
+                    {gradeName}
+                  </span>
+                )}
+                <span className={`text-xs font-medium ${penaltyColor}`}>
+                  페널티 {memPenalty}점{penaltyLabel}
                 </span>
               </div>
             </div>
@@ -182,12 +206,8 @@ const MemberUpdate = () => {
                   value={formData.newPwd}
                   onChange={handleChange}
                   placeholder="🔒 변경할 비밀번호를 입력해주세요"
-                  /* ✅ 에러 시 border-red-500과 focus:ring-red-500 적용 */
                   className={`w-full bg-white border rounded-md px-3 pr-10 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 transition-all
-                    ${pwdMsg.isError
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-[#7CBD00]"
-                    }`}
+                    ${pwdMsg.isError ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-[#7CBD00]"}`}
                 />
                 <button type="button" onClick={() => setShowPwd(!showPwd)}
                   className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600">
@@ -202,12 +222,8 @@ const MemberUpdate = () => {
                 value={formData.newPwdConfirm}
                 onChange={handleChange}
                 placeholder="🔒 변경할 비밀번호를 확인해주세요"
-                /* ✅ 확인란도 동일하게 빨간 테두리 적용 */
                 className={`w-full bg-white border rounded-md px-3 h-10 text-sm text-gray-900 focus:outline-none focus:ring-2 transition-all
-                  ${pwdMsg.isError
-                    ? "border-red-500 focus:ring-red-500"
-                    : "border-gray-300 focus:ring-[#7CBD00]"
-                  }`}
+                  ${pwdMsg.isError ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-[#7CBD00]"}`}
               />
 
               {pwdMsg.text && (

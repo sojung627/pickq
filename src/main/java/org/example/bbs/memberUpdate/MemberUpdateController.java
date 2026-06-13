@@ -2,6 +2,8 @@ package org.example.bbs.memberUpdate;
 
 import lombok.RequiredArgsConstructor;
 //import org.springframework.beans.factory.annotation.Autowired;
+import org.example.bbs.grade.GradeEntity;
+import org.example.bbs.grade.GradeRepository;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ public class MemberUpdateController {
 
     private final MemberUpdateService memberService;
     private final MemberUpdateRepository memberUpdateRepository;
+    private final GradeRepository gradeRepository;
 
     // 회원정보 불러오기
     @GetMapping("/info")
@@ -26,6 +29,10 @@ public class MemberUpdateController {
         MemberEntity member = memberUpdateRepository.findByMemId(memId)
                 .orElseThrow(() -> new RuntimeException("회원 없음"));
 
+        String gradeName = gradeRepository.findById(member.getMemGradeIdx())
+                .map(GradeEntity::getGradeName)
+                .orElse("normal");  // 추가
+
         return ResponseEntity.ok(Map.of(
                 "memIdx", member.getMemIdx(),
                 "memId", member.getMemId(),
@@ -33,9 +40,12 @@ public class MemberUpdateController {
                 "memEmail", member.getMemEmail() != null ? member.getMemEmail() : "",
                 "memTel", member.getMemTel() != null ? member.getMemTel() : "",
                 "memBday", member.getMemBday() != null ? member.getMemBday().toString() : "",
-                "memLoginType", member.getMemLoginType() != null ? member.getMemLoginType() : "LOCAL"
+                "memLoginType", member.getMemLoginType() != null ? member.getMemLoginType() : "LOCAL",
+                "memPenalty", member.getMemPenalty() != null ? member.getMemPenalty() : 0,
+                "gradeName", gradeName  // 추가
         ));
     }
+
 
     // 회원정보 수정
     @PostMapping("/info")
