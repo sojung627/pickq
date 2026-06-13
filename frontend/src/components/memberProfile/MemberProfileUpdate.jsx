@@ -30,12 +30,17 @@ const MemberProfileUpdate = () => {
           'profile_default_4.png', 'profile_default_5.png'
         ];
 
-        const getRandomDefaultImg = () => {
-          const randomIndex = Math.floor(Math.random() * defaultImages.length);
-          return defaultImages[randomIndex];
+        const getFixedDefaultImg = (id) => {
+          const index = (id ?? 0) % defaultImages.length;
+          return defaultImages[index];
         };
 
-        const initialImg = data.memImg || getRandomDefaultImg();
+        const initialImg = data.memImg || getFixedDefaultImg(data.memId);  // memId 필드명 확인 필요
+
+        if (!initialImg) {
+          console.error('initialImg가 undefined입니다. data:', data);
+          return;
+        }
 
         const initial = {
           memNickname: data.memNickname || '',
@@ -46,12 +51,9 @@ const MemberProfileUpdate = () => {
         setProfile(initial);
         setOriginalData(initial);
 
-        // 경로 구분 로직 추가!
         if (initialImg.startsWith('profile_default_')) {
-          // 기본 이미지는 리액트의 public/images/profile 폴더에서 가져옴
           setPreviewUrl(`/images/profile/${initialImg}`);
         } else {
-          // 사용자가 올린 이미지는 백엔드의 uploads 폴더에서 가져옴
           setPreviewUrl(`http://localhost:8080/uploads/profile/${initialImg}`);
         }
       });
