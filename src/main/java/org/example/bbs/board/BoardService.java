@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
+import org.example.bbs.memberProfile.MemberProfileEntity;
+import org.example.bbs.memberProfile.MemberProfileRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -32,12 +34,14 @@ public class BoardService {
 
     private final MemberRepository memberRepository;
 
+    private final MemberProfileRepository memberProfileRepository;
+
     // 게시글 목록 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 리스트
     public Map<String, Object> getBoardList(int page, String searchType, String keyword, String typeCode, String sortType) {
 
-        Sort sort = sortType.equals("views") // sortType을 해결할 수 없습니다
+        Sort sort = sortType.equals("views")
                 ? Sort.by("boardViewCount").descending()
                 : Sort.by("boardIdx").descending();
 
@@ -90,8 +94,10 @@ public class BoardService {
         BoardEntity board = boardRepository.findDetail(boardTypeCode, boardIdx)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
 
-        // 조회수 증가
         board.setBoardViewCount(board.getBoardViewCount() + 1);
+
+        // MemberProfileEntity는 MemberEntity와 별도 테이블이므로 memIdx로 직접 조회
+        MemberProfileEntity profile = memberProfileRepository.findById(board.getMember().getMemIdx()).orElse(null);
 
         return BoardDetailDTO.builder()
                 .boardIdx(board.getBoardIdx())
@@ -101,6 +107,8 @@ public class BoardService {
                 .boardTypeName(board.getBoardType().getBoardTypeName())
                 .memIdx(board.getMember().getMemIdx())
                 .memId(board.getMember().getMemId())
+                .memNickname(profile != null ? profile.getMemNickname() : null)
+                .memProfileImg(profile != null ? profile.getMemImg() : null)
                 .boardViewCount(board.getBoardViewCount())
                 .boardLike(board.getBoardLike())
                 .boardRegdate(board.getBoardRegdate())
@@ -124,12 +132,10 @@ public class BoardService {
         boolean isLiked;
 
         if (existingLike.isPresent()) {
-            // 좋아요 취소
             boardLikeRepository.delete(existingLike.get());
             board.setBoardLike(board.getBoardLike() - 1);
             isLiked = false;
         } else {
-            // 좋아요 추가
             BoardLikeEntity like = BoardLikeEntity.builder()
                     .board(board)
                     .member(member)
@@ -160,7 +166,7 @@ public class BoardService {
             ReplyEntity parent = replyRepository.findById(dto.getReplyParentIdx())
                     .orElseThrow(() -> new RuntimeException("부모 댓글을 찾을 수 없습니다."));
             depth = parent.getReplyDepth() + 1;
-            ref = Math.toIntExact(parent.getReplyIdx()); // 원댓글 기준점
+            ref = Math.toIntExact(parent.getReplyIdx());
         }
 
         ReplyEntity reply = ReplyEntity.builder()
@@ -178,38 +184,39 @@ public class BoardService {
 
     // 댓글 리스트 조회
     public Map<String, Object> getReplies(Long boardIdx, String sort, int page) {
-        // 1. 정렬 조건 설정 (최신순 vs 오래된순)
         Sort sortOption = sort.equals("latest")
                 ? Sort.by("replyRegdate").descending()
                 : Sort.by("replyRegdate").ascending();
 
-        // 2. 페이징 정보 생성 (페이지 번호는 0부터 시작하니까 page - 1)
         Pageable pageable = PageRequest.of(page - 1, 10, sortOption);
 
-        // 3. 레포지토리 호출 (이 부분이 에러였지! 변수명을 replyPage로 선언하고 repository를 호출해야 해)
-        Page<ReplyEntity> replyPage = replyRepository.findByBoard_BoardIdx(boardIdx, pageable); // 에러라고 5번째 말한다
+        Page<ReplyEntity> replyPage = replyRepository.findByBoard_BoardIdx(boardIdx, pageable);
 
-        // 4. 결과 가공 (Entity -> Map)
         Map<String, Object> result = new HashMap<>();
         result.put("replies", replyPage.getContent().stream()
                 .map(r -> {
-                    // 탈퇴한 회원일 경우를 대비한 안전한 처리
                     String memId = (r.getMember() != null) ? r.getMember().getMemId() : "(탈퇴회원)";
                     Long memIdx = (r.getMember() != null) ? r.getMember().getMemIdx() : 0L;
 
-                    return Map.of(
-                            "replyIdx", r.getReplyIdx(),
-                            "replyContent", r.getReplyContent(),
-                            "replyRegdate", r.getReplyRegdate(),
-                            "replyLike", r.getReplyLike(),
-                            "replyDepth", r.getReplyDepth(),
-                            "memId", memId,
-                            "memIdx", memIdx
-                    );
+                    // MemberProfileEntity는 MemberEntity와 별도 테이블이므로 memIdx로 직접 조회
+                    MemberProfileEntity profile = (r.getMember() != null)
+                            ? memberProfileRepository.findById(r.getMember().getMemIdx()).orElse(null)
+                            : null;
+
+                    Map<String, Object> replyMap = new HashMap<>();
+                    replyMap.put("replyIdx", r.getReplyIdx());
+                    replyMap.put("replyContent", r.getReplyContent());
+                    replyMap.put("replyRegdate", r.getReplyRegdate());
+                    replyMap.put("replyLike", r.getReplyLike());
+                    replyMap.put("replyDepth", r.getReplyDepth());
+                    replyMap.put("memId", memId);
+                    replyMap.put("memIdx", memIdx);
+                    replyMap.put("memNickname", profile != null ? profile.getMemNickname() : null);
+                    replyMap.put("memProfileImg", profile != null ? profile.getMemImg() : null);
+                    return replyMap;
                 })
                 .toList());
 
-        // 5. 전체 댓글 수 등 추가 정보 담기
         result.put("totalReplies", replyPage.getTotalElements());
         result.put("totalPages", replyPage.getTotalPages());
         result.put("currentPage", page);
@@ -231,16 +238,13 @@ public class BoardService {
                 replyLikeRepository.findByReply_ReplyIdxAndMember_MemId(replyIdx, memId);
 
         if (existingLike.isPresent()) {
-            // 좋아요 취소
             replyLikeRepository.delete(existingLike.get());
             reply.setReplyLike(reply.getReplyLike() - 1);
         } else {
-            // 좋아요 추가
             ReplyLikeEntity like = ReplyLikeEntity.builder()
                     .reply(reply)
                     .member(member)
                     .build();
-
             replyLikeRepository.save(like);
             reply.setReplyLike(reply.getReplyLike() + 1);
         }
@@ -257,7 +261,6 @@ public class BoardService {
         ReplyEntity reply = replyRepository.findById(replyIdx)
                 .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
 
-        // 작성자 검증
         if (!reply.getMember().getMemId().equals(memId)) {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
@@ -272,7 +275,6 @@ public class BoardService {
         BoardEntity board = boardRepository.findById(boardIdx)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
 
-        // 작성자 검증
         if (!board.getMember().getMemId().equals(memId)) {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
@@ -341,22 +343,5 @@ public class BoardService {
                 })
                 .toList();
     }
-
-//    public List<BoardListDTO> getMyBoards(String memId) {
-//        return boardRepository.findByMember_MemIdAndBoardIsDeletedOrderByBoardRegdateDesc(memId, "N")
-//                .stream()
-//                .map(b -> BoardListDTO.builder()
-//                        .boardIdx(b.getBoardIdx())
-//                        .boardTitle(b.getBoardTitle())
-//                        .boardViewCount(b.getBoardViewCount())
-//                        .boardLike(b.getBoardLike())
-//                        .boardRegdate(b.getBoardRegdate())
-//                        .boardTypeCode(b.getBoardType().getBoardTypeCode())
-//                        .boardTypeName(b.getBoardType().getBoardTypeName())
-//                        .replyCount(0)
-//                        .build())
-//                .toList();
-//    }
-
 
 }

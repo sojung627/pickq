@@ -9,6 +9,7 @@ import org.example.bbs.member.MemberEntity;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+
 @AllArgsConstructor
 @Builder
 public class MemberProfileEntity {

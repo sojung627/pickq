@@ -18,7 +18,7 @@ const BoardDetail = () => {
   const [replyFormId, setReplyFormId] = useState(null);
   const [replyContent, setReplyContent] = useState('');
   const [childReplyContent, setChildReplyContent] = useState('');
-  const [likedReplies, setLikedReplies] = useState(new Set()); // 좋아요 누른 댓글 추적
+  const [likedReplies, setLikedReplies] = useState(new Set());
   const [profileModal, setProfileModal] = useState(null);
 
   const fetchReplies = () => {
@@ -108,13 +108,11 @@ const BoardDetail = () => {
     })
       .then(res => res.json())
       .then(data => {
-        // 좋아요 상태 토글
         setLikedReplies(prev => {
           const next = new Set(prev);
           next.has(rid) ? next.delete(rid) : next.add(rid);
           return next;
         });
-        // 댓글 카운트만 업데이트 (재조회 없이)
         setReplies(prev => prev.map(r =>
           r.replyIdx === rid ? { ...r, replyLike: data.replyLike } : r
         ));
@@ -181,6 +179,15 @@ const BoardDetail = () => {
   const isOwner = Number(member?.memIdx) === Number(board.memIdx);
   const isAdmin = Number(member?.memRoleIdx) === 2;
 
+  // memIdx 기반으로 기본 프로필 이미지 1~5 중 고정 선택
+  const getProfileImgUrl = (memProfileImg, memIdx) => {
+    if (memProfileImg) {
+      return `http://localhost:8080/uploads/profile/${memProfileImg}`;
+    }
+    const defaultNum = (Number(memIdx) % 5) + 1;
+    return `/images/profile/profile_default_${defaultNum}.png`;
+  }; // 수정: 함수 닫는 괄호 누락 추가
+
   return (
     <div className="min-h-screen bg-white py-8">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
@@ -217,7 +224,15 @@ const BoardDetail = () => {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm">
                 <div className="flex items-center gap-4 text-[#767676]">
                   <div className="flex items-center gap-2">
-                    <i className="bi bi-person-circle text-[14px]"></i>
+                    <img
+                      src={getProfileImgUrl(board.memProfileImg, board.memIdx)}
+                      alt="프로필"
+                      className="w-6 h-6 rounded-full object-cover"
+                      onError={(e) => {
+                        const fallback = (Number(board.memIdx) % 5) + 1;
+                        e.target.src = `/images/profile/profile_default_${fallback}.png`;
+                      }}
+                    />
                     <span
                       className="cursor-pointer hover:text-[#7CBD00]"
                       onClick={() => openProfileModal(board.memIdx)}
@@ -326,9 +341,15 @@ const BoardDetail = () => {
                       <div className="flex-1">
                         <div className="mb-2 flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
-                              <i className="bi bi-person-fill text-[#a7a7a7]"></i>
-                            </div>
+                            <img
+                              src={getProfileImgUrl(r.memProfileImg, r.memIdx)}
+                              alt="프로필"
+                              className="h-8 w-8 rounded-full object-cover bg-gray-100"
+                              onError={(e) => {
+                                const fallback = (Number(r.memIdx) % 5) + 1;
+                                e.target.src = `/images/profile/profile_default_${fallback}.png`; // 수정: 댓글 onError 기본 이미지 경로 /profile/ 추가
+                              }}
+                            />
                             <div>
                               <div
                                 className="text-[13px] font-semibold text-[#222222] cursor-pointer hover:text-[#7CBD00]"
@@ -342,7 +363,6 @@ const BoardDetail = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-1 sm:gap-2">
-                            {/* 댓글 좋아요 버튼 - 게시글 좋아요와 동일한 디자인 */}
                             <button
                               onClick={() => handleReplyLike(r.replyIdx)}
                               className={`inline-flex items-center gap-1 px-2 h-[28px] rounded-md text-[11px] sm:text-xs font-semibold border border-gray-300 transition-colors cursor-pointer ${

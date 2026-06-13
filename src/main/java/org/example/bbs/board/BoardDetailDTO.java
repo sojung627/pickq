@@ -18,4 +18,7 @@ public class BoardDetailDTO {
     private Integer boardLike;
     private LocalDateTime boardRegdate;
     private boolean isLiked;
+    // 프사용
+    private String memNickname;
+    private String memProfileImg;
 }
