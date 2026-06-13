@@ -404,7 +404,7 @@ export default function MyOrders() {
                   )}
 
                   {/* 구매확정 */}
-                  {order.userRole === "BUYER" && order.shippingStatusCode === "SHIPPING" && (
+                  {order.userRole === "BUYER" && order.shippingStatusCode === "SHIPPING" && order.orderStatusCode !== "CONFIRMED" && (
                     <div
                       role="button"
                       tabIndex={0}
