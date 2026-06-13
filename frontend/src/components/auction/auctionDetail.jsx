@@ -66,8 +66,20 @@ const AuctionDetail = () => {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.success) { setMode('list'); }
-        else setErrorMessage(data.error || '입찰에 실패했습니다.');
+        if (data.success) {
+          // 입찰 목록 재fetch
+          fetch(`http://localhost:8080/auctions/${auctionIdx}`, { credentials: 'include' })
+            .then(res => res.json())
+            .then(res => {
+              setDetail(res.detail);
+              setBidList(res.bidList || []);
+            });
+          setBidForm({ itemName: '', itemBrand: '', bidPrice: '', bidQuantity: 1, bidMessage: '', bidImageFile: null });
+          setBidPreviewUrl(null);
+          setMode('list');
+        } else {
+          setErrorMessage(data.error || '입찰에 실패했습니다.');
+        }
       })
       .catch(() => setErrorMessage('서버 오류가 발생했습니다.'));
   };
