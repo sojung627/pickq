@@ -36,79 +36,62 @@ public class PaymentService {
 
     private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
-    @Transactional
+    // ── 결제 정보 조회 (읽기 전용, DB에 아무것도 저장하지 않음) ──────────────────
+    @Transactional(readOnly = true)
     public PaymentOrderInfoResponseDTO getOrderInfo(Long bidIdx, String memId) {
         BidEntity bid = bidRepository.findById(bidIdx)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "낙찰 정보를 찾을 수 없습니다."));
 
-        // 역경매 구조: auction.buyer = 결제할 사람(구매자)
         MemberEntity buyer = bid.getAuction().getBuyer();
         if (!buyer.getMemId().equals(memId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "결제 권한이 없습니다.");
         }
 
-        PaymentEntity payment = paymentRepository.findByBid_BidIdx(bidIdx)
-                .orElseGet(() -> createReadyPayment(bid, buyer));
+        paymentRepository.findByBid_BidIdx(bidIdx).ifPresent(p -> {
+            if ("DONE".equals(p.getPayStatus()) || "CONFIRMED".equals(p.getPayStatus())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 결제가 완료된 주문입니다.");
+            }
+        });
 
-        if ("DONE".equals(payment.getPayStatus()) || "CONFIRMED".equals(payment.getPayStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 결제가 완료된 주문입니다.");
-        }
+        long amount = bid.getBidPrice() * bid.getBidQuantity();
+        // orderId에 bidIdx를 포함시켜서 confirm 단계에서 다시 꺼내 쓴다 (DB 미저장 상태이므로)
+        String orderId = bidIdx + "_" + UUID.randomUUID();
 
         return PaymentOrderInfoResponseDTO.builder()
-                .orderId(payment.getOrderId())
+                .orderId(orderId)
                 .orderName(bid.getAuction().getAuctionTitle())
-                .amount(payment.getPayAmount())
+                .amount(amount)
                 .customerName(buyer.getMemName())
                 .customerEmail(buyer.getMemEmail())
                 .build();
     }
 
-    private PaymentEntity createReadyPayment(BidEntity bid, MemberEntity buyer) {
-        // TODO: 배송지 선택 UI가 생기면 선택한 주소를 받아서 넣도록 변경
-        List<MemberAddrEntity> addrs = memberAddrRepository.findByMember_MemId(buyer.getMemId());
-        MemberAddrEntity addr = addrs.stream()
-                .filter(a -> "Y".equals(a.getIsPrimary()))
-                .findFirst()
-                .orElse(addrs.isEmpty() ? null : addrs.get(0));
-
-        long amount = bid.getBidPrice() * bid.getBidQuantity();
-        String orderId = UUID.randomUUID().toString();
-
-        PaymentEntity payment = PaymentEntity.builder()
-                .bid(bid)
-                .member(buyer)
-                .orderId(orderId)
-                .paymentKey("PENDING_" + orderId)   // 결제 전 임시값 (confirm 시 실제 paymentKey로 교체)
-                .payMethod("")
-                .payAmount(amount)
-                .payStatus("READY")
-                .buyerName(Objects.requireNonNullElse(buyer.getMemName(), ""))
-                .buyerTel(Objects.requireNonNullElse(buyer.getMemTel(), ""))
-                .buyerAddr(addr != null ? (addr.getMemAddr() + " " + addr.getMemAddrDetail()) : "")
-                .buyerZipcode(addr != null ? addr.getMemZipcode() : "")
-                .build();
-
-        return paymentRepository.save(payment);
-    }
-
+    // ── 결제 승인 (이 시점에만 PaymentEntity가 생성/갱신됨) ──────────────────────
     @Transactional
     public PaymentConfirmResponseDTO confirmPayment(PaymentConfirmRequestDTO dto, String memId) {
-        PaymentEntity payment = paymentRepository.findByOrderId(dto.getOrderId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다."));
+        Long bidIdx = parseBidIdx(dto.getOrderId());
 
-        if (!payment.getMember().getMemId().equals(memId)) {
+        BidEntity bid = bidRepository.findById(bidIdx)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "낙찰 정보를 찾을 수 없습니다."));
+
+        MemberEntity buyer = bid.getAuction().getBuyer();
+        if (!buyer.getMemId().equals(memId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "결제 권한이 없습니다.");
         }
 
-        if (!payment.getPayAmount().equals(dto.getAmount())) {
+        long expectedAmount = bid.getBidPrice() * bid.getBidQuantity();
+        if (expectedAmount != dto.getAmount()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "결제 금액이 일치하지 않습니다.");
         }
 
-        if ("DONE".equals(payment.getPayStatus())) {
+        // 이미 승인된 건이면 토스 API 재호출 없이 그대로 응답 (중복 클릭 방지)
+        PaymentEntity existing = paymentRepository.findByBid_BidIdx(bidIdx).orElse(null);
+        if (existing != null
+                && ("DONE".equals(existing.getPayStatus()) || "CONFIRMED".equals(existing.getPayStatus()))) {
             return PaymentConfirmResponseDTO.builder()
                     .success(true)
-                    .orderId(payment.getOrderId())
-                    .payStatus(payment.getPayStatus())
+                    .orderId(existing.getOrderId())
+                    .payStatus(existing.getPayStatus())
                     .build();
         }
 
@@ -137,14 +120,47 @@ public class PaymentService {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "결제 승인에 실패했습니다.");
         }
 
+        PaymentEntity payment = (existing != null) ? existing : buildNewPayment(bid, buyer, expectedAmount);
+
+        payment.setOrderId(dto.getOrderId());
         payment.setPaymentKey(dto.getPaymentKey());
         payment.setPayMethod((String) result.getOrDefault("method", ""));
+        payment.setPayAmount(expectedAmount);
         payment.setPayStatus("DONE");
+
+        paymentRepository.save(payment);
 
         return PaymentConfirmResponseDTO.builder()
                 .success(true)
                 .orderId(payment.getOrderId())
                 .payStatus(payment.getPayStatus())
                 .build();
+    }
+
+    private PaymentEntity buildNewPayment(BidEntity bid, MemberEntity buyer, long amount) {
+        // TODO: 배송지 선택 UI가 생기면 선택한 주소를 받아서 넣도록 변경
+        List<MemberAddrEntity> addrs = memberAddrRepository.findByMember_MemId(buyer.getMemId());
+        MemberAddrEntity addr = addrs.stream()
+                .filter(a -> "Y".equals(a.getIsPrimary()))
+                .findFirst()
+                .orElse(addrs.isEmpty() ? null : addrs.get(0));
+
+        return PaymentEntity.builder()
+                .bid(bid)
+                .member(buyer)
+                .payAmount(amount)
+                .buyerName(Objects.requireNonNullElse(buyer.getMemName(), ""))
+                .buyerTel(Objects.requireNonNullElse(buyer.getMemTel(), ""))
+                .buyerAddr(addr != null ? (addr.getMemAddr() + " " + addr.getMemAddrDetail()) : "")
+                .buyerZipcode(addr != null ? addr.getMemZipcode() : "")
+                .build();
+    }
+
+    private Long parseBidIdx(String orderId) {
+        try {
+            return Long.parseLong(orderId.split("_")[0]);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 주문번호입니다.");
+        }
     }
 }
