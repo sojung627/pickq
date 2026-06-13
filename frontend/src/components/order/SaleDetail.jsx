@@ -219,7 +219,7 @@ export default function SaleDetail() {
           {isBuyer && order.orderStatusCode === "CREATED" && order.auctionIdx && (
             <div
               onClick={() =>
-                navigate(`/payment/pay?auctionIdx=${order.auctionIdx}`)
+                navigate(`/payment/pay?bidIdx=${order.bidIdx}`)
               }
               className="px-3 py-1.5 rounded-lg bg-[#7CBD00] text-white text-xs font-semibold hover:bg-[#6AA500] cursor-pointer"
             >

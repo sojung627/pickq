@@ -399,7 +399,7 @@ export default function MyOrders() {
                       }}
                     >
                       구매확정
-                    </div> 
+                    </div>
                   )}
 
                   {/* 리뷰 작성 가능 상태

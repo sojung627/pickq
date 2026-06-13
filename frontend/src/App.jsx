@@ -66,6 +66,11 @@ import ChatOverlay from "./components/chat/ChatOverlay";
 /* 알림 */
 import NotificationPage from "./components/notification/NotificationPage";
 
+/* 결제 */
+import { CheckoutPage } from "./components/payment/CheckoutPage";
+import { SuccessPage } from "./components/payment/SuccessPage";
+import { FailPage } from "./components/payment/FailPage";
+
 function App() {
 
   return (
@@ -153,6 +158,11 @@ function App() {
 
             {/* 알림 */}
             <Route path="/notifications" element={<NotificationPage />} />
+
+            {/* 결제 */}
+            <Route path="/payment/pay" element={<CheckoutPage />} />
+            <Route path="/payment/success" element={<SuccessPage />} />
+            <Route path="/payment/fail" element={<FailPage />} />
 
           </Routes>
 
