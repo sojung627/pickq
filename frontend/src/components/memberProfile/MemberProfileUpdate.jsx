@@ -22,41 +22,33 @@ const MemberProfileUpdate = () => {
 
   // 2. 초기 데이터 로드
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/profile/data", { credentials: "include" })
-      .then(res => res.json())
-      .then(data => {
-        const defaultImages = [
-          'profile_default_1.png', 'profile_default_2.png', 'profile_default_3.png',
-          'profile_default_4.png', 'profile_default_5.png'
-        ];
+    Promise.all([
+      fetch("http://localhost:8080/mypage/profile/data", { credentials: "include" }).then(res => res.json()),
+      fetch("http://localhost:8080/mypage/session", { credentials: "include" }).then(res => res.json())
+    ]).then(([data, session]) => {
+      const memIdx = session.memIdx;
+      const defaultImages = [
+        'profile_default_1.png', 'profile_default_2.png', 'profile_default_3.png',
+        'profile_default_4.png', 'profile_default_5.png'
+      ];
+      const num = (Number(memIdx ?? 0) % 5) + 1;
+      const initialImg = data.memImg || `profile_default_${num}.png`;
 
-        const getFixedDefaultImg = (id) => {
-          const num = (Number(id ?? 0) % 5) + 1;
-          return `profile_default_${num}.png`;
-        };
+      const initial = {
+        memNickname: data.memNickname || '',
+        memIntro: data.memIntro || '',
+        memImg: initialImg
+      };
 
-        const initialImg = data.memImg || getFixedDefaultImg(data.memIdx);  // memId 필드명 확인 필요
+      setProfile(initial);
+      setOriginalData(initial);
 
-        if (!initialImg) {
-          console.error('initialImg가 undefined입니다. data:', data);
-          return;
-        }
-
-        const initial = {
-          memNickname: data.memNickname || '',
-          memIntro: data.memIntro || '',
-          memImg: initialImg
-        };
-
-        setProfile(initial);
-        setOriginalData(initial);
-
-        if (initialImg.startsWith('profile_default_')) {
-          setPreviewUrl(`/images/profile/${initialImg}`);
-        } else {
-          setPreviewUrl(`http://localhost:8080/uploads/profile/${initialImg}`);
-        }
-      });
+      if (initialImg.startsWith('profile_default_')) {
+        setPreviewUrl(`/images/profile/${initialImg}`);
+      } else {
+        setPreviewUrl(`http://localhost:8080/uploads/profile/${initialImg}`);
+      }
+    });
   }, []);
 
   // 3. 닉네임 중복 체크
