@@ -1,17 +1,39 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function SuccessPage() {
   const navigate = useNavigate();
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const paymentKey = searchParams.get("paymentKey");
-  const orderId = searchParams.get("orderId");
-  const amount = searchParams.get("amount");
+  // 토스가 successUrl로 리다이렉트할 때 쿼리 파라미터로 전달하는 결제 정보
+  const { paymentKey, orderId, amount } = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      paymentKey: params.get("paymentKey"),
+      orderId: params.get("orderId"),
+      amount: params.get("amount"),
+    };
+  }, []);
+
+  // paymentKey가 없으면 정상적인 토스 리다이렉트 경로가 아님
+  if (!paymentKey || !orderId || !amount) {
+    return (
+      <div className="wrapper w-100">
+        <p>잘못된 접근입니다.</p>
+        <div className="btn-wrapper w-100">
+          <div className="btn w-100" onClick={() => navigate("/mypage/orders")}>
+            주문 목록으로
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   async function confirmPayment() {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch("/api/payment/confirm", {
         method: "POST",
@@ -31,6 +53,8 @@ export function SuccessPage() {
       setIsConfirmed(true);
     } catch (err) {
       setError("결제 승인에 실패했습니다. 고객센터에 문의해 주세요.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -61,8 +85,12 @@ export function SuccessPage() {
           <h4 className="text-center description">결제 승인하고 완료해보세요.</h4>
           {error && <p style={{ color: "#D64545" }}>{error}</p>}
           <div className="w-100">
-            <button className="btn primary w-100" onClick={confirmPayment}>
-              결제 승인하기
+            <button
+              className="btn primary w-100"
+              onClick={confirmPayment}
+              disabled={isLoading}
+            >
+              {isLoading ? "처리 중..." : "결제 승인하기"}
             </button>
           </div>
         </div>

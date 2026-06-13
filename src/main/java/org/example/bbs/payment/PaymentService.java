@@ -36,6 +36,15 @@ public class PaymentService {
 
     private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
+    /**
+     * 포트폴리오 시연용 Mock 모드 플래그.
+     * true: 토스 실결제 API를 호출하지 않고 성공 응답을 시뮬레이션한다.
+     * false: 실제 토스페이먼츠 승인 API를 호출한다.
+     * application.yml의 toss.mock-mode 값으로 제어 (기본값 true).
+     */
+    @Value("${toss.mock-mode:true}")
+    private boolean mockMode;
+
     // ── 결제 정보 조회 (읽기 전용, DB에 아무것도 저장하지 않음) ──────────────────
     @Transactional(readOnly = true)
     public PaymentOrderInfoResponseDTO getOrderInfo(Long bidIdx, String memId) {
@@ -95,36 +104,43 @@ public class PaymentService {
                     .build();
         }
 
-        // ------ 토스페이먼츠 결제 승인 API 호출 ------
-        RestTemplate restTemplate = new RestTemplate();
+        // ------ 토스페이먼츠 결제 승인 처리 ------
+        // mockMode=true: 포트폴리오 시연용으로 토스 실결제 API를 호출하지 않고 성공 응답을 시뮬레이션한다.
+        // mockMode=false: application.yml에서 toss.mock-mode=false 설정 시 실제 API가 호출된다.
+        Map<String, Object> result;
+        if (mockMode) {
+            result = Map.of("method", "카드");
+        } else {
+            RestTemplate restTemplate = new RestTemplate();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Basic " + Base64.getEncoder().encodeToString((secretKey + ":").getBytes()));
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Basic " + Base64.getEncoder().encodeToString((secretKey + ":").getBytes()));
 
-        Map<String, Object> body = Map.of(
-                "paymentKey", dto.getPaymentKey(),
-                "orderId", dto.getOrderId(),
-                "amount", dto.getAmount()
-        );
+            Map<String, Object> body = Map.of(
+                    "paymentKey", dto.getPaymentKey(),
+                    "orderId", dto.getOrderId(),
+                    "amount", dto.getAmount()
+            );
 
-        ResponseEntity<Map> response;
-        try {
-            response = restTemplate.postForEntity(TOSS_CONFIRM_URL, new HttpEntity<>(body, headers), Map.class);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "결제 승인 중 오류가 발생했습니다.");
-        }
+            ResponseEntity<Map> response;
+            try {
+                response = restTemplate.postForEntity(TOSS_CONFIRM_URL, new HttpEntity<>(body, headers), Map.class);
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "결제 승인 중 오류가 발생했습니다.");
+            }
 
-        Map<String, Object> result = response.getBody();
-        if (!response.getStatusCode().is2xxSuccessful() || result == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "결제 승인에 실패했습니다.");
+            result = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful() || result == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "결제 승인에 실패했습니다.");
+            }
         }
 
         PaymentEntity payment = (existing != null) ? existing : buildNewPayment(bid, buyer, expectedAmount);
 
         payment.setOrderId(dto.getOrderId());
         payment.setPaymentKey(dto.getPaymentKey());
-        payment.setPayMethod((String) result.getOrDefault("method", ""));
+        payment.setPayMethod((String) result.getOrDefault("method", "카드"));
         payment.setPayAmount(expectedAmount);
         payment.setPayStatus("DONE");
 

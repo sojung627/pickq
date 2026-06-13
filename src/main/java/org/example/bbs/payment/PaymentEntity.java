@@ -31,13 +31,14 @@ public class PaymentEntity {
     @JoinColumn(name = "mem_idx", nullable = false)
     private MemberEntity member;
 
-    @Column(name = "payment_key", nullable = false, length = 255)
+    // nullable = true: DB 직접 초기화(READY 상태 복구) 시 NULL 값과 JPA 충돌 방지
+    @Column(name = "payment_key", nullable = true, length = 255)
     private String paymentKey;
 
-    @Column(name = "order_id", nullable = false, length = 255)
+    @Column(name = "order_id", nullable = true, length = 255)
     private String orderId;
 
-    @Column(name = "pay_method", nullable = false, length = 100)
+    @Column(name = "pay_method", nullable = true, length = 100)
     private String payMethod;
 
     @Column(name = "pay_amount", nullable = false)
@@ -68,7 +69,7 @@ public class PaymentEntity {
     @Column(name = "canceled_at")
     private LocalDateTime canceledAt;
 
-    // ── 배송 관련 추가 필드 ──────────────────────────────
+    // 배송 관련 추가 필드
     // null = 배송준비중 / SHIPPING = 배송중 / DELIVERED = 구매확정완료
     @Column(name = "delivery_status", length = 20)
     private String deliveryStatus;
@@ -81,7 +82,6 @@ public class PaymentEntity {
 
     @Column(name = "shipped_at")
     private LocalDateTime shippedAt;
-    // ────────────────────────────────────────────────────
 
     @PrePersist
     public void prePersist() {
