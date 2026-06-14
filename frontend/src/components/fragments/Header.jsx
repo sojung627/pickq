@@ -41,7 +41,7 @@ export default function Header() {
   // 알림 빨간색 점
   useEffect(() => {
     if (!isLoggedIn) return;
-    fetch("/api/notifications/unread-count", { credentials: "include" })
+    fetch("http://localhost:8080/api/notifications/unread-count", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setUnreadCount(data.count || 0))
       .catch(() => {});

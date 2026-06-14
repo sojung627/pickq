@@ -5,6 +5,7 @@ public enum NotificationTypeCode {
     BOARD_COMMENT,   // 내 글에 댓글
     BOARD_REPLY,     // 내 댓글에 답글
     BOARD_LIKE,      // 내 글에 좋아요
+    REPLY_LIKE,      // 내 댓글/답글에 좋아요
 
     // 경매 / 입찰 (나중에 추가)
     AUCTION_BID,

@@ -64,23 +64,24 @@ public class NotificationService {
     }
 
     // 조회
+    // 조회
     @Transactional(readOnly = true)
     public List<NotificationDTO> getAll(String memId) {
         return notificationRepository
-                .findByReceiverMemIdOrderByCreatedAtDesc(memId)
+                .findByReceiver_MemIdOrderByCreatedAtDesc(memId)
                 .stream().map(NotificationDTO::from).toList();
     }
 
     @Transactional(readOnly = true)
     public List<NotificationDTO> getRecent5(String memId) {
         return notificationRepository
-                .findTop5ByReceiverMemIdOrderByCreatedAtDesc(memId)
+                .findTop5ByReceiver_MemIdOrderByCreatedAtDesc(memId)
                 .stream().map(NotificationDTO::from).toList();
     }
 
     @Transactional(readOnly = true)
     public long getUnreadCount(String memId) {
-        return notificationRepository.countByReceiverMemIdAndIsRead(memId, "N");
+        return notificationRepository.countByReceiver_MemIdAndIsRead(memId, "N");
     }
 
     // 읽음 처리

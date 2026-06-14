@@ -205,16 +205,25 @@ public class BoardService {
     // 댓글 리스트 조회 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     public Map<String, Object> getReplies(Long boardIdx, String sort, int page) {
-        Sort sortOption = sort.equals("latest")
-                ? Sort.by("replyRegdate").descending()
-                : Sort.by("replyRegdate").ascending();
 
-        Pageable pageable = PageRequest.of(page - 1, 10, sortOption);
+        // 트리 순서(부모-자식 묶음)로 전체 조회
+        List<ReplyEntity> allReplies = replyRepository.findByBoard_BoardIdxOrderByTree(boardIdx);
 
-        Page<ReplyEntity> replyPage = replyRepository.findByBoard_BoardIdx(boardIdx, pageable);
+        // 최신순이면 최상위 댓글 그룹 단위로 역순 재배치 (그룹 내부 순서는 유지)
+        if (sort.equals("latest")) {
+            allReplies = reorderGroupsDesc(allReplies);
+        }
+
+        int pageSize = 10;
+        int totalElements = allReplies.size();
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+
+        int fromIndex = Math.min((page - 1) * pageSize, totalElements);
+        int toIndex = Math.min(fromIndex + pageSize, totalElements);
+        List<ReplyEntity> pageContent = allReplies.subList(fromIndex, toIndex);
 
         Map<String, Object> result = new HashMap<>();
-        result.put("replies", replyPage.getContent().stream()
+        result.put("replies", pageContent.stream()
                 .map(r -> {
                     String replyMemId = (r.getMember() != null) ? r.getMember().getMemId() : "(탈퇴회원)";
                     Long replyMemIdx = (r.getMember() != null) ? r.getMember().getMemIdx() : 0L;
@@ -237,11 +246,25 @@ public class BoardService {
                 })
                 .toList());
 
-        result.put("totalReplies", replyPage.getTotalElements());
-        result.put("totalPages", replyPage.getTotalPages());
+        result.put("totalReplies", (long) totalElements);
+        result.put("totalPages", totalPages);
         result.put("currentPage", page);
 
         return result;
+    }
+
+    // 최상위 댓글 그룹(자신 + 하위 답글들) 단위로 묶어서 그룹 순서를 역순으로 재배치
+    private List<ReplyEntity> reorderGroupsDesc(List<ReplyEntity> treeOrdered) {
+        List<List<ReplyEntity>> groups = new java.util.ArrayList<>();
+        for (ReplyEntity r : treeOrdered) {
+            if (r.getReplyRef() == 0) {
+                groups.add(new java.util.ArrayList<>(List.of(r)));
+            } else if (!groups.isEmpty()) {
+                groups.get(groups.size() - 1).add(r);
+            }
+        }
+        java.util.Collections.reverse(groups);
+        return groups.stream().flatMap(List::stream).toList();
     }
 
     // 댓글 좋아요 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ

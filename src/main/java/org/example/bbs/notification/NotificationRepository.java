@@ -9,13 +9,13 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
 
     // 내 알림 전체 목록 (최신순)
-    List<NotificationEntity> findByReceiverMemIdOrderByCreatedAtDesc(String memId);
+    List<NotificationEntity> findByReceiver_MemIdOrderByCreatedAtDesc(String memId);
 
     // 최근 알림 5건 (드롭다운용)
-    List<NotificationEntity> findTop5ByReceiverMemIdOrderByCreatedAtDesc(String memId);
+    List<NotificationEntity> findTop5ByReceiver_MemIdOrderByCreatedAtDesc(String memId);
 
     // 안읽은 알림 수
-    long countByReceiverMemIdAndIsRead(String memId, String isRead);
+    long countByReceiver_MemIdAndIsRead(String memId, String isRead);
 
     // 특정 댓글을 참조하는 알림 목록 (댓글 삭제 시 FK 해제용)
     List<NotificationEntity> findByReply_ReplyIdx(Long replyIdx);

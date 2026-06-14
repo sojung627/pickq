@@ -10,9 +10,7 @@ export default function NotificationPage() {
 
   // 백엔드 API로부터 알림 데이터 로드 (fetch 사용)
   useEffect(() => {
-    fetch("/api/notifications", {
-      credentials: "include",
-    })
+    fetch("http://localhost:8080/api/notifications", { credentials: "include" })
       .then((res) => {
         if (!res.ok) return;  // 404 등 에러 응답이면 그냥 빈 배열 유지
         return res.json();
