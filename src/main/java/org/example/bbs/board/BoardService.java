@@ -6,6 +6,7 @@ import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
 import org.example.bbs.memberProfile.MemberProfileEntity;
 import org.example.bbs.memberProfile.MemberProfileRepository;
+import org.example.bbs.notification.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -33,12 +34,13 @@ public class BoardService {
     private final ReplyLikeRepository replyLikeRepository;
 
     private final MemberRepository memberRepository;
-
     private final MemberProfileRepository memberProfileRepository;
+
+    // ▼ 추가
+    private final NotificationService notificationService;
 
     // 게시글 목록 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-    // 게시글 리스트
     public Map<String, Object> getBoardList(int page, String searchType, String keyword, String typeCode, String sortType) {
 
         Sort sort = sortType.equals("views")
@@ -88,7 +90,6 @@ public class BoardService {
 
     // 게시글 상세 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-    // 게시글 상세보기
     @Transactional
     public BoardDetailDTO getBoardDetail(String boardTypeCode, Long boardIdx) {
         BoardEntity board = boardRepository.findDetail(boardTypeCode, boardIdx)
@@ -96,7 +97,6 @@ public class BoardService {
 
         board.setBoardViewCount(board.getBoardViewCount() + 1);
 
-        // MemberProfileEntity는 MemberEntity와 별도 테이블이므로 memIdx로 직접 조회
         MemberProfileEntity profile = memberProfileRepository.findById(board.getMember().getMemIdx()).orElse(null);
 
         return BoardDetailDTO.builder()
@@ -116,7 +116,8 @@ public class BoardService {
                 .build();
     }
 
-    // 게시글 좋아요 토글
+    // 게시글 좋아요 토글 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
     @Transactional
     public Map<String, Object> toggleLike(Long boardIdx, String memId) {
 
@@ -144,6 +145,12 @@ public class BoardService {
             board.setBoardLike(board.getBoardLike() + 1);
             isLiked = true;
         }
+
+        // ▼ 추가: 좋아요 눌렸을 때만 알림 (취소 시에는 알림 X)
+        if (isLiked) {
+            notificationService.notifyBoardLike(board.getMember(), member, board);
+        }
+
         Map<String, Object> result = new HashMap<>();
         result.put("boardLike", board.getBoardLike());
         result.put("isLiked", isLiked);
@@ -151,7 +158,8 @@ public class BoardService {
         return result;
     }
 
-    // 댓글 / 답글
+    // 댓글 / 답글 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
     @Transactional
     public void writeReply(Long boardIdx, ReplyWriteDTO dto, HttpServletRequest request, String memId) {
         MemberEntity member = memberRepository.findByMemId(memId)
@@ -180,9 +188,13 @@ public class BoardService {
                 .build();
 
         replyRepository.save(reply);
+
+        // ▼ 추가: 게시글 작성자에게 댓글 알림 (자기 글에 자기 댓글이면 제외는 NotificationService 내부에서 처리)
+        notificationService.notifyBoardComment(board.getMember(), member, board, reply);
     }
 
-    // 댓글 리스트 조회
+    // 댓글 리스트 조회 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
     public Map<String, Object> getReplies(Long boardIdx, String sort, int page) {
         Sort sortOption = sort.equals("latest")
                 ? Sort.by("replyRegdate").descending()
@@ -195,10 +207,9 @@ public class BoardService {
         Map<String, Object> result = new HashMap<>();
         result.put("replies", replyPage.getContent().stream()
                 .map(r -> {
-                    String memId = (r.getMember() != null) ? r.getMember().getMemId() : "(탈퇴회원)";
-                    Long memIdx = (r.getMember() != null) ? r.getMember().getMemIdx() : 0L;
+                    String replyMemId = (r.getMember() != null) ? r.getMember().getMemId() : "(탈퇴회원)";
+                    Long replyMemIdx = (r.getMember() != null) ? r.getMember().getMemIdx() : 0L;
 
-                    // MemberProfileEntity는 MemberEntity와 별도 테이블이므로 memIdx로 직접 조회
                     MemberProfileEntity profile = (r.getMember() != null)
                             ? memberProfileRepository.findById(r.getMember().getMemIdx()).orElse(null)
                             : null;
@@ -209,8 +220,8 @@ public class BoardService {
                     replyMap.put("replyRegdate", r.getReplyRegdate());
                     replyMap.put("replyLike", r.getReplyLike());
                     replyMap.put("replyDepth", r.getReplyDepth());
-                    replyMap.put("memId", memId);
-                    replyMap.put("memIdx", memIdx);
+                    replyMap.put("memId", replyMemId);
+                    replyMap.put("memIdx", replyMemIdx);
                     replyMap.put("memNickname", profile != null ? profile.getMemNickname() : null);
                     replyMap.put("memProfileImg", profile != null ? profile.getMemImg() : null);
                     return replyMap;
@@ -224,7 +235,8 @@ public class BoardService {
         return result;
     }
 
-    // 댓글 좋아요
+    // 댓글 좋아요 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
     @Transactional
     public Map<String, Object> toggleReplyLike(Long replyIdx, String memId) {
 
@@ -254,7 +266,8 @@ public class BoardService {
         return result;
     }
 
-    // 댓글 삭제
+    // 댓글 삭제 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
     @Transactional
     public void deleteReply(Long replyIdx, String memId) {
 
@@ -268,7 +281,8 @@ public class BoardService {
         replyRepository.delete(reply);
     }
 
-    // 게시글 삭제
+    // 게시글 삭제 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
     @Transactional
     public void deleteBoard(Long boardIdx, String memId) {
 
@@ -284,7 +298,6 @@ public class BoardService {
 
     // 게시글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-    // 게시글 작성하기
     @Transactional
     public Long writeBoard(String typeCode, BoardWriteDTO dto, HttpServletRequest request, String memId) {
         MemberEntity member = memberRepository.findByMemId(memId)
@@ -306,7 +319,6 @@ public class BoardService {
 
     // 게시글 수정 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-    // 게시글 수정
     @Transactional
     public void editBoard(Long boardIdx, BoardWriteDTO dto, String memId) {
         BoardEntity board = boardRepository.findById(boardIdx)

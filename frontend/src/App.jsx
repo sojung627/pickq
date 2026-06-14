@@ -1,5 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+import { ToastProvider, useToast } from "./components/notification/ToastContext";
 
 /* 헤더 푸터 메인 등등 */
 import Header from "./components/fragments/Header";
@@ -25,8 +28,8 @@ import SaleDetail from "./components/order/SaleDetail";
 import BoardList from "./components/board/BoardList";
 import BoardDetail from "./components/board/BoardDetail";
 import BoardWrite from "./components/board/BoardWrite";
-import BoardEdit from "./components/board/BoardEdit"
-import MyPosts from "./components/board/MyPosts"
+import BoardEdit from "./components/board/BoardEdit";
+import MyPosts from "./components/board/MyPosts";
 
 /* 회원가입 / 로그인 */
 import Register from "./components/members/SignUp";
@@ -71,106 +74,139 @@ import { CheckoutPage } from "./components/payment/CheckoutPage";
 import { SuccessPage } from "./components/payment/SuccessPage";
 import { FailPage } from "./components/payment/FailPage";
 
-function App() {
+// 라우트 + STOMP 구독을 담당하는 내부 컴포넌트
+function AppInner() {
+  const { addToast } = useToast();
+  const stompRef = useRef(null);
+  const [loginMemIdx, setLoginMemIdx] = useState(null);
+
+  // 로그인 여부 확인 → memIdx 저장
+  useEffect(() => {
+    fetch("http://localhost:8080/members/auth/check", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => {
+        if (data.isLoggedIn) setLoginMemIdx(data.member.memIdx);
+      })
+      .catch(() => {});
+  }, []);
+
+  // memIdx 생기면 STOMP 구독 시작
+  useEffect(() => {
+    if (!loginMemIdx) return;
+
+    const client = new Client({
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws-chat"),
+      reconnectDelay: 5000,
+      onConnect: () => {
+        client.subscribe(`/topic/notifications/${loginMemIdx}`, (frame) => {
+          const noti = JSON.parse(frame.body);
+          addToast(noti.notificationMessage, noti.targetUrl, noti.notificationTitle);
+        });
+      },
+    });
+
+    client.activate();
+    stompRef.current = client;
+
+    return () => client.deactivate();
+  }, [loginMemIdx, addToast]);
 
   return (
+    <div className="app-container">
+      <Header />
+      <main>
+        <Routes>
+          {/* 메인 */}
+          <Route path="/" element={<MainPage />} />
+
+          {/* 회원 파트 */}
+          <Route path="/members/login" element={<Login />} />
+          <Route path="/members/signUp" element={<Register />} />
+          <Route path="/members/pwdFind" element={<PwdFind />} />
+
+          {/* 경매 */}
+          <Route path="/auctions" element={
+            <AuctionList
+              statusFilter={new URLSearchParams(window.location.search).get('statusFilter') || 'open'}
+              sortBy={new URLSearchParams(window.location.search).get('sortBy') || 'latest'}
+              keyword={new URLSearchParams(window.location.search).get('keyword') || ''}
+              selectedCategory={null}
+            />
+          } />
+          <Route path="/auctions/category/:category" element={
+            <AuctionList
+              statusFilter={new URLSearchParams(window.location.search).get('statusFilter') || 'open'}
+              sortBy={new URLSearchParams(window.location.search).get('sortBy') || 'latest'}
+              keyword={new URLSearchParams(window.location.search).get('keyword') || ''}
+              selectedCategory={window.location.pathname.split('/').pop()}
+            />
+          } />
+          <Route path="/auctions/new" element={<AuctionWrite />} />
+          <Route path="/auctions/:auctionIdx" element={<AuctionDetail />} />
+
+          {/* 게시판 파트 */}
+          <Route path="/boards" element={<BoardList />} />
+          <Route path="/boards/:typeCode/new" element={<BoardWrite />} />
+          <Route path="/boards/:boardTypeCode/:boardIdx" element={<BoardDetail />} />
+          <Route path="/boards/:boardTypeCode/:boardIdx/edit" element={<BoardEdit />} />
+
+          {/* 마이페이지 */}
+          <Route path="/mypage" element={<MyPageLayout />}>
+            <Route path="auctions" element={<Auctions />} />
+            <Route path="bids" element={<Mybids />} />
+            <Route path="orders" element={<MyOrders />} />
+            <Route path="info" element={<MemberUpdate />} />
+            <Route path="addresses" element={<AddressManagement />} />
+            <Route path="addresses/new" element={<AddressInsert />} />
+            <Route path="addresses/edit" element={<AddressUpdate />} />
+            <Route path="profile" element={<MemberProfileUpdate />} />
+            <Route path="boards" element={<MyPosts />} />
+            <Route path="reviews" element={<ReviewManagement />} />
+            <Route path="reviews/ReviewWrite" element={<ReviewWrite />} />
+            <Route path="reviews/reviewDetail" element={<ReviewDetail />} />
+            <Route path="reviews/reviewAdmin" element={<ReviewAdmin />} />
+            <Route path="sales" element={<MySales />} />
+            <Route path="payments" element={<MyPayments />} />
+            <Route path="orders/:orderIdx" element={<SaleDetail />} />
+          </Route>
+
+          {/* 고객지원 */}
+          <Route path="/support/guide" element={
+            <SupportLayout currentTab="guide"><Guide /></SupportLayout>} />
+          <Route path="/support/faq" element={
+            <SupportLayout currentTab="faq"><Faq /></SupportLayout>} />
+          <Route path="/support/inquiry" element={
+            <SupportLayout currentTab="inquiry"><Inquiry /></SupportLayout>} />
+
+          {/* 채팅 */}
+          <Route path="/chatRoom" element={<ChatOverlay />} />
+
+          {/* 요약 프로필 */}
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/reviews/detail/:reviewIdx" element={<ReviewDetail />} />
+
+          {/* 알림 */}
+          <Route path="/notifications" element={<NotificationPage />} />
+
+          {/* 결제 */}
+          <Route path="/payment/pay" element={<CheckoutPage />} />
+          <Route path="/payment/success" element={<SuccessPage />} />
+          <Route path="/payment/fail" element={<FailPage />} />
+        </Routes>
+      </main>
+      <FloatingButtons />
+      <Footer />
+    </div>
+  );
+}
+
+// 최상위 App: Router > ToastProvider > AppInner
+function App() {
+  return (
     <Router>
-      <div className="app-container">
-        {/* 언제나 위에 떠야 하는 것
-            - main 밖이면 어디서든 뜸
-        */}
-        <Header />
-        <main>
-          <Routes>
-            {/* 메인 */}
-            <Route path="/" element={<MainPage />} />
-
-            {/* 회원 파트 */}
-            <Route path="/members/login" element={<Login />} />
-            <Route path="/members/signUp" element={<Register />} />
-            {/* 비밀번호 api */}
-            <Route path="/members/pwdFind" element={<PwdFind />} />
-
-            {/* 경매 */}
-            <Route path="/auctions" element={
-              <AuctionList
-                statusFilter={new URLSearchParams(window.location.search).get('statusFilter') || 'open'}
-                sortBy={new URLSearchParams(window.location.search).get('sortBy') || 'latest'}
-                keyword={new URLSearchParams(window.location.search).get('keyword') || ''}
-                selectedCategory={null}
-              />
-            } />
-
-            {/* 경매 카테고리 */}
-            <Route path="/auctions/category/:category" element={
-              <AuctionList
-                statusFilter={new URLSearchParams(window.location.search).get('statusFilter') || 'open'}
-                sortBy={new URLSearchParams(window.location.search).get('sortBy') || 'latest'}
-                keyword={new URLSearchParams(window.location.search).get('keyword') || ''}
-                selectedCategory={window.location.pathname.split('/').pop()}
-              />
-            } />
-
-            <Route path="/auctions/new" element={<AuctionWrite/> } />
-            <Route path="/auctions/:auctionIdx" element={<AuctionDetail/> } />
-
-            {/* 게시판 파트 */}
-            <Route path="/boards" element={<BoardList />} />
-            <Route path="/boards/:typeCode/new" element={<BoardWrite />} />
-            <Route path="/boards/:boardTypeCode/:boardIdx" element={<BoardDetail />} />
-            <Route path="/boards/:boardTypeCode/:boardIdx/edit" element={<BoardEdit />} />
-
-            {/* 헤더의 마이페이지에서만 뜨는 것들 */}
-            <Route path="/mypage" element={<MyPageLayout />}>
-              <Route path="auctions" element={<Auctions />} />
-              <Route path="bids" element={<Mybids />} />
-              <Route path="orders" element={<MyOrders />} />
-              <Route path="info" element={<MemberUpdate />} />
-              <Route path="addresses" element={<AddressManagement />} />
-              <Route path="addresses/new" element={<AddressInsert />} />
-              <Route path="addresses/edit" element={<AddressUpdate />} />
-              <Route path="profile" element={<MemberProfileUpdate />} />
-              <Route path="boards" element={<MyPosts />} />
-              <Route path="reviews" element={<ReviewManagement />} />
-              <Route path="reviews/ReviewWrite" element={<ReviewWrite />} />
-              <Route path="reviews/reviewDetail" element={<ReviewDetail />} />
-              <Route path="reviews/reviewAdmin" element={<ReviewAdmin />} />
-              <Route path="sales" element={<MySales />} />
-              <Route path="payments" element={<MyPayments />} />
-              <Route path="orders/:orderIdx" element={<SaleDetail />} />
-            </Route>
-
-            {/* 고객지원 파트 */}
-            <Route path="/support/guide" element={
-              <SupportLayout currentTab="guide"><Guide /></SupportLayout>} />
-            <Route path="/support/faq" element={
-              <SupportLayout currentTab="faq"><Faq /></SupportLayout>} />
-            <Route path="/support/inquiry" element={
-              <SupportLayout currentTab="inquiry"><Inquiry /></SupportLayout>} />
-
-            {/* 채팅 */}
-            <Route path="/chatRoom" element={<ChatOverlay />} />
-
-            {/* 요약 프로필 */}
-            <Route path="/profile" element={<Profile />} />
-            {/* 요약 프로필 - 리뷰 */}
-            <Route path="/reviews/detail/:reviewIdx" element={<ReviewDetail />} />
-
-            {/* 알림 */}
-            <Route path="/notifications" element={<NotificationPage />} />
-
-            {/* 결제 */}
-            <Route path="/payment/pay" element={<CheckoutPage />} />
-            <Route path="/payment/success" element={<SuccessPage />} />
-            <Route path="/payment/fail" element={<FailPage />} />
-
-          </Routes>
-
-        </main>
-        {/* 언제나 아래에 떠야 하는 것들 */}
-        <FloatingButtons />
-        <Footer />
-      </div>
+      <ToastProvider>
+        <AppInner />
+      </ToastProvider>
     </Router>
   );
 }
