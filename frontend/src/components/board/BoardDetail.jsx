@@ -20,18 +20,20 @@ const BoardDetail = () => {
   const [childReplyContent, setChildReplyContent] = useState('');
   const [likedReplies, setLikedReplies] = useState(new Set());
   const [profileModal, setProfileModal] = useState(null);
+  const [totalReplyPages, setTotalReplyPages] = useState(1);
 
-  const fetchReplies = () => {
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
-      credentials: "include"
-    })
-      .then(res => res.json())
-      .then(data => {
-        setReplies(data.replies || []);
-        setTotalReplies(data.totalReplies || 0);
+    const fetchReplies = () => {
+      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
+        credentials: "include"
       })
-      .catch(err => console.error("댓글 조회 에러:", err));
-  };
+        .then(res => res.json())
+        .then(data => {
+          setReplies(data.replies || []);
+          setTotalReplies(data.totalReplies || 0);
+          setTotalReplyPages(data.totalPages || 1);
+        })
+        .catch(err => console.error("댓글 조회 에러:", err));
+    };
 
   const from = searchParams.get("from") || "";
   const page = searchParams.get("page") || "1";
@@ -84,20 +86,58 @@ const BoardDetail = () => {
   };
 
   const handleReplySubmit = () => {
-    if (!replyContent.trim()) return;
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ replyContent })
+      if (!replyContent.trim()) return;
+      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ replyContent })
+      })
+        .then(res => res.json())
+        .then(() => {
+          setReplyContent('');
+          goToReplyAfterSubmit();
+        })
+        .catch(err => console.error("댓글 등록 에러:", err));
+    };
+
+  const goToReplyAfterSubmit = () => {
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=1`, {
+      credentials: "include"
     })
       .then(res => res.json())
-      .then(() => {
-        setReplyContent('');
-        setReplyPage(1);
-        fetchReplies();
+      .then(data => {
+        const newTotalPages = data.totalPages || 1;
+
+        if (sortType === 'oldest') {
+          // 등록순: 새 댓글은 마지막 페이지
+          if (replyPage === newTotalPages) {
+            // 이미 마지막 페이지에 있으면 state 변경 없으므로 useEffect 미발동
+            // → 마지막 페이지 데이터 직접 fetch해서 갱신
+            fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${newTotalPages}`, {
+              credentials: "include"
+            })
+              .then(res => res.json())
+              .then(d => {
+                setReplies(d.replies || []);
+                setTotalReplies(d.totalReplies || 0);
+                setTotalReplyPages(d.totalPages || 1);
+              });
+          } else {
+            setReplyPage(newTotalPages);
+          }
+        } else {
+          // 최신순: 새 댓글은 1페이지
+          if (replyPage === 1) {
+            setReplies(data.replies || []);
+            setTotalReplies(data.totalReplies || 0);
+            setTotalReplyPages(newTotalPages);
+          } else {
+            setReplyPage(1);
+          }
+        }
       })
-      .catch(err => console.error("댓글 등록 에러:", err));
+      .catch(err => console.error("댓글 목록 갱신 에러:", err));
   };
 
   const handleReplyLike = (rid) => {
@@ -148,21 +188,21 @@ const BoardDetail = () => {
   };
 
   const handleChildReplySubmit = (parentIdx) => {
-    if (!childReplyContent.trim()) return;
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ replyContent: childReplyContent, replyParentIdx: parentIdx })
-    })
-      .then(res => res.json())
-      .then(() => {
-        setChildReplyContent('');
-        setReplyFormId(null);
-        fetchReplies();
+      if (!childReplyContent.trim()) return;
+      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ replyContent: childReplyContent, replyParentIdx: parentIdx })
       })
-      .catch(err => console.error("답글 등록 에러:", err));
-  };
+        .then(res => res.json())
+        .then(() => {
+          setChildReplyContent('');
+          setReplyFormId(null);
+          goToReplyAfterSubmit();
+        })
+        .catch(err => console.error("답글 등록 에러:", err));
+    };
 
   const handleBoardDelete = () => {
     if (!confirm('삭제하시겠습니까?')) return;
