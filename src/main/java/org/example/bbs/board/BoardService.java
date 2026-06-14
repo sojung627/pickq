@@ -166,17 +166,16 @@ public class BoardService {
     @Transactional
     public void writeReply(Long boardIdx, ReplyWriteDTO dto, HttpServletRequest request, String memId) {
         MemberEntity member = memberRepository.findByMemId(memId)
-                .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다.")); // 주석: 회원 조회 [cite: 413]
         BoardEntity board = boardRepository.findById(boardIdx)
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
-
-        int depth = 0;
-        ReplyEntity parent = null;
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다.")); // 주석: 게시글 조회 [cite: 414]
+        int depth = 0; // 주석: 기본 depth 설정 [cite: 415]
+        ReplyEntity parent = null; // 주석: 부모 댓글 초기화 [cite: 415]
 
         if (dto.getReplyParentIdx() != null) {
             parent = replyRepository.findById(dto.getReplyParentIdx())
-                    .orElseThrow(() -> new RuntimeException("부모 댓글을 찾을 수 없습니다."));
-            depth = parent.getReplyDepth() + 1;
+                    .orElseThrow(() -> new RuntimeException("부모 댓글을 찾을 수 없습니다.")); // 주석: 부모 댓글 조회 [cite: 415]
+            depth = parent.getReplyDepth() + 1; // 주석: depth 증가 [cite: 416]
         }
 
         // 일차적으로 replyRef를 임시로 세팅하여 엔티티 빌드
@@ -185,28 +184,33 @@ public class BoardService {
                 .member(member)
                 .replyContent(dto.getReplyContent())
                 .replyIp(request.getRemoteAddr())
-                .replyRef(0) // 아래에서 고유 ID로 업데이트되므로 임시 세팅
-                .replyStep(0)
+                .replyRef(0) // 아래에서 고유 ID로 업데이트되므로 임시 세팅 [cite: 417]
+                .replyStep(0) // 주석: 초기 스텝 설정 [cite: 417]
                 .replyDepth(depth)
                 .build();
-
-        replyRepository.save(reply);
+        replyRepository.save(reply); // 주석: 1차 저장 [cite: 418]
 
         // 일반 댓글(부모가 없는 최상위 댓글)인 경우, 자기 자신의 PK(replyIdx)를 그룹 번호(replyRef)로 지정
         if (parent == null) {
-            reply.setReplyRef(Math.toIntExact(reply.getReplyIdx()));
+            reply.setReplyRef(Math.toIntExact(reply.getReplyIdx())); // 주석: 본인 인덱스를 ref로 지정 [cite: 418]
         } else {
-            reply.setReplyRef(Math.toIntExact(parent.getReplyRef()));
+            reply.setReplyRef(Math.toIntExact(parent.getReplyRef())); // 주석: 부모의 ref를 승계 [cite: 419]
         }
 
         // 변경된 replyRef 반영을 위해 다시 저장 혹은 더티 체킹 유도
-        replyRepository.save(reply);
+        replyRepository.save(reply); // 주석: 최종 저장 [cite: 420]
 
         // 알림 서비스 분기 처리
         if (parent != null) {
-            notificationService.notifyBoardReply(parent.getMember(), member, board, reply);
+            // 주석: 답글인 경우 부모 댓글 작성자에게 알림 발송
+            if (parent.getMember() != null) {
+                notificationService.notifyBoardReply(parent.getMember(), member, board, reply);
+            }
         } else {
-            notificationService.notifyBoardComment(board.getMember(), member, board, reply);
+            // 주석: 일반 댓글인 경우 게시글 작성자에게 알림 발송
+            if (board.getMember() != null) {
+                notificationService.notifyBoardComment(board.getMember(), member, board, reply);
+            }
         }
     }
 //    @Transactional
@@ -217,34 +221,41 @@ public class BoardService {
 //                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
 //
 //        int depth = 0;
-//        int ref = 0;
 //        ReplyEntity parent = null;
 //
 //        if (dto.getReplyParentIdx() != null) {
 //            parent = replyRepository.findById(dto.getReplyParentIdx())
 //                    .orElseThrow(() -> new RuntimeException("부모 댓글을 찾을 수 없습니다."));
 //            depth = parent.getReplyDepth() + 1;
-//            ref = Math.toIntExact(parent.getReplyIdx());
 //        }
 //
+//        // 일차적으로 replyRef를 임시로 세팅하여 엔티티 빌드
 //        ReplyEntity reply = ReplyEntity.builder()
 //                .board(board)
 //                .member(member)
 //                .replyContent(dto.getReplyContent())
 //                .replyIp(request.getRemoteAddr())
-//                .replyRef(ref)
+//                .replyRef(0) // 아래에서 고유 ID로 업데이트되므로 임시 세팅
 //                .replyStep(0)
 //                .replyDepth(depth)
 //                .build();
 //
 //        replyRepository.save(reply);
 //
-//        // 답글 여부에 따라 알림 분기
+//        // 일반 댓글(부모가 없는 최상위 댓글)인 경우, 자기 자신의 PK(replyIdx)를 그룹 번호(replyRef)로 지정
+//        if (parent == null) {
+//            reply.setReplyRef(Math.toIntExact(reply.getReplyIdx()));
+//        } else {
+//            reply.setReplyRef(Math.toIntExact(parent.getReplyRef()));
+//        }
+//
+//        // 변경된 replyRef 반영을 위해 다시 저장 혹은 더티 체킹 유도
+//        replyRepository.save(reply);
+//
+//        // 알림 서비스 분기 처리
 //        if (parent != null) {
-//            // 답글: 부모 댓글 작성자에게 BOARD_REPLY 알림
 //            notificationService.notifyBoardReply(parent.getMember(), member, board, reply);
 //        } else {
-//            // 일반 댓글: 게시글 작성자에게 BOARD_COMMENT 알림
 //            notificationService.notifyBoardComment(board.getMember(), member, board, reply);
 //        }
 //    }
@@ -308,55 +319,6 @@ public class BoardService {
 
         return result;
     }
-
-//    public Map<String, Object> getReplies(Long boardIdx, String sort, int page) {
-//
-//        // 트리 순서(부모-자식 묶음)로 전체 조회
-//        List<ReplyEntity> allReplies = replyRepository.findByBoard_BoardIdxOrderByTree(boardIdx);
-//
-//        // 최신순이면 최상위 댓글 그룹 단위로 역순 재배치 (그룹 내부 순서는 유지)
-//        if (sort.equals("latest")) {
-//            allReplies = reorderGroupsDesc(allReplies);
-//        }
-//
-//        int pageSize = 10;
-//        int totalElements = allReplies.size();
-//        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
-//
-//        int fromIndex = Math.min((page - 1) * pageSize, totalElements);
-//        int toIndex = Math.min(fromIndex + pageSize, totalElements);
-//        List<ReplyEntity> pageContent = allReplies.subList(fromIndex, toIndex);
-//
-//        Map<String, Object> result = new HashMap<>();
-//        result.put("replies", pageContent.stream()
-//                .map(r -> {
-//                    String replyMemId = (r.getMember() != null) ? r.getMember().getMemId() : "(탈퇴회원)";
-//                    Long replyMemIdx = (r.getMember() != null) ? r.getMember().getMemIdx() : 0L;
-//
-//                    MemberProfileEntity profile = (r.getMember() != null)
-//                            ? memberProfileRepository.findById(r.getMember().getMemIdx()).orElse(null)
-//                            : null;
-//
-//                    Map<String, Object> replyMap = new HashMap<>();
-//                    replyMap.put("replyIdx", r.getReplyIdx());
-//                    replyMap.put("replyContent", r.getReplyContent());
-//                    replyMap.put("replyRegdate", r.getReplyRegdate());
-//                    replyMap.put("replyLike", r.getReplyLike());
-//                    replyMap.put("replyDepth", r.getReplyDepth());
-//                    replyMap.put("memId", replyMemId);
-//                    replyMap.put("memIdx", replyMemIdx);
-//                    replyMap.put("memNickname", profile != null ? profile.getMemNickname() : null);
-//                    replyMap.put("memProfileImg", profile != null ? profile.getMemImg() : null);
-//                    return replyMap;
-//                })
-//                .toList());
-//
-//        result.put("totalReplies", (long) totalElements);
-//        result.put("totalPages", totalPages);
-//        result.put("currentPage", page);
-//
-//        return result;
-//    }
 
     // 최상위 댓글 그룹(자신 + 하위 답글들) 단위로 묶어서 그룹 순서를 역순으로 재배치
     // 수정된 그룹 역순 재배치 로직 (고유한 replyRef 기반으로 안전하게 그룹핑)
