@@ -213,52 +213,6 @@ public class BoardService {
             }
         }
     }
-//    @Transactional
-//    public void writeReply(Long boardIdx, ReplyWriteDTO dto, HttpServletRequest request, String memId) {
-//        MemberEntity member = memberRepository.findByMemId(memId)
-//                .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
-//        BoardEntity board = boardRepository.findById(boardIdx)
-//                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
-//
-//        int depth = 0;
-//        ReplyEntity parent = null;
-//
-//        if (dto.getReplyParentIdx() != null) {
-//            parent = replyRepository.findById(dto.getReplyParentIdx())
-//                    .orElseThrow(() -> new RuntimeException("부모 댓글을 찾을 수 없습니다."));
-//            depth = parent.getReplyDepth() + 1;
-//        }
-//
-//        // 일차적으로 replyRef를 임시로 세팅하여 엔티티 빌드
-//        ReplyEntity reply = ReplyEntity.builder()
-//                .board(board)
-//                .member(member)
-//                .replyContent(dto.getReplyContent())
-//                .replyIp(request.getRemoteAddr())
-//                .replyRef(0) // 아래에서 고유 ID로 업데이트되므로 임시 세팅
-//                .replyStep(0)
-//                .replyDepth(depth)
-//                .build();
-//
-//        replyRepository.save(reply);
-//
-//        // 일반 댓글(부모가 없는 최상위 댓글)인 경우, 자기 자신의 PK(replyIdx)를 그룹 번호(replyRef)로 지정
-//        if (parent == null) {
-//            reply.setReplyRef(Math.toIntExact(reply.getReplyIdx()));
-//        } else {
-//            reply.setReplyRef(Math.toIntExact(parent.getReplyRef()));
-//        }
-//
-//        // 변경된 replyRef 반영을 위해 다시 저장 혹은 더티 체킹 유도
-//        replyRepository.save(reply);
-//
-//        // 알림 서비스 분기 처리
-//        if (parent != null) {
-//            notificationService.notifyBoardReply(parent.getMember(), member, board, reply);
-//        } else {
-//            notificationService.notifyBoardComment(board.getMember(), member, board, reply);
-//        }
-//    }
 
     // 댓글 리스트 조회 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
