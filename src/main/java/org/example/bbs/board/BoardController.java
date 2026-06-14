@@ -189,4 +189,23 @@ public class BoardController {
         return ResponseEntity.ok(Map.of("result", "success"));
     }
 
+    // 댓글 및 답글 수정
+    @PutMapping("/replies/{replyIdx}")
+    public ResponseEntity<?> editReply(
+            @PathVariable Long replyIdx,
+            @RequestBody ReplyWriteDTO dto,
+            HttpSession session) {
+
+        String memId = (String) session.getAttribute("loginMember");
+
+        if (memId == null) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "로그인이 필요합니다."));
+        }
+
+        boardService.editReply(replyIdx, dto, memId);
+
+        return ResponseEntity.ok(Map.of("result", "success"));
+    }
+
 }

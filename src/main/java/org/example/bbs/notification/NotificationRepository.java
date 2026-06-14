@@ -17,6 +17,9 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
     // 안읽은 알림 수
     long countByReceiverMemIdAndIsRead(String memId, String isRead);
 
+    // 특정 댓글을 참조하는 알림 목록 (댓글 삭제 시 FK 해제용)
+    List<NotificationEntity> findByReply_ReplyIdx(Long replyIdx);
+
     // 전체 읽음 처리
     @Modifying
     @Query("UPDATE NotificationEntity n SET n.isRead = 'Y', n.readAt = CURRENT_TIMESTAMP WHERE n.receiver.memId = :memId")

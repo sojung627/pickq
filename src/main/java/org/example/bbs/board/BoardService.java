@@ -6,6 +6,8 @@ import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
 import org.example.bbs.memberProfile.MemberProfileEntity;
 import org.example.bbs.memberProfile.MemberProfileRepository;
+import org.example.bbs.notification.NotificationEntity;
+import org.example.bbs.notification.NotificationRepository;
 import org.example.bbs.notification.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,8 +38,8 @@ public class BoardService {
     private final MemberRepository memberRepository;
     private final MemberProfileRepository memberProfileRepository;
 
-    // ▼ 추가
     private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
 
     // 게시글 목록 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -169,9 +171,10 @@ public class BoardService {
 
         int depth = 0;
         int ref = 0;
+        ReplyEntity parent = null;
 
         if (dto.getReplyParentIdx() != null) {
-            ReplyEntity parent = replyRepository.findById(dto.getReplyParentIdx())
+            parent = replyRepository.findById(dto.getReplyParentIdx())
                     .orElseThrow(() -> new RuntimeException("부모 댓글을 찾을 수 없습니다."));
             depth = parent.getReplyDepth() + 1;
             ref = Math.toIntExact(parent.getReplyIdx());
@@ -189,8 +192,14 @@ public class BoardService {
 
         replyRepository.save(reply);
 
-        // ▼ 추가: 게시글 작성자에게 댓글 알림 (자기 글에 자기 댓글이면 제외는 NotificationService 내부에서 처리)
-        notificationService.notifyBoardComment(board.getMember(), member, board, reply);
+        // 답글 여부에 따라 알림 분기
+        if (parent != null) {
+            // 답글: 부모 댓글 작성자에게 BOARD_REPLY 알림
+            notificationService.notifyBoardReply(parent.getMember(), member, board, reply);
+        } else {
+            // 일반 댓글: 게시글 작성자에게 BOARD_COMMENT 알림
+            notificationService.notifyBoardComment(board.getMember(), member, board, reply);
+        }
     }
 
     // 댓글 리스트 조회 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -278,8 +287,14 @@ public class BoardService {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
 
+        // 이 댓글을 참조하는 알림의 reply_idx를 null로 먼저 해제한 뒤 삭제
+        List<NotificationEntity> relatedNotis = notificationRepository.findByReply_ReplyIdx(replyIdx);
+        relatedNotis.forEach(n -> n.setReply(null));
+        notificationRepository.saveAll(relatedNotis);
+
         replyRepository.delete(reply);
     }
+
 
     // 게시글 삭제 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -354,6 +369,21 @@ public class BoardService {
                             .build();
                 })
                 .toList();
+    }
+
+    // 댓글 및 답글 수정
+    @Transactional
+    public void editReply(Long replyIdx, ReplyWriteDTO dto, String memId) {
+
+        ReplyEntity reply = replyRepository.findById(replyIdx)
+                .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+
+        if (!reply.getMember().getMemId().equals(memId)) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        reply.setReplyContent(dto.getReplyContent());
+        reply.setReplyModdate(LocalDateTime.now());
     }
 
 }

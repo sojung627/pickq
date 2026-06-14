@@ -108,4 +108,29 @@ public class NotificationService {
         if (text == null) return "";
         return text.length() > limit ? text.substring(0, limit) + "..." : text;
     }
+
+    // 댓글에 대한 답글 알림
+    @Transactional
+    public void notifyBoardReply(MemberEntity receiver, MemberEntity sender,
+                                 BoardEntity board, ReplyEntity reply) {
+        if (receiver.getMemId().equals(sender.getMemId())) return; // 본인 댓글에 본인 답글 제외
+
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .board(board)
+                .reply(reply)
+                .notificationType(NotificationTypeCode.BOARD_REPLY.name())
+                .notificationTitle("내 댓글에 답글이 달렸어요")
+                .notificationMessage(sender.getMemName() + "님이 답글을 남겼습니다: "
+                        + truncate(reply.getReplyContent(), 30))
+                .targetUrl("/boards/" + board.getBoardType().getBoardTypeCode()
+                        + "/" + board.getBoardIdx())
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
+
+
 }
