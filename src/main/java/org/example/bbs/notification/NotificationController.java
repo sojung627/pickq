@@ -22,12 +22,12 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getAll(memId));
     }
 
-    // 최근 5건 (드롭다운용)
+    // 최근 3건 (드롭다운용)
     @GetMapping("/recent")
     public ResponseEntity<?> getRecent(HttpSession session) {
         String memId = (String) session.getAttribute("loginMember");
         if (memId == null) return ResponseEntity.status(401).body("로그인 필요");
-        return ResponseEntity.ok(notificationService.getRecent5(memId));
+        return ResponseEntity.ok(notificationService.getRecent3(memId));
     }
 
     // 안읽은 수 (헤더 빨간 점)

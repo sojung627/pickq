@@ -63,8 +63,7 @@ public class NotificationService {
         pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
     }
 
-    // 조회
-    // 조회
+    // 조회 3세트 - 알림에서도 씀
     @Transactional(readOnly = true)
     public List<NotificationDTO> getAll(String memId) {
         return notificationRepository
@@ -73,9 +72,9 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    public List<NotificationDTO> getRecent5(String memId) {
+    public List<NotificationDTO> getRecent3(String memId) {
         return notificationRepository
-                .findTop5ByReceiver_MemIdOrderByCreatedAtDesc(memId)
+                .findTop3ByReceiver_MemIdOrderByCreatedAtDesc(memId)
                 .stream().map(NotificationDTO::from).toList();
     }
 
@@ -110,6 +109,8 @@ public class NotificationService {
         return text.length() > limit ? text.substring(0, limit) + "..." : text;
     }
 
+    // 알림 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
     // 댓글에 대한 답글 알림
     @Transactional
     public void notifyBoardReply(MemberEntity receiver, MemberEntity sender,
@@ -124,6 +125,33 @@ public class NotificationService {
                 .notificationType(NotificationTypeCode.BOARD_REPLY.name())
                 .notificationTitle("내 댓글에 답글이 달렸어요")
                 .notificationMessage(sender.getMemName() + "님이 답글을 남겼습니다: "
+                        + truncate(reply.getReplyContent(), 30))
+                .targetUrl("/boards/" + board.getBoardType().getBoardTypeCode()
+                        + "/" + board.getBoardIdx())
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
+
+    // 댓글 / 답글 좋아요 알림
+    @Transactional
+    public void notifyReplyLike(MemberEntity receiver, MemberEntity sender,
+                                BoardEntity board, ReplyEntity reply) {
+        if (receiver.getMemId().equals(sender.getMemId())) return; // 본인 댓글에 본인 좋아요 제외
+
+        // 답글(depth > 0)인지 일반 댓글(depth == 0)인지에 따라 문구 분기
+        boolean isReply = reply.getReplyDepth() != null && reply.getReplyDepth() > 0;
+        String label = isReply ? "답글" : "댓글";
+
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .board(board)
+                .reply(reply)
+                .notificationType(NotificationTypeCode.REPLY_LIKE.name())
+                .notificationTitle("내 " + label + "에 좋아요가 눌렸어요")
+                .notificationMessage(sender.getMemName() + "님이 좋아요를 눌렀습니다: "
                         + truncate(reply.getReplyContent(), 30))
                 .targetUrl("/boards/" + board.getBoardType().getBoardTypeCode()
                         + "/" + board.getBoardIdx())

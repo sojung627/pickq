@@ -35,8 +35,7 @@ export default function NotificationDropdown({ onClose }) {
           notifications.map(n => (
             <div key={n.notificationIdx}
               onClick={() => { navigate(n.targetUrl || '/notifications'); onClose(); }}
-              className={`px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors
-                ${n.isRead === 'N' ? 'bg-green-50' : ''}`}>
+              className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
               <p className="text-sm font-semibold text-[#222] mb-0.5">{n.notificationTitle}</p>
               <p className="text-xs text-gray-500 truncate">{n.notificationMessage}</p>
               <p className="text-xs text-gray-300 mt-1">

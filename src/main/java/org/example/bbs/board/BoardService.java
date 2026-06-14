@@ -281,9 +281,12 @@ public class BoardService {
         Optional<ReplyLikeEntity> existingLike =
                 replyLikeRepository.findByReply_ReplyIdxAndMember_MemId(replyIdx, memId);
 
+        boolean isLiked;
+
         if (existingLike.isPresent()) {
             replyLikeRepository.delete(existingLike.get());
             reply.setReplyLike(reply.getReplyLike() - 1);
+            isLiked = false;
         } else {
             ReplyLikeEntity like = ReplyLikeEntity.builder()
                     .reply(reply)
@@ -291,7 +294,14 @@ public class BoardService {
                     .build();
             replyLikeRepository.save(like);
             reply.setReplyLike(reply.getReplyLike() + 1);
+            isLiked = true;
         }
+
+        // 좋아요 눌렸을 때만 댓글/답글 작성자에게 알림 (취소 시에는 알림 X)
+        if (isLiked) {
+            notificationService.notifyReplyLike(reply.getMember(), member, reply.getBoard(), reply);
+        }
+
         Map<String, Object> result = new HashMap<>();
         result.put("replyLike", reply.getReplyLike());
 

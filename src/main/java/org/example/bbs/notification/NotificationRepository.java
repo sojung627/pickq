@@ -8,11 +8,11 @@ import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
 
-    // 내 알림 전체 목록 (최신순)
+    // 내 알림 전체 목록 (최신순, 알림 페이지용)
     List<NotificationEntity> findByReceiver_MemIdOrderByCreatedAtDesc(String memId);
 
-    // 최근 알림 5건 (드롭다운용)
-    List<NotificationEntity> findTop5ByReceiver_MemIdOrderByCreatedAtDesc(String memId);
+    // 최근 알림 3건 (드롭다운용)
+    List<NotificationEntity> findTop3ByReceiver_MemIdOrderByCreatedAtDesc(String memId);
 
     // 안읽은 알림 수
     long countByReceiver_MemIdAndIsRead(String memId, String isRead);
