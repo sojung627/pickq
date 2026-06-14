@@ -22,18 +22,18 @@ const BoardDetail = () => {
   const [profileModal, setProfileModal] = useState(null);
   const [totalReplyPages, setTotalReplyPages] = useState(1);
 
-    const fetchReplies = () => {
-      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
-        credentials: "include"
+  const fetchReplies = () => {
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
+      credentials: "include"
+    })
+      .then(res => res.json())
+      .then(data => {
+        setReplies(data.replies || []);
+        setTotalReplies(data.totalReplies || 0);
+        setTotalReplyPages(data.totalPages || 1);
       })
-        .then(res => res.json())
-        .then(data => {
-          setReplies(data.replies || []);
-          setTotalReplies(data.totalReplies || 0);
-          setTotalReplyPages(data.totalPages || 1);
-        })
-        .catch(err => console.error("댓글 조회 에러:", err));
-    };
+      .catch(err => console.error("댓글 조회 에러:", err));
+  };
 
   const from = searchParams.get("from") || "";
   const page = searchParams.get("page") || "1";
@@ -86,20 +86,20 @@ const BoardDetail = () => {
   };
 
   const handleReplySubmit = () => {
-      if (!replyContent.trim()) return;
-      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ replyContent })
+    if (!replyContent.trim()) return;
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ replyContent })
+    })
+      .then(res => res.json())
+      .then(() => {
+        setReplyContent('');
+        goToReplyAfterSubmit();
       })
-        .then(res => res.json())
-        .then(() => {
-          setReplyContent('');
-          goToReplyAfterSubmit();
-        })
-        .catch(err => console.error("댓글 등록 에러:", err));
-    };
+      .catch(err => console.error("댓글 등록 에러:", err));
+  };
 
   const goToReplyAfterSubmit = () => {
     fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=1`, {
@@ -110,28 +110,14 @@ const BoardDetail = () => {
         const newTotalPages = data.totalPages || 1;
 
         if (sortType === 'oldest') {
-          // 등록순: 새 댓글은 마지막 페이지
           if (replyPage === newTotalPages) {
-            // 이미 마지막 페이지에 있으면 state 변경 없으므로 useEffect 미발동
-            // → 마지막 페이지 데이터 직접 fetch해서 갱신
-            fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${newTotalPages}`, {
-              credentials: "include"
-            })
-              .then(res => res.json())
-              .then(d => {
-                setReplies(d.replies || []);
-                setTotalReplies(d.totalReplies || 0);
-                setTotalReplyPages(d.totalPages || 1);
-              });
+            fetchReplies();
           } else {
             setReplyPage(newTotalPages);
           }
-        } else {
-          // 최신순: 새 댓글은 1페이지
+        } else if (sortType === 'latest') {
           if (replyPage === 1) {
-            setReplies(data.replies || []);
-            setTotalReplies(data.totalReplies || 0);
-            setTotalReplyPages(newTotalPages);
+            fetchReplies();
           } else {
             setReplyPage(1);
           }
@@ -188,21 +174,21 @@ const BoardDetail = () => {
   };
 
   const handleChildReplySubmit = (parentIdx) => {
-      if (!childReplyContent.trim()) return;
-      fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ replyContent: childReplyContent, replyParentIdx: parentIdx })
+    if (!childReplyContent.trim()) return;
+    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ replyContent: childReplyContent, replyParentIdx: parentIdx })
+    })
+      .then(res => res.json())
+      .then(() => {
+        setChildReplyContent('');
+        setReplyFormId(null);
+        goToReplyAfterSubmit();
       })
-        .then(res => res.json())
-        .then(() => {
-          setChildReplyContent('');
-          setReplyFormId(null);
-          goToReplyAfterSubmit();
-        })
-        .catch(err => console.error("답글 등록 에러:", err));
-    };
+      .catch(err => console.error("답글 등록 에러:", err));
+  };
 
   const handleBoardDelete = () => {
     if (!confirm('삭제하시겠습니까?')) return;
@@ -219,14 +205,13 @@ const BoardDetail = () => {
   const isOwner = Number(member?.memIdx) === Number(board.memIdx);
   const isAdmin = Number(member?.memRoleIdx) === 2;
 
-  // memIdx 기반으로 기본 프로필 이미지 1~5 중 고정 선택
   const getProfileImgUrl = (memProfileImg, memIdx) => {
     if (memProfileImg) {
       return `http://localhost:8080/uploads/profile/${memProfileImg}`;
     }
     const defaultNum = (Number(memIdx) % 5) + 1;
     return `/images/profile/profile_default_${defaultNum}.png`;
-  }; // 수정: 함수 닫는 괄호 누락 추가
+  };
 
   return (
     <div className="min-h-screen bg-white py-8">
@@ -354,7 +339,10 @@ const BoardDetail = () => {
                 {['oldest', 'latest'].map((type) => (
                   <button
                     key={type}
-                    onClick={() => setSortType(type)}
+                    onClick={() => {
+                      setSortType(type);
+                      setReplyPage(1);
+                    }}
                     className={`px-3 py-1.5 rounded-md border transition-colors cursor-pointer ${
                       sortType === type
                         ? 'bg-[#222222] border-[#222222] text-white'
@@ -387,7 +375,7 @@ const BoardDetail = () => {
                               className="h-8 w-8 rounded-full object-cover bg-gray-100"
                               onError={(e) => {
                                 const fallback = (Number(r.memIdx) % 5) + 1;
-                                e.target.src = `/images/profile/profile_default_${fallback}.png`; // 수정: 댓글 onError 기본 이미지 경로 /profile/ 추가
+                                e.target.src = `/images/profile/profile_default_${fallback}.png`;
                               }}
                             />
                             <div>
@@ -484,6 +472,42 @@ const BoardDetail = () => {
                 );
               })}
             </div>
+
+            {/* 댓글 페이지네이션 컴포넌트 추가 (가로 드래그 및 오버플로우 처리 가능) */}
+            {totalReplyPages > 1 && (
+              <div className="mt-6 flex justify-center border-t border-gray-50 pt-4">
+                <div className="flex gap-1 overflow-x-auto max-w-full pb-2 scrollbar-none select-none touch-pan-x">
+                  <button
+                    disabled={replyPage === 1}
+                    onClick={() => setReplyPage(prev => Math.max(1, prev - 1))}
+                    className="px-2 py-1 rounded border text-xs disabled:opacity-40 cursor-pointer bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                  >
+                    이전
+                  </button>
+                  {Array.from({ length: totalReplyPages }, (_, idx) => idx + 1).map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      onClick={() => setReplyPage(pageNum)}
+                      className={`px-3 py-1 rounded border text-xs transition-colors cursor-pointer ${
+                        replyPage === pageNum
+                          ? 'bg-[#222222] border-[#222222] text-white font-semibold'
+                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+                  <button
+                    disabled={replyPage === totalReplyPages}
+                    onClick={() => setReplyPage(prev => Math.min(totalReplyPages, prev + 1))}
+                    className="px-2 py-1 rounded border text-xs disabled:opacity-40 cursor-pointer bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                  >
+                    다음
+                  </button>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
 
