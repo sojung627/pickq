@@ -12,7 +12,7 @@ import java.util.Map;
 @RequestMapping("/api/grade")
 public class GradeController {
 
-    private final GradeService gradeService;
+    private final GradeService gradeService; 
 
     // 관리자용 수동 등급 재계산
     @PostMapping("/recalculate/{memIdx}")
