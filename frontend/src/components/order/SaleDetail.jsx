@@ -228,7 +228,7 @@ export default function SaleDetail() {
           )}
 
           {/* 구매확정 */}
-          {isBuyer && order.shippingStatusCode === "SHIPPING" && (
+          {isBuyer && order.shippingStatusCode === "SHIPPING" && order.orderStatusCode !== "CONFIRMED" && (
             <div
               onClick={handleConfirm}
               className="px-3 py-1.5 rounded-lg bg-[#7CBD00] text-white text-xs font-semibold hover:bg-[#6AA500] cursor-pointer"
