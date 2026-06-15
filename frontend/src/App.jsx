@@ -74,13 +74,12 @@ import { CheckoutPage } from "./components/payment/CheckoutPage";
 import { SuccessPage } from "./components/payment/SuccessPage";
 import { FailPage } from "./components/payment/FailPage";
 
-// 라우트 + STOMP 구독을 담당하는 내부 컴포넌트
 function AppInner() {
   const { addToast } = useToast();
   const stompRef = useRef(null);
   const [loginMemIdx, setLoginMemIdx] = useState(null);
+  const [realtimeUnreadCount, setRealtimeUnreadCount] = useState(0); // ← 추가
 
-  // 로그인 여부 확인 → memIdx 저장
   useEffect(() => {
     fetch("http://localhost:8080/members/auth/check", { credentials: "include" })
       .then(r => r.json())
@@ -90,7 +89,6 @@ function AppInner() {
       .catch(() => {});
   }, []);
 
-  // memIdx 생기면 STOMP 구독 시작
   useEffect(() => {
     if (!loginMemIdx) return;
 
@@ -101,6 +99,10 @@ function AppInner() {
         client.subscribe(`/topic/notifications/${loginMemIdx}`, (frame) => {
           const noti = JSON.parse(frame.body);
           addToast(noti.notificationMessage, noti.targetUrl, noti.notificationTitle);
+          // 채팅 메시지면 플로팅 버튼 카운트 +1 ← 추가
+          if (noti.notificationType === 'CHAT_MESSAGE') {
+            setRealtimeUnreadCount(prev => prev + 1);
+          }
         });
       },
     });
@@ -116,15 +118,10 @@ function AppInner() {
       <Header />
       <main>
         <Routes>
-          {/* 메인 */}
           <Route path="/" element={<MainPage />} />
-
-          {/* 회원 파트 */}
           <Route path="/members/login" element={<Login />} />
           <Route path="/members/signUp" element={<Register />} />
           <Route path="/members/pwdFind" element={<PwdFind />} />
-
-          {/* 경매 */}
           <Route path="/auctions" element={
             <AuctionList
               statusFilter={new URLSearchParams(window.location.search).get('statusFilter') || 'open'}
@@ -143,14 +140,10 @@ function AppInner() {
           } />
           <Route path="/auctions/new" element={<AuctionWrite />} />
           <Route path="/auctions/:auctionIdx" element={<AuctionDetail />} />
-
-          {/* 게시판 파트 */}
           <Route path="/boards" element={<BoardList />} />
           <Route path="/boards/:typeCode/new" element={<BoardWrite />} />
           <Route path="/boards/:boardTypeCode/:boardIdx" element={<BoardDetail />} />
           <Route path="/boards/:boardTypeCode/:boardIdx/edit" element={<BoardEdit />} />
-
-          {/* 마이페이지 */}
           <Route path="/mypage" element={<MyPageLayout />}>
             <Route path="auctions" element={<Auctions />} />
             <Route path="bids" element={<Mybids />} />
@@ -169,38 +162,31 @@ function AppInner() {
             <Route path="payments" element={<MyPayments />} />
             <Route path="orders/:orderIdx" element={<SaleDetail />} />
           </Route>
-
-          {/* 고객지원 */}
           <Route path="/support/guide" element={
             <SupportLayout currentTab="guide"><Guide /></SupportLayout>} />
           <Route path="/support/faq" element={
             <SupportLayout currentTab="faq"><Faq /></SupportLayout>} />
           <Route path="/support/inquiry" element={
             <SupportLayout currentTab="inquiry"><Inquiry /></SupportLayout>} />
-
-          {/* 채팅 */}
           <Route path="/chatRoom" element={<ChatOverlay />} />
-
-          {/* 요약 프로필 */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/reviews/detail/:reviewIdx" element={<ReviewDetail />} />
-
-          {/* 알림 */}
           <Route path="/notifications" element={<NotificationPage />} />
-
-          {/* 결제 */}
           <Route path="/payment/pay" element={<CheckoutPage />} />
           <Route path="/payment/success" element={<SuccessPage />} />
           <Route path="/payment/fail" element={<FailPage />} />
         </Routes>
       </main>
-      <FloatingButtons />
+      {/* realtimeUnreadCount, onChatOpen props 추가 ← */}
+      <FloatingButtons
+        realtimeUnreadCount={realtimeUnreadCount}
+        onChatOpen={() => setRealtimeUnreadCount(0)}
+      />
       <Footer />
     </div>
   );
 }
 
-// 최상위 App: Router > ToastProvider > AppInner
 function App() {
   return (
     <Router>

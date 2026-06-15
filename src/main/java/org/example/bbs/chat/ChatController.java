@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.bbs.member.MemberEntity;
+import org.example.bbs.notification.NotificationService;
 import org.example.bbs.member.MemberRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -117,6 +118,5 @@ public class ChatController {
         long count = chatMessageRepository.countUnreadMessages(member.getMemIdx());
         return ResponseEntity.ok(Map.of("unreadCount", count));
     }
-
 
 }

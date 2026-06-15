@@ -3,6 +3,7 @@ package org.example.bbs.chat;
 import lombok.RequiredArgsConstructor;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
+import org.example.bbs.notification.NotificationService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,7 @@ public class ChatMessageController {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatroomRepository chatroomRepository;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     @MessageMapping("/chat/send")
     public void sendMessage(ChatMessageDTO dto) {
@@ -45,5 +47,12 @@ public class ChatMessageController {
                         "isRead",         saved.getIsRead()
                 )
         );
+
+        // 채팅 알림 - 상대방(receiver) 찾아서 발송
+//        MemberEntity receiver = chatroom.getBuyer().getMemIdx().equals(sender.getMemIdx())
+//                ? chatroom.getBidder()
+//                : chatroom.getBuyer();
+//        notificationService.notifyChatMessage(receiver, sender, chatroom, dto.getMessageContent());
     }
+
 }

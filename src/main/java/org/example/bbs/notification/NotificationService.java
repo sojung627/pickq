@@ -5,8 +5,10 @@ import org.example.bbs.auction.AuctionEntity;
 import org.example.bbs.bid.BidEntity;
 import org.example.bbs.board.BoardEntity;
 import org.example.bbs.board.ReplyEntity;
+import org.example.bbs.chat.ChatroomEntity;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
+import org.example.bbs.review.ReviewEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,8 +114,6 @@ public class NotificationService {
         if (text == null) return "";
         return text.length() > limit ? text.substring(0, limit) + "..." : text;
     }
-
-    // 알림 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 댓글에 대한 답글 알림
     @Transactional
@@ -228,5 +228,50 @@ public class NotificationService {
         notificationRepository.save(noti);
         pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
     }
+
+    // 리뷰 알림 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 리뷰 알림 (buyer → bidder에게)
+
+    @Transactional
+
+    public void notifyReviewReceived(MemberEntity receiver, MemberEntity sender,
+                                     ReviewEntity review) {
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .notificationType(NotificationTypeCode.REVIEW_RECEIVED.name())
+                .notificationTitle("새 리뷰가 등록되었어요")
+                .notificationMessage(sender.getMemName() + "님이 리뷰를 남겼습니다: "
+                        + truncate(review.getReviewTitle(), 30))
+                .targetUrl("/reviews/" + review.getReviewIdx())
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
+
+    // 채팅 알림 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 채팅 알림 (sender → receiver에게)
+//    @Transactional
+//    public void notifyChatMessage(MemberEntity receiver, MemberEntity sender,
+//                                  ChatroomEntity chatroom, String messageContent) {
+//
+//        if (receiver.getMemId().equals(sender.getMemId())) return;
+//        NotificationEntity noti = NotificationEntity.builder()
+//                .receiver(receiver)
+//                .sender(sender)
+//                .notificationType(NotificationTypeCode.CHAT_MESSAGE.name())
+//                .notificationTitle("새 채팅 메시지가 도착했어요")
+//                .notificationMessage(sender.getMemName() + ": "
+//                        + truncate(messageContent, 30))
+//                .targetUrl("/chats")
+//                .build();
+//
+//        notificationRepository.save(noti);
+//        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+//    }
+
 
 }

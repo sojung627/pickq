@@ -11,6 +11,7 @@ import org.example.bbs.member.MemberRepository;
 import org.example.bbs.memberPenalty.PenaltyService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.example.bbs.notification.NotificationService;
 
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,8 @@ public class ReviewService {
     private final MemberRepository memberRepository;
     private final PenaltyService penaltyService;
     private final GradeService gradeService;
+    private final NotificationService notificationService;
+
 
     // 리뷰 매니지먼트 페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -71,6 +74,9 @@ public class ReviewService {
 
         // 판매자 등급 재계산
         gradeService.recalculateGrade(bidderIdx);
+
+        // 리뷰 알림 - bidder(판매자)에게 발송
+        notificationService.notifyReviewReceived(bidder, buyer, review);
     }
 
     // 리뷰 관리자 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
