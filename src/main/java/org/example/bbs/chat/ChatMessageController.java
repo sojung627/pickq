@@ -7,6 +7,7 @@ import org.example.bbs.notification.NotificationService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
@@ -20,6 +21,7 @@ public class ChatMessageController {
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
 
+    @Transactional
     @MessageMapping("/chat/send")
     public void sendMessage(ChatMessageDTO dto) {
 
@@ -49,10 +51,10 @@ public class ChatMessageController {
         );
 
         // 채팅 알림 - 상대방(receiver) 찾아서 발송
-//        MemberEntity receiver = chatroom.getBuyer().getMemIdx().equals(sender.getMemIdx())
-//                ? chatroom.getBidder()
-//                : chatroom.getBuyer();
-//        notificationService.notifyChatMessage(receiver, sender, chatroom, dto.getMessageContent());
+        MemberEntity receiver = chatroom.getBuyer().getMemId().equals(sender.getMemId())
+                ? chatroom.getBidder()
+                : chatroom.getBuyer();
+        notificationService.notifyChatMessage(receiver, sender, chatroom, dto.getMessageContent());
     }
 
 }

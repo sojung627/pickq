@@ -38,7 +38,7 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
     if (!chatroomIdx || !currentUserIdx) return;
     subscriptionsRef.current.forEach(sub => sub.unsubscribe());
     subscriptionsRef.current = [];
-    const socket = new SockJS("/ws-chat");
+    const socket = new SockJS("http://localhost:8080/ws-chat");
     const client = new Client({
       webSocketFactory: () => socket,
       debug: () => {},

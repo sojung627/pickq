@@ -254,24 +254,25 @@ public class NotificationService {
     // 채팅 알림 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 채팅 알림 (sender → receiver에게)
-//    @Transactional
-//    public void notifyChatMessage(MemberEntity receiver, MemberEntity sender,
-//                                  ChatroomEntity chatroom, String messageContent) {
-//
-//        if (receiver.getMemId().equals(sender.getMemId())) return;
-//        NotificationEntity noti = NotificationEntity.builder()
-//                .receiver(receiver)
-//                .sender(sender)
-//                .notificationType(NotificationTypeCode.CHAT_MESSAGE.name())
-//                .notificationTitle("새 채팅 메시지가 도착했어요")
-//                .notificationMessage(sender.getMemName() + ": "
-//                        + truncate(messageContent, 30))
-//                .targetUrl("/chats")
-//                .build();
-//
-//        notificationRepository.save(noti);
-//        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
-//    }
+    @Transactional
+    public void notifyChatMessage(MemberEntity receiver, MemberEntity sender,
+                                  ChatroomEntity chatroom, String messageContent) {
+
+        if (receiver.getMemId().equals(sender.getMemId())) return; // 본인에게는 알림 생성 안 함
+
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .notificationType(NotificationTypeCode.CHAT_MESSAGE.name())
+                .notificationTitle("새 채팅 메시지가 도착했어요")
+                .notificationMessage(sender.getMemName() + ": "
+                        + truncate(messageContent, 30))
+                .targetUrl("/chats")
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
 
 
 }
