@@ -6,6 +6,7 @@ import org.example.bbs.bid.BidRepository;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.memberAddr.MemberAddrEntity;
 import org.example.bbs.memberAddr.MemberAddrRepository;
+import org.example.bbs.notification.NotificationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,6 +31,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final BidRepository bidRepository;
     private final MemberAddrRepository memberAddrRepository;
+    private final NotificationService notificationService;
 
     @Value("${toss.secret-key}")
     private String secretKey;
@@ -145,6 +147,10 @@ public class PaymentService {
         payment.setPayStatus("DONE");
 
         paymentRepository.save(payment);
+
+        // 결제 완료 알림: 판매자(낙찰 입찰자)에게 배송을 시작해달라는 알림 전송
+        MemberEntity seller = bid.getBidder();
+        notificationService.notifyPaymentDone(seller, buyer, bid.getAuction());
 
         return PaymentConfirmResponseDTO.builder()
                 .success(true)

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.bbs.bid.BidRepository;
 import org.example.bbs.grade.GradeService;
 import org.example.bbs.memberPenalty.PenaltyService;
+import org.example.bbs.notification.NotificationService;
 import org.example.bbs.order.SalesResponseDTO;
 import org.example.bbs.order.ShipRequestDTO;
 import org.example.bbs.payment.PaymentEntity;
@@ -24,6 +25,7 @@ public class OrderService {
     private final BidRepository bidRepository;
     private final PenaltyService penaltyService;
     private final GradeService gradeService;
+    private final NotificationService notificationService;
 
     // 마이페이지 - 판매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -54,6 +56,10 @@ public class OrderService {
         payment.setCourierCompany(dto.getCourierCompany());
         payment.setTrackingNumber(dto.getTrackingNumber());
         payment.setShippedAt(LocalDateTime.now());
+
+        // 배송 시작 알림: 구매자에게 전송
+        notificationService.notifyDeliveryStarted(
+                payment.getMember(), payment.getBid().getBidder(), payment.getBid().getAuction());
 
         return SalesResponseDTO.from(payment);
     }
@@ -98,6 +104,10 @@ public class OrderService {
 
         // 판매자 등급 재계산
         gradeService.recalculateGrade(sellerIdx);
+
+        // 구매확정(배송 완료) 알림: 판매자에게 전송
+        notificationService.notifyDeliveryConfirmed(
+                payment.getBid().getBidder(), payment.getMember(), payment.getBid().getAuction());
 
         return PurchaseResponseDTO.from(payment);
     }

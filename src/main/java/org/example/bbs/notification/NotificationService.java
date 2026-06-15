@@ -274,5 +274,67 @@ public class NotificationService {
         pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
     }
 
+    // 결제 및 배송 알림 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 결제 완료 알림 (구매자 -> 판매자: 배송을 시작해달라는 알림)
+    @Transactional
+    public void notifyPaymentDone(MemberEntity receiver, MemberEntity sender, AuctionEntity auction) {
+        if (receiver.getMemId().equals(sender.getMemId())) return;
+
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .auction(auction)
+                .notificationType(NotificationTypeCode.PAYMENT_DONE.name())
+                .notificationTitle("결제가 완료되었어요")
+                .notificationMessage(sender.getMemName() + "님이 [" + auction.getAuctionTitle()
+                        + "] 상품에 대해 결제를 완료했습니다. 배송을 시작해주세요.")
+                .targetUrl("/mypage/sales")
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
+
+    // 배송 시작 알림 (판매자 -> 구매자)
+    @Transactional
+    public void notifyDeliveryStarted(MemberEntity receiver, MemberEntity sender, AuctionEntity auction) {
+        if (receiver.getMemId().equals(sender.getMemId())) return;
+
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .auction(auction)
+                .notificationType(NotificationTypeCode.DELIVERY_STARTED.name())
+                .notificationTitle("배송이 시작되었어요")
+                .notificationMessage("[" + auction.getAuctionTitle() + "] 상품의 배송이 시작되었습니다.")
+                .targetUrl("/mypage/orders")
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
+
+    // 구매확정(배송 완료) 알림 (구매자 -> 판매자)
+    @Transactional
+    public void notifyDeliveryConfirmed(MemberEntity receiver, MemberEntity sender, AuctionEntity auction) {
+        if (receiver.getMemId().equals(sender.getMemId())) return;
+
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .auction(auction)
+                .notificationType(NotificationTypeCode.DELIVERY_CONFIRMED.name())
+                .notificationTitle("배송이 완료되었어요")
+                .notificationMessage(sender.getMemName() + "님이 [" + auction.getAuctionTitle()
+                        + "] 상품의 구매를 확정했습니다. 거래가 완료되었습니다.")
+                .targetUrl("/mypage/sales")
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
+
+
 
 }

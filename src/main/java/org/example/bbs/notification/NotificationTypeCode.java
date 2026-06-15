@@ -18,5 +18,10 @@ public enum NotificationTypeCode {
     REVIEW_RECEIVED,
     CHAT_MESSAGE,
     PENALTY_ISSUED,
-    GRADE_CHANGED
+    GRADE_CHANGED,
+
+    // 결제 / 배송
+    PAYMENT_DONE,    // 구매자가 결제 완료 -> 판매자에게 배송 요청 알림
+    DELIVERY_STARTED, // 판매자가 배송 시작 -> 구매자에게 배송 시작 알림
+    DELIVERY_CONFIRMED // 구매자가 구매확정 -> 판매자에게 배송 완료(거래 종료) 알림
 }
