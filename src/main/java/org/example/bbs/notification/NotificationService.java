@@ -1,6 +1,8 @@
 package org.example.bbs.notification;
 
 import lombok.RequiredArgsConstructor;
+import org.example.bbs.auction.AuctionEntity;
+import org.example.bbs.bid.BidEntity;
 import org.example.bbs.board.BoardEntity;
 import org.example.bbs.board.ReplyEntity;
 import org.example.bbs.member.MemberEntity;
@@ -18,6 +20,8 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
     private final SimpMessagingTemplate messagingTemplate;
+
+    // 게시판 알림 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     // 게시글 댓글 알림
     @Transactional
@@ -161,5 +165,68 @@ public class NotificationService {
         pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
     }
 
+    // 경매 및 입찰 알림 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 입찰 등록 알림 (경매 buyer에게)
+    @Transactional
+    public void notifyAuctionBid(AuctionEntity auction, BidEntity bid) {
+        MemberEntity receiver = auction.getBuyer();
+        MemberEntity sender   = bid.getBidder();
+        if (receiver.getMemId().equals(sender.getMemId())) return;
+
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .auction(auction)
+                .bid(bid)
+                .notificationType(NotificationTypeCode.AUCTION_BID.name())
+                .notificationTitle("내 경매에 새 입찰이 들어왔어요")
+                .notificationMessage(sender.getMemName() + "님이 입찰을 등록했습니다: "
+                        + truncate(bid.getBidMessage(), 30))
+                .targetUrl("/auctions/" + auction.getAuctionIdx())
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
+
+    // 낙찰 알림 (입찰자 bidder에게)
+    @Transactional
+    public void notifyAuctionDecided(AuctionEntity auction, BidEntity winBid) {
+        MemberEntity receiver = winBid.getBidder();
+        MemberEntity sender   = auction.getBuyer();
+
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .auction(auction)
+                .bid(winBid)
+                .notificationType(NotificationTypeCode.AUCTION_DECIDED.name())
+                .notificationTitle("입찰글이 낙찰되었습니다.")
+                .notificationMessage("[" + auction.getAuctionTitle() + "] 경매에 낙찰되었습니다.")
+                .targetUrl("/auctions/" + auction.getAuctionIdx())
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
+
+    // 경매 상태 변경 알림 (경매 buyer에게)
+    @Transactional
+    public void notifyAuctionStatusChanged(AuctionEntity auction, String statusName) {
+        MemberEntity receiver = auction.getBuyer();
+
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .auction(auction)
+                .notificationType(NotificationTypeCode.AUCTION_STATUS_CHANGED.name())
+                .notificationTitle("경매 상태가 변경되었어요")
+                .notificationMessage("[" + auction.getAuctionTitle() + "] 상태: " + statusName)
+                .targetUrl("/auctions/" + auction.getAuctionIdx())
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
 
 }

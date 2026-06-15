@@ -7,11 +7,14 @@ public enum NotificationTypeCode {
     BOARD_LIKE,      // 내 글에 좋아요
     REPLY_LIKE,      // 내 댓글/답글에 좋아요
 
-    // 경매 / 입찰 (나중에 추가)
+    // 경매 / 입찰
     AUCTION_BID,
     AUCTION_DECIDED,
 
-    // 리뷰 / 채팅 / 페널티 (나중에 추가)
+    // 경매 상태 변경 (마감/유찰)
+    AUCTION_STATUS_CHANGED,
+
+    // 리뷰 / 채팅 / 페널티
     REVIEW_RECEIVED,
     CHAT_MESSAGE,
     PENALTY_ISSUED,

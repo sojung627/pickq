@@ -9,6 +9,7 @@ import org.example.bbs.item.ItemEntity;
 import org.example.bbs.item.ItemRepository;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
+import org.example.bbs.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +34,7 @@ public class BidService {
     private final ItemCategoryRepository itemCategoryRepository;
     private final AuctionStatusRepository auctionStatusRepository;
     private final ChatroomRepository chatroomRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public void registerBid(Long auctionIdx, BidRequestDTO dto, MultipartFile imageFile, String memId) throws IOException {
@@ -89,6 +91,7 @@ public class BidService {
                 .bidStatus(bidStatus)
                 .build();
         bidRepository.save(bid);
+        notificationService.notifyAuctionBid(auction, bid);
 
         // 채팅방 자동 생성 (중복 방지)
         chatroomRepository.findByBuyer_MemIdxAndBidder_MemIdx(
@@ -144,27 +147,28 @@ public class BidService {
             throw new IllegalStateException("해당 경매의 입찰이 아닙니다.");
         }
 
-        // 6. 낙찰 상태 조회 (bid_status_idx = 2 = 낙찰)
+        // 낙찰 상태 조회 (bid_status_idx = 2 = 낙찰)
         BidStatusEntity wonStatus = bidStatusRepository.findById(2)
                 .orElseThrow(() -> new IllegalArgumentException("낙찰 상태를 찾을 수 없습니다."));
 
-        // 7. 유찰 상태 조회 (bid_status_idx = 4 = 유찰)
+        // 유찰 상태 조회 (bid_status_idx = 4 = 유찰)
         BidStatusEntity lostStatus = bidStatusRepository.findById(4)
                 .orElseThrow(() -> new IllegalArgumentException("유찰 상태를 찾을 수 없습니다."));
 
-        // 8. 낙찰 입찰 상태 변경
+        // 낙찰 입찰 상태 변경
         winBid.setBidStatus(wonStatus);
 
-        // 9. 나머지 입찰 유찰 처리
+        // 나머지 입찰 유찰 처리
         List<BidEntity> allBids = bidRepository.findByAuction_AuctionIdxOrderByBidRegdateDesc(auctionIdx);
         allBids.stream()
                 .filter(b -> !b.getBidIdx().equals(bidIdx) && b.getBidStatus().getBidStatusIdx() == 1)
                 .forEach(b -> b.setBidStatus(lostStatus));
 
-        // 10. 경매 상태를 마감(3)으로 변경
+        // 경매 상태를 마감(3)으로 변경
         AuctionStatusEntity closedStatus = auctionStatusRepository.findById(3)
                 .orElseThrow(() -> new IllegalArgumentException("경매 상태를 찾을 수 없습니다."));
         auction.setAuctionStatus(closedStatus);
+        notificationService.notifyAuctionDecided(auction, winBid);
     }
 
     // 마이페이지 입찰 목록 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -187,6 +191,5 @@ public class BidService {
             return b;
         }).collect(Collectors.toList());
     }
-
 
 }
