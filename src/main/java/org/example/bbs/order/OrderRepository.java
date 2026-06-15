@@ -19,7 +19,7 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             JOIN FETCH b.bidder seller
             JOIN FETCH p.member buyer
             WHERE seller.memId = :memId
-              AND p.payStatus = 'DONE'
+              AND p.payStatus IN ('DONE', 'CONFIRMED')
             ORDER BY p.payRegdate DESC
             """)
     List<PaymentEntity> findSalesBySellerMemId(@Param("memId") String memId);
