@@ -39,12 +39,31 @@ export default function Header() {
   };
 
   // 알림 빨간색 점
-  useEffect(() => {
-    if (!isLoggedIn) return;
+  const fetchUnreadCount = () => {
     fetch("http://localhost:8080/api/notifications/unread-count", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setUnreadCount(data.count || 0))
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    fetchUnreadCount();
+
+    // 알림 페이지에서 읽음 처리 후 헤더 카운트 재조회
+    const handleRefresh = () => fetchUnreadCount();
+    window.addEventListener("notification-read", handleRefresh);
+
+    // 탭 전환 시(다른 페이지에서 읽음 처리 후 돌아왔을 때) 재조회
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") fetchUnreadCount();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      window.removeEventListener("notification-read", handleRefresh);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [isLoggedIn]);
 
   return (

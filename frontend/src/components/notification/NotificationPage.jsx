@@ -59,9 +59,31 @@ export default function NotificationPage() {
       .then((res) => {
         if (res.ok) {
           setNotifications((prev) => prev.map((n) => ({ ...n, isRead: "Y" })));
+          // 헤더의 빨간 점 즉시 제거를 위해 커스텀 이벤트 발송
+          window.dispatchEvent(new Event("notification-read"));
         }
       })
       .catch((err) => console.error("전체 읽음 처리에 실패했습니다:", err));
+  };
+
+  // 알림 삭제 함수
+  const handleDelete = (idx, e) => {
+    e.stopPropagation();
+
+    fetch(`http://localhost:8080/api/notifications/${idx}`, {
+      method: "DELETE",
+      credentials: "include",
+    })
+      .then((res) => {
+        if (res.ok) {
+          setNotifications((prev) =>
+            prev.filter((n) => n.notificationIdx !== idx)
+          );
+          // 삭제된 알림이 미읽음이었을 수 있으므로 헤더 카운트 재조회
+          window.dispatchEvent(new Event("notification-read"));
+        }
+      })
+      .catch((err) => console.error("알림 삭제에 실패했습니다:", err));
   };
 
   // 알림 카드 클릭 시 해당 targetUrl로 이동하는 함수
@@ -185,7 +207,7 @@ export default function NotificationPage() {
                             )}
                             <button
                               type="button"
-                              onClick={(e) => e.stopPropagation()} // 상세 페이지 이동 방지
+                              onClick={(e) => handleDelete(n.notificationIdx, e)}
                               className="hidden text-xs sm:inline-flex items-center hover:text-red-500 cursor-pointer"
                             >
                               🗑

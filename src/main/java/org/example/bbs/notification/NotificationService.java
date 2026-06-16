@@ -104,6 +104,16 @@ public class NotificationService {
         notificationRepository.markAllAsRead(memId);
     }
 
+    // 알림 삭제 (본인 알림만 삭제 가능)
+    @Transactional
+    public void deleteNotification(Long notificationIdx, String memId) {
+        notificationRepository.findById(notificationIdx).ifPresent(n -> {
+            if (n.getReceiver().getMemId().equals(memId)) {
+                notificationRepository.delete(n);
+            }
+        });
+    }
+
     // 내부 유틸
     private void pushToClient(Long memIdx, NotificationDTO dto) {
         messagingTemplate.convertAndSend(

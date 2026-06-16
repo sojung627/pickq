@@ -55,4 +55,13 @@ public class NotificationController {
         notificationService.markAllAsRead(memId);
         return ResponseEntity.ok(Map.of("result", "success"));
     }
+
+    // 개별 알림 삭제
+    @DeleteMapping("/{idx}")
+    public ResponseEntity<?> delete(@PathVariable Long idx, HttpSession session) {
+        String memId = (String) session.getAttribute("loginMember");
+        if (memId == null) return ResponseEntity.status(401).body("로그인 필요");
+        notificationService.deleteNotification(idx, memId);
+        return ResponseEntity.ok(Map.of("result", "success"));
+    }
 }
