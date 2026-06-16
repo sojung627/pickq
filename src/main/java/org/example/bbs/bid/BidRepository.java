@@ -28,4 +28,17 @@ public interface BidRepository extends JpaRepository<BidEntity, Long> {
             """)
     List<BidEntity> findPendingBidsByBuyerMemId(@Param("memId") String memId);
 
+    // 크레딧 기능 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 결제 및 배송 등등에 대한 크레딧
+    @Query("""
+        SELECT b FROM BidEntity b
+        WHERE b.bidStatus.bidStatusCode = 'won'
+          AND b.bidModdate IS NOT NULL
+          AND NOT EXISTS (
+              SELECT 1 FROM PaymentEntity p WHERE p.bid.bidIdx = b.bidIdx
+          )
+    """)
+    List<BidEntity> findWonBidsWithoutPayment();
+
 }
