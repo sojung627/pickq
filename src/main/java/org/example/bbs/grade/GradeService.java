@@ -41,6 +41,6 @@ public class GradeService {
         }
 
         member.setMemGradeIdx(newGradeIdx);
-        memberRepository.save(member); // [수정] DB 반영
+        memberRepository.save(member);
     }
 }

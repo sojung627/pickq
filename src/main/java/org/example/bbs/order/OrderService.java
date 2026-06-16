@@ -90,7 +90,7 @@ public class OrderService {
 
 //        if (!"SHIPPING".equals(payment.getDeliveryStatus())) {
 //            throw new ResponseStatusException(
-//                    HttpStatus.BAD_REQUEST, "배송중 상태일 때만 구매확정이 가능합니다.");
+//                    HttpStatus.BAD_REQUEST, "배송중 상태일 때만 구매확정이 가능합니다."); // 이거 추가하면 기능 작동(구매 확정 후 페널티)을 안함
 //        }
 
         payment.setPayStatus("CONFIRMED");

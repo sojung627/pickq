@@ -73,7 +73,7 @@ public class ReviewService {
         penaltyService.applyStarReceived(bidderIdx, reviewStar);
 
         // 판매자 등급 재계산
-        gradeService.recalculateGrade(bidderIdx);
+        // gradeService.recalculateGrade(bidderIdx); // 이미 페널티 서비스에서 쓰는 중
 
         // 리뷰 알림 - bidder(판매자)에게 발송
         notificationService.notifyReviewReceived(bidder, buyer, review);
