@@ -176,7 +176,7 @@ const MemberUpdate = () => {
                   </span>
                 )}
                 <span className={`text-xs font-medium ${penaltyColor}`}>
-                  페널티 {memPenalty}점{penaltyLabel}
+                  회원 점수 {memPenalty}점{penaltyLabel}
                 </span>
               </div>
             </div>

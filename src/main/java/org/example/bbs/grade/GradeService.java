@@ -7,8 +7,6 @@ import org.example.bbs.review.ReviewRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class GradeService {
@@ -17,20 +15,18 @@ public class GradeService {
     private final GradeRepository gradeRepository;
     private final ReviewRepository reviewRepository;
 
-    // 등급 재계산 (구매확정 또는 리뷰 작성 시 호출)
     @Transactional
     public void recalculateGrade(Long memIdx) {
         MemberEntity member = memberRepository.findById(memIdx)
                 .orElseThrow(() -> new RuntimeException("회원 없음"));
 
-        // 해당 회원이 판매자로서 완료된 거래 수 (리뷰 수 = 완료 거래 수)
+        // 거래 완료 수: 리뷰 수 기준 (리뷰가 bid_idx unique -> 거래 1건당 1리뷰)
         long tradeCount = reviewRepository.countByBidder_MemIdx(memIdx);
 
-        // 해당 회원의 평균 별점
+        // 평균 별점
         Double avgStar = reviewRepository.findAvgStarByBidderIdx(memIdx);
-        double avg = avgStar != null ? avgStar : 0.0;
+        double avg = (avgStar != null) ? avgStar : 0.0;
 
-        // 등급 결정
         int newGradeIdx;
         if (tradeCount >= 100 && avg >= 4.5) {
             newGradeIdx = 5; // vip
@@ -45,5 +41,6 @@ public class GradeService {
         }
 
         member.setMemGradeIdx(newGradeIdx);
+        memberRepository.save(member); // [수정] DB 반영
     }
 }

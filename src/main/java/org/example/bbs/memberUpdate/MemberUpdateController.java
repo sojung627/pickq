@@ -42,7 +42,8 @@ public class MemberUpdateController {
                 "memBday", member.getMemBday() != null ? member.getMemBday().toString() : "",
                 "memLoginType", member.getMemLoginType() != null ? member.getMemLoginType() : "LOCAL",
                 "memPenalty", member.getMemPenalty() != null ? member.getMemPenalty() : 0,
-                "gradeName", gradeName  // 추가
+                "memCredit", member.getMemCredit() != null ? member.getMemCredit() : 0,
+                "gradeName", gradeName
         ));
     }
 

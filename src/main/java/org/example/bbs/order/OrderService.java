@@ -88,10 +88,10 @@ public class OrderService {
                     HttpStatus.BAD_REQUEST, "이미 구매확정된 주문입니다.");
         }
 
-        if (!"SHIPPING".equals(payment.getDeliveryStatus())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "배송중 상태일 때만 구매확정이 가능합니다.");
-        }
+//        if (!"SHIPPING".equals(payment.getDeliveryStatus())) {
+//            throw new ResponseStatusException(
+//                    HttpStatus.BAD_REQUEST, "배송중 상태일 때만 구매확정이 가능합니다.");
+//        }
 
         payment.setPayStatus("CONFIRMED");
         payment.setConfirmedAt(LocalDateTime.now());
