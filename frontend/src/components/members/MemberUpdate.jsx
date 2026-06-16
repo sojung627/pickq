@@ -13,6 +13,7 @@ const MemberUpdate = () => {
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
   const [updateMsg, setUpdateMsg] = useState({ text: '', color: '' });
   const [memPenalty, setMemPenalty] = useState(0);
+  const [memCredit, setMemCredit] = useState(0);
 
   useEffect(() => {
     fetch("http://localhost:8080/mypage/info", { credentials: "include" })
@@ -32,6 +33,7 @@ const MemberUpdate = () => {
         setGradeName(data.gradeName || '');
         setMemLoginType(data.memLoginType || 'LOCAL');
         setMemPenalty(data.memPenalty ?? 0);
+        setMemCredit(data.memCredit ?? 0);
       });
   }, []);
 
@@ -176,7 +178,7 @@ const MemberUpdate = () => {
                   </span>
                 )}
                 <span className={`text-xs font-medium ${penaltyColor}`}>
-                  회원 점수 {memPenalty}점{penaltyLabel}
+                  회원 점수 {memCredit - memPenalty}점{penaltyLabel}
                 </span>
               </div>
             </div>
