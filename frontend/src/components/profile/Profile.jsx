@@ -108,7 +108,7 @@ export default function Profile({
               {profile?.memIntro || "소개글이 아직 없습니다."}
             </p>
 
-            {/* 별점 · 리뷰 수 + 키워드 뱃지 */}
+            {/* 별점 · 리뷰 수 */}
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
               <span>
                 평균 별점{" "}
@@ -120,35 +120,38 @@ export default function Profile({
                 리뷰{" "}
                 <strong>{profile?.reviewCount ?? 0}</strong>개
               </span>
-
-              {/* 이 판매자가 자주 받는 키워드 뱃지 (3~4개) */}
-              {(() => {
-                const allKeywords = (reviews || [])
-                  .flatMap((r) => parseKeywords(r.reviewKeywords))
-                  .filter((k) => k.length > 0);
-
-                // 빈도수 집계
-                const freq = {};
-                allKeywords.forEach((k) => { freq[k] = (freq[k] || 0) + 1; });
-
-                // 빈도순 정렬 후 최대 4개
-                const top = Object.entries(freq)
-                  .sort((a, b) => b[1] - a[1])
-                  .slice(0, 4)
-                  .map(([k]) => k);
-
-                return top.map((kw, i) => (
-                  <span
-                    key={i}
-                    className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200"
-                  >
-                    #{kw}
-                  </span>
-                ));
-              })()}
             </div>
-          </div>
 
+            {/* 이 판매자가 자주 받는 키워드 뱃지 (3~4개) - 별도 줄 */}
+            {(() => {
+              const allKeywords = (reviews || [])
+                .flatMap((r) => parseKeywords(r.reviewKeywords))
+                .filter((k) => k.length > 0);
+
+              const freq = {};
+              allKeywords.forEach((k) => { freq[k] = (freq[k] || 0) + 1; });
+
+              const top = Object.entries(freq)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 4)
+                .map(([k]) => k);
+
+              if (top.length === 0) return null;
+
+              return (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {top.map((kw, i) => (
+                    <span
+                      key={i}
+                      className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+                    >
+                      #{kw}
+                    </span>
+                  ))}
+                </div>
+              );
+            })()}
+            </div>
         </div>
       </article>
 

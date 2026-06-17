@@ -121,7 +121,6 @@ export default function ReviewManagement() {
   }
 
   return (
-    /* 요구사항 조건에 맞추어 기존 <form> 구조를 완전히 <div> 컨테이너로 리팩토링 진행 */
     <div className="review">
       {/* 내가 남긴 리뷰 영역 */}
       <div className="border border-gray-200 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.02)] mb-6">
@@ -245,20 +244,20 @@ export default function ReviewManagement() {
                       <p className="text-[11px] text-gray-500 mt-0.5">
                         상품명: <span>{review.itemName}</span>
                       </p>
+                      {/* Gemini 추출 키워드 뱃지 - 여기로 이동 */}
+                      {review.reviewKeywords && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {review.reviewKeywords.split(",").map((kw, i) => (
+                            <span
+                              key={i}
+                              className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+                            >
+                              #{kw.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    {/* Gemini 추출 키워드 뱃지 */}
-                    {review.reviewKeywords && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {review.reviewKeywords.split(",").map((kw, i) => (
-                          <span
-                            key={i}
-                            className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200"
-                          >
-                            #{kw.trim()}
-                          </span>
-                        ))}
-                      </div>
-                    )}
                     <div className="text-right text-xs text-yellow-500">
                       <div className="flex items-center gap-0.5 justify-end">
                         {renderStars(review.reviewStar)}
