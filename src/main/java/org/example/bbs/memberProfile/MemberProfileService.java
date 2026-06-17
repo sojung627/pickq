@@ -125,6 +125,7 @@ public class MemberProfileService {
                     .reviewTitle((String) row.get("reviewTitle"))
                     .reviewRegdate(regdate)
                     .auctionTitle((String) row.get("auctionTitle"))
+                    .reviewKeywords((String) row.get("reviewKeywords"))
                     .build();
 
         }).collect(Collectors.toList());

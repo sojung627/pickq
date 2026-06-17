@@ -246,6 +246,19 @@ export default function ReviewManagement() {
                         상품명: <span>{review.itemName}</span>
                       </p>
                     </div>
+                    {/* Gemini 추출 키워드 뱃지 */}
+                    {review.reviewKeywords && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {review.reviewKeywords.split(",").map((kw, i) => (
+                          <span
+                            key={i}
+                            className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+                          >
+                            #{kw.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <div className="text-right text-xs text-yellow-500">
                       <div className="flex items-center gap-0.5 justify-end">
                         {renderStars(review.reviewStar)}

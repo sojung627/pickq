@@ -14,4 +14,6 @@ public class ReviewDTO {
     private String reviewTitle;
     private LocalDateTime reviewRegdate;
     private String auctionTitle;      // auction 테이블 join 필요
+    private String itemName;
+    private String reviewKeywords; // Gemini 추출 키워드 필드 추가
 }

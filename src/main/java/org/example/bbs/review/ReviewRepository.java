@@ -53,12 +53,13 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     // 내가 받은 리뷰
     @Query(value = """
     SELECT
-        r.review_idx AS reviewIdx,
-        r.review_title AS reviewTitle,
-        a.auction_title AS auctionTitle,
-        i.item_name AS itemName,
-        r.review_star AS reviewStar,
-        r.review_regdate AS reviewRegdate
+        r.review_idx       AS reviewIdx,
+        r.review_title     AS reviewTitle,
+        a.auction_title    AS auctionTitle,
+        i.item_name        AS itemName,
+        r.review_star      AS reviewStar,
+        r.review_regdate   AS reviewRegdate,
+        r.review_keywords  AS reviewKeywords
     FROM review r
     JOIN auction a ON r.auction_idx = a.auction_idx
     JOIN bid b ON r.bid_idx = b.bid_idx
@@ -67,7 +68,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
       AND r.review_is_deleted = 'N'
     ORDER BY r.review_regdate DESC
     """, nativeQuery = true)
-    List<Map<String, Object>> findReceivedReviews(@Param("memIdx") Long memIdx);
+        List<Map<String, Object>> findReceivedReviews(@Param("memIdx") Long memIdx);
 
     // 평균 별점
     @Query(value = """

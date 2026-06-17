@@ -28,6 +28,10 @@ public class GeminiService {
      *         실패 시 빈 문자열 반환
      */
     public String extractKeywords(String reviewContent) {
+        // 제미나이 일하는지 확인용
+        log.info("[GeminiService] API KEY 앞 5자리: {}",
+                apiKey != null ? apiKey.substring(0, 5) : "NULL");
+
         if (reviewContent == null || reviewContent.trim().isEmpty()) {
             return "";
         }
