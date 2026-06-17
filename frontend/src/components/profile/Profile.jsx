@@ -12,6 +12,7 @@ export default function Profile({
   onClose,
 }) {
   const navigate = useNavigate();
+  const MAX_VISIBLE_REVIEWS = 2;
 
   const handleBack = () => {
     if (profileBackUrl) {
@@ -27,19 +28,19 @@ export default function Profile({
       memIdx: profile.memIdx,
     });
 
-    if (from) {
-      params.append("from", from);
-    }
-
-    if (auctionId) {
-      params.append("auctionId", auctionId);
-    }
+    if (from) params.append("from", from);
+    if (auctionId) params.append("auctionId", auctionId);
 
     navigate(`/reviews/detail/${reviewIdx}?${params.toString()}`);
   };
 
+  // 키워드 파싱 - 최대 4개만
+  const parseKeywords = (keywords, max = 4) => {
+    if (!keywords || keywords.trim() === "") return [];
+    return keywords.split(",").map((k) => k.trim()).filter((k) => k.length > 0).slice(0, max);
+  };
+
   const defaultImg = `/images/profile/profile_default_${(profile?.memIdx % 5) + 1}.png`;
-  console.log("profile:", profile);
 
   return (
     <section className="max-w-full mx-auto px-4 py-6">
@@ -90,18 +91,14 @@ export default function Profile({
 
           <div className="flex-1 w-full">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-
               {profile?.gradeName &&
-                !["basic", "normal"].includes(
-                  profile.gradeName.toLowerCase()
-                ) && (
+                !["basic", "normal"].includes(profile.gradeName.toLowerCase()) && (
                   <img
                     src={`/images/common/icon_${profile.gradeName.toLowerCase()}.png`}
                     alt="grade"
                     className="w-5 h-5 object-contain"
                   />
                 )}
-
               <h2 className="text-lg md:text-xl font-semibold text-gray-900">
                 {profile?.memNickname || profile?.maskedMemId}
               </h2>
@@ -111,21 +108,44 @@ export default function Profile({
               {profile?.memIntro || "소개글이 아직 없습니다."}
             </p>
 
-            <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+            {/* 별점 · 리뷰 수 + 키워드 뱃지 */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
               <span>
                 평균 별점{" "}
                 <strong className="text-amber-600">
                   {(profile?.avgRating ?? 0).toFixed(1)}
                 </strong>
               </span>
-
               <span>
                 리뷰{" "}
-                <strong>
-                  {profile?.reviewCount ?? 0}
-                </strong>
-                개
+                <strong>{profile?.reviewCount ?? 0}</strong>개
               </span>
+
+              {/* 이 판매자가 자주 받는 키워드 뱃지 (3~4개) */}
+              {(() => {
+                const allKeywords = (reviews || [])
+                  .flatMap((r) => parseKeywords(r.reviewKeywords))
+                  .filter((k) => k.length > 0);
+
+                // 빈도수 집계
+                const freq = {};
+                allKeywords.forEach((k) => { freq[k] = (freq[k] || 0) + 1; });
+
+                // 빈도순 정렬 후 최대 4개
+                const top = Object.entries(freq)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 4)
+                  .map(([k]) => k);
+
+                return top.map((kw, i) => (
+                  <span
+                    key={i}
+                    className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+                  >
+                    #{kw}
+                  </span>
+                ));
+              })()}
             </div>
           </div>
 
@@ -141,7 +161,7 @@ export default function Profile({
 
         {reviews?.length > 0 ? (
           <div className="space-y-3">
-            {reviews.map((review) => (
+            {reviews.slice(0, MAX_VISIBLE_REVIEWS).map((review) => (
               <article
                 key={review.reviewIdx}
                 className="bg-white rounded-xl border border-gray-200 p-4 md:p-5 hover:shadow-sm transition-shadow"
@@ -163,8 +183,7 @@ export default function Profile({
                 </button>
 
                 <p className="mt-2 text-sm text-gray-600 truncate">
-                  거래 상품:{" "}
-                  {review.itemName || review.auctionTitle}
+                  거래 상품: {review.itemName || review.auctionTitle}
                 </p>
               </article>
             ))}

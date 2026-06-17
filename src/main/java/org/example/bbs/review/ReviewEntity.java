@@ -70,4 +70,9 @@ public class ReviewEntity {
             this.reviewIsDeleted = "N";
         }
     }
+
+    // Gemini가 추출한 핵심 키워드 (쉼표 구분, 예: "친절,빠른배송,정품")
+    @Column(name = "review_keywords", length = 255)
+    private String reviewKeywords;
+
 }

@@ -5,6 +5,7 @@ import org.example.bbs.auction.AuctionEntity;
 import org.example.bbs.auction.AuctionRepository;
 import org.example.bbs.bid.BidEntity;
 import org.example.bbs.bid.BidRepository;
+import org.example.bbs.gemini.GeminiService;
 import org.example.bbs.grade.GradeService;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
@@ -28,6 +29,7 @@ public class ReviewService {
     private final PenaltyService penaltyService;
     private final GradeService gradeService;
     private final NotificationService notificationService;
+    private final GeminiService geminiService;
 
 
     // 리뷰 매니지먼트 페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -54,6 +56,9 @@ public class ReviewService {
         AuctionEntity auction = auctionRepository.findById(auctionIdx).orElseThrow();
         BidEntity bid = bidRepository.findById(bidIdx).orElseThrow();
 
+        // Gemini로 키워드 추출 (실패해도 저장은 정상 진행)
+        String keywords = geminiService.extractKeywords(content);
+
         ReviewEntity review = ReviewEntity.builder()
                 .buyer(buyer)
                 .bidder(bidder)
@@ -62,6 +67,7 @@ public class ReviewService {
                 .reviewTitle(reviewTitle)
                 .reviewContent(content)
                 .reviewStar(reviewStar)
+                .reviewKeywords(keywords)
                 .build();
 
         reviewRepository.save(review);
