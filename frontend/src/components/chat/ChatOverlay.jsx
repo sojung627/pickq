@@ -162,7 +162,7 @@ export default function ChatOverlay({ onClose }) {
             opponentIdx:  room.opponentIdx  ?? room.opponentidx,
             opponentName: room.opponentName ?? room.opponentname,
             lastMessage:  room.lastMessage  ?? room.lastmessage,
-            unreadCount:  room.unreadCount  ?? room.unreadcount ?? 0, // 추가: 방별 읽지 않은 메시지 수
+            unreadCount:  room.unreadCount  ?? room.unreadcount ?? 0,
           }));
           setRoomList(normalized);
         }
@@ -191,8 +191,9 @@ export default function ChatOverlay({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-      <div className="flex w-[750px] h-[500px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-100">
+    <>
+      {/* 우측 하단 플로팅 채팅창 */}
+      <div className="fixed bottom-28 right-8 z-50 flex w-[750px] h-[500px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-100">
         <div className="w-[250px] border-r border-gray-100 flex flex-col">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <span className="text-base font-semibold text-gray-900">채팅 목록</span>
@@ -264,6 +265,6 @@ export default function ChatOverlay({ onClose }) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

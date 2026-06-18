@@ -6,10 +6,8 @@ const AuctionList = ({
   successMessage,
   errorMessage
 }) => {
-  // useSearchParams를 활용해 주소창의 쿼리 파라미터를 직접 제어
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // URL에서 상태 필터, 정렬 기준, 키워드 값을 실시간으로 추출 (기본값 설정 포함)
   const statusFilter = searchParams.get('statusFilter') || 'open';
   const sortBy = searchParams.get('sortBy') || 'latest';
   const urlKeyword = searchParams.get('keyword') || '';
@@ -19,15 +17,12 @@ const AuctionList = ({
   const [session, setSession] = useState(null);
   const sidebarBodyRef = useRef(null);
 
-  // 입력 필드 관리를 위한 독립된 useState
   const [searchInput, setSearchInput] = useState(urlKeyword);
 
-  // URL의 키워드가 변경되면 입력창 상태도 실시간 동기화
   useEffect(() => {
     setSearchInput(urlKeyword);
   }, [urlKeyword]);
 
-  // 경매 목록 fetch (URL 파라미터 상태가 변경될 때마다 자동 실행)
   useEffect(() => {
     const params = new URLSearchParams();
     if (selectedCategory) params.append('category', selectedCategory);
@@ -37,7 +32,7 @@ const AuctionList = ({
         params.append('keyword', urlKeyword.trim());
     }
 
-    console.log('fetch params:', params.toString()); // 디버깅
+    console.log('fetch params:', params.toString());
 
     fetch(`http://localhost:8080/auctions?${params.toString()}`, {
       credentials: 'include'
@@ -47,7 +42,6 @@ const AuctionList = ({
       .catch(err => console.error('경매 목록 fetch 실패:', err));
   }, [selectedCategory, sortBy, statusFilter, urlKeyword]);
 
-  // 세션 fetch
   useEffect(() => {
     fetch('http://localhost:8080/members/api/session', { credentials: 'include' })
       .then(res => res.json())
@@ -55,12 +49,10 @@ const AuctionList = ({
       .catch(() => setSession({}));
   }, [selectedCategory, sortBy, statusFilter, urlKeyword]);
 
-  // 사이드바 토글
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // 공통 URL 상태 변경 함수 (필터 클릭 시 페이지 새로고침 없이 상태 및 스타일 동기화)
   const handleParamChange = (key, value) => {
     const newParams = new URLSearchParams(searchParams);
     if (value) {
@@ -71,7 +63,6 @@ const AuctionList = ({
     setSearchParams(newParams);
   };
 
-  // 검색 실행 함수
   const handleSearch = () => {
     handleParamChange('keyword', searchInput.trim());
   };
@@ -100,7 +91,6 @@ const AuctionList = ({
               <p className="text-sm text-[#767676]">원하는 조건으로 경매를 등록해 보세요. 여러 판매자가 제안합니다</p>
             </div>
 
-            {/* 로그인 시: 경매 등록하기 */}
             {session?.loginUser && (
               <div className="mt-4 sm:mt-0">
                 <button
@@ -121,7 +111,6 @@ const AuctionList = ({
           <aside className="w-full lg:w-60 lg:flex-shrink-0">
             <div className="sticky top-24 bg-white border border-gray-100 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] overflow-hidden">
 
-              {/* Mobile header */}
               <button
                 className="lg:hidden w-full flex items-center justify-between px-4 py-3 border-b border-gray-100 text-sm font-semibold text-[#222222]"
                 aria-expanded={isSidebarOpen}
@@ -136,12 +125,10 @@ const AuctionList = ({
                 <i className={`bi bi-chevron-down text-[#767676] transition-transform duration-300 ${isSidebarOpen ? 'rotate-180' : ''}`}></i>
               </button>
 
-              {/* Desktop header */}
               <div className="hidden lg:block px-4 py-3 border-b border-gray-100">
                 <h3 className="text-sm font-semibold text-[#222222]">카테고리</h3>
               </div>
 
-              {/* Body */}
               <nav
                 ref={sidebarBodyRef}
                 className="overflow-hidden transition-[max-height] duration-300 ease-in-out lg:max-h-none lg:overflow-visible"
@@ -250,8 +237,8 @@ const AuctionList = ({
                   >
                     <a href={`/auctions/${item.auctionIdx}`} className="block group">
 
-                      {/* 썸네일 */}
-                      <div className="relative aspect-square mb-3 overflow-hidden bg-gray-100">
+                      {/* 썸네일 - rounded-xl 적용 */}
+                      <div className="relative aspect-square mb-3 overflow-hidden bg-gray-100 rounded-xl">
                         <img
                           src={
                              item.auctionThumbnailImg

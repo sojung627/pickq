@@ -153,7 +153,7 @@ const AuctionDetail = () => {
       6: ['bg-gray-800', '삭제됨'],
     };
     const [cls, label] = map[statusIdx] || ['bg-gray-400', '알수없음'];
-    return <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold text-white ${cls}`}>{label}</span>;
+    return <span className={`inline-block px-2 py-0.5 rounded-xl text-xs font-semibold text-white ${cls}`}>{label}</span>;
   };
 
   const GradeBadge = ({ gradeName }) => {
@@ -168,7 +168,7 @@ const AuctionDetail = () => {
       : statusIdx === 4 ? 'bg-gray-400 text-white'
       : statusIdx === 5 ? 'bg-gray-800 text-white'
       : 'bg-blue-600 text-white';
-    return <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${cls}`}>{statusName}</span>;
+    return <span className={`inline-block px-2 py-0.5 rounded-xl text-xs font-semibold ${cls}`}>{statusName}</span>;
   };
 
   const canWin = (bid) =>
@@ -195,14 +195,14 @@ const AuctionDetail = () => {
 
             {/* ── LEFT ── */}
             <div className="col-span-1">
-              <div className={`bg-white shadow-sm rounded-2xl border-0 ${isTerminal ? 'grayscale' : ''}`}>
+              <div className={`bg-white shadow-sm rounded-xl border-0 ${isTerminal ? 'grayscale' : ''}`}>
                 <div className="p-4">
 
                   {mode === 'list' && (
                     <>
                       <div className="flex flex-col md:flex-row gap-4">
                         <div className="w-full max-w-[220px]">
-                          <div className="aspect-square rounded overflow-hidden bg-gray-100 border border-gray-100">
+                          <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-100">
                             <img
                               src={detail.auctionThumbnailImg
                                 ? `http://localhost:8080${detail.auctionThumbnailImg}`
@@ -235,7 +235,7 @@ const AuctionDetail = () => {
                             {detail.chatroomIdx && (
                               <button
                                 type="button"
-                                className="px-3 py-1.5 bg-gray-900 text-white text-sm rounded"
+                                className="px-3 py-1.5 bg-gray-900 text-white text-sm rounded-xl"
                                 onClick={() => window.open(`/chat/${detail.chatroomIdx}`, 'chatPopup', 'width=400,height=600')}
                               >
                                 <i className="bi bi-chat-dots me-1"></i> 대화하기
@@ -261,13 +261,13 @@ const AuctionDetail = () => {
                         </div>
                       </div>
 
-                      <div className="border border-gray-100 rounded p-4 bg-gray-50 mt-4">
+                      <div className="border border-gray-100 rounded-xl p-4 bg-gray-50 mt-4">
                         <h6 className="font-bold mb-2">상세 요청</h6>
                         <p style={{ whiteSpace: 'pre-line', margin: 0 }}>{detail.auctionDesc}</p>
                       </div>
 
                       {detail.auctionStatusIdx !== 1 && (
-                        <div className="text-center mt-3 p-3 border border-gray-100 rounded text-gray-500">
+                        <div className="text-center mt-3 p-3 border border-gray-100 rounded-xl text-gray-500">
                           {detail.auctionStatusIdx === 2 && '⏳ 결정 대기중인 경매입니다.'}
                           {detail.auctionStatusIdx === 3 && '⛔ 마감된 경매입니다.'}
                           {detail.auctionStatusIdx === 4 && '😢 유찰된 경매입니다.'}
@@ -276,30 +276,30 @@ const AuctionDetail = () => {
                         </div>
                       )}
 
-                      {successMessage && <div className="mt-2 p-2 bg-green-100 text-green-700 rounded text-sm">{successMessage}</div>}
-                      {errorMessage && <div className="mt-2 p-2 bg-red-100 text-red-700 rounded text-sm">{errorMessage}</div>}
+                      {successMessage && <div className="mt-2 p-2 bg-green-100 text-green-700 rounded-xl text-sm">{successMessage}</div>}
+                      {errorMessage && <div className="mt-2 p-2 bg-red-100 text-red-700 rounded-xl text-sm">{errorMessage}</div>}
 
                       <div className="flex gap-2 flex-wrap mt-3">
                         <button
                           onClick={() => navigate(detail.auctionStatusIdx === 1 ? '/auctions' : '/auctions?statusFilter=closed')}
-                          className="px-3 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
+                          className="px-3 py-1.5 border border-gray-400 rounded-xl text-sm text-gray-700 hover:bg-gray-50"
                         >
                           ← 목록으로
                         </button>
 
                         {Number(session?.loginUser?.memIdx) === Number(detail.buyerIdx) && detail.auctionStatusIdx === 1 && (
                           <>
-                            <button onClick={handleCancel} className="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                            <button onClick={handleCancel} className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-xl hover:bg-red-700">
                               구매요청 취소
                             </button>
-                            <button onClick={handleClose} className="px-3 py-1.5 border border-gray-800 text-sm rounded hover:bg-gray-50">
+                            <button onClick={handleClose} className="px-3 py-1.5 border border-gray-800 text-sm rounded-xl hover:bg-gray-50">
                               수동 마감
                             </button>
                           </>
                         )}
 
                         {session?.loginUser?.memRoleIdx === 2 && (
-                          <button onClick={handleAdminDelete} className="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                          <button onClick={handleAdminDelete} className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-xl hover:bg-red-700">
                             🛡️ 관리자 삭제
                           </button>
                         )}
@@ -316,27 +316,27 @@ const AuctionDetail = () => {
                           <label className="block text-sm font-semibold mb-1">제안 이미지 <span className="text-red-500">*</span></label>
                           <input
                             type="file"
-                            className="border border-gray-100 rounded p-2 w-full text-sm text-transparent file:text-gray-700 file:bg-transparent file:border-0 file:p-0 file:cursor-pointer"
+                            className="border border-gray-100 rounded-xl p-2 w-full text-sm text-transparent file:text-gray-700 file:bg-transparent file:border-0 file:p-0 file:cursor-pointer"
                             accept="image/*"
                             onChange={handleBidImageChange}
                           />
                           <div className="text-xs text-gray-500 mt-1">판매할 상품 이미지를 등록해주세요 (필수)</div>
                           {bidPreviewUrl && (
                             <div className="mt-2">
-                              <img src={bidPreviewUrl} style={{ maxWidth: 200, maxHeight: 150, border: '1px solid #ddd', borderRadius: 4 }} alt="미리보기" />
+                              <img src={bidPreviewUrl} style={{ maxWidth: 200, maxHeight: 150, border: '1px solid #ddd', borderRadius: 12 }} alt="미리보기" />
                             </div>
                           )}
                         </div>
 
                         <div className="mb-3">
                           <label className="block text-sm font-semibold mb-1">상품명 <span className="text-red-500">*</span></label>
-                          <input type="text" className="border border-gray-100 rounded p-2 w-full text-sm" placeholder="제안할 상품명을 입력하세요" required
+                          <input type="text" className="border border-gray-100 rounded-xl p-2 w-full text-sm" placeholder="제안할 상품명을 입력하세요" required
                             value={bidForm.itemName} onChange={e => setBidForm(p => ({ ...p, itemName: e.target.value }))} />
                         </div>
 
                         <div className="mb-3">
                           <label className="block text-sm font-semibold mb-1">브랜드 <span className="text-gray-400 text-xs">(선택)</span></label>
-                          <input type="text" className="border border-gray-100 rounded p-2 w-full text-sm" placeholder="예: NIKE, ADIDAS"
+                          <input type="text" className="border border-gray-100 rounded-xl p-2 w-full text-sm" placeholder="예: NIKE, ADIDAS"
                             value={bidForm.itemBrand} onChange={e => setBidForm(p => ({ ...p, itemBrand: e.target.value }))} />
                         </div>
 
@@ -344,7 +344,7 @@ const AuctionDetail = () => {
                           <label className="block text-sm font-semibold mb-1">제안 가격 (₩) <span className="text-red-500">*</span></label>
                           <input
                             type="text"
-                            className="border border-gray-100 rounded p-2 w-full text-sm"
+                            className="border border-gray-100 rounded-xl p-2 w-full text-sm"
                             placeholder="예: 50,000"
                             required
                             inputMode="numeric"
@@ -363,20 +363,20 @@ const AuctionDetail = () => {
 
                         <div className="mb-3">
                           <label className="block text-sm font-semibold mb-1">수량 <span className="text-red-500">*</span></label>
-                          <input type="number" className="border border-gray-100 rounded p-2 w-full text-sm" min="1" required
+                          <input type="number" className="border border-gray-100 rounded-xl p-2 w-full text-sm" min="1" required
                             value={bidForm.bidQuantity} onChange={e => setBidForm(p => ({ ...p, bidQuantity: e.target.value }))} />
                         </div>
 
                         <div className="mb-4">
                           <label className="block text-sm font-semibold mb-1">제안 메시지 <span className="text-gray-400 text-xs">(선택)</span></label>
-                          <textarea className="border border-gray-100 rounded p-2 w-full text-sm" rows={4} placeholder="상품 상태, 배송 조건 등을 입력하세요"
+                          <textarea className="border border-gray-100 rounded-xl p-2 w-full text-sm" rows={4} placeholder="상품 상태, 배송 조건 등을 입력하세요"
                             value={bidForm.bidMessage} onChange={e => setBidForm(p => ({ ...p, bidMessage: e.target.value }))} />
                         </div>
 
                         <div className="flex gap-2">
-                          <button type="button" className="flex-1 border border-gray-400 rounded py-2 text-sm hover:bg-gray-50"
+                          <button type="button" className="flex-1 border border-gray-400 rounded-xl py-2 text-sm hover:bg-gray-50"
                             onClick={() => setMode('list')}>취소</button>
-                          <button type="submit" className="flex-1 bg-green-600 text-white rounded py-2 text-sm font-bold hover:bg-green-700">
+                          <button type="submit" className="flex-1 bg-green-600 text-white rounded-xl py-2 text-sm font-bold hover:bg-green-700">
                             📦 입찰 제출
                           </button>
                         </div>
@@ -388,7 +388,7 @@ const AuctionDetail = () => {
                     <>
                       <div className="flex justify-between items-center mb-3">
                         <h5 className="font-bold mb-0">📋 입찰 상세</h5>
-                        <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-blue-600 text-white">
+                        <span className="inline-block px-2 py-0.5 rounded-xl text-xs font-semibold bg-blue-600 text-white">
                           {selectedBid.bidStatusName}
                         </span>
                       </div>
@@ -398,7 +398,7 @@ const AuctionDetail = () => {
                           src={selectedBid.itemThumbnailImg
                             ? `http://localhost:8080${selectedBid.itemThumbnailImg}`
                             : '/images/bid/bid_default.png'}
-                          className="rounded max-h-[300px] object-cover w-4/5" alt="입찰 이미지"
+                          className="rounded-xl max-h-[300px] object-cover w-4/5" alt="입찰 이미지"
                         />
                       </div>
 
@@ -438,7 +438,7 @@ const AuctionDetail = () => {
                       ))}
 
                       {selectedBid.bidMessage && (
-                        <div className="border border-gray-100 rounded p-3 bg-gray-50 mb-3">
+                        <div className="border border-gray-100 rounded-xl p-3 bg-gray-50 mb-3">
                           <small className="text-gray-500 block mb-1">제안 메시지</small>
                           <p style={{ whiteSpace: 'pre-line', margin: 0 }}>{selectedBid.bidMessage}</p>
                         </div>
@@ -448,7 +448,7 @@ const AuctionDetail = () => {
                         <div className="mt-3">
                           <button
                             onClick={() => handleWin(selectedBid.bidIdx)}
-                            className="w-full py-2 font-bold rounded"
+                            className="w-full py-2 font-bold rounded-xl"
                             style={{ background: '#FFC107', color: '#222', border: 'none' }}
                           >
                             🏆 낙찰하기
@@ -458,7 +458,7 @@ const AuctionDetail = () => {
 
                       <button
                         onClick={() => setMode('list')}
-                        className="mt-3 w-full border border-gray-400 rounded py-2 text-sm hover:bg-gray-50"
+                        className="mt-3 w-full border border-gray-400 rounded-xl py-2 text-sm hover:bg-gray-50"
                       >
                         ← 경매 상세 보기
                       </button>
@@ -471,12 +471,12 @@ const AuctionDetail = () => {
 
             {/* ── RIGHT ── */}
             <div className="col-span-1">
-              <div className="bg-white shadow-sm border-0 rounded-2xl">
+              <div className="bg-white shadow-sm border-0 rounded-xl">
                 <div className="p-4">
 
                   {detail.auctionStatusIdx === 1 && session?.loginUser && session.loginUser.memIdx !== detail.buyerIdx && (
                     <button
-                      className="w-full mb-4 text-white font-bold py-2 rounded"
+                      className="w-full mb-4 text-white font-bold py-2 rounded-xl"
                       style={{ background: '#ef6253' }}
                       onClick={() => setMode('bidForm')}
                     >
@@ -486,7 +486,7 @@ const AuctionDetail = () => {
 
                   {detail.auctionStatusIdx === 1 && !session?.loginUser && (
                     <button
-                      className="w-full mb-4 text-white font-bold py-2 rounded"
+                      className="w-full mb-4 text-white font-bold py-2 rounded-xl"
                       style={{ background: '#ef6253' }}
                       onClick={() => navigate(`/members/login?redirect=/auctions/${auctionIdx}/bids`)}
                     >
@@ -537,7 +537,7 @@ const AuctionDetail = () => {
                               {canWin(bid) && (
                                 <button
                                   onClick={() => handleWin(bid.bidIdx)}
-                                  className="px-2 py-1 text-xs font-bold rounded"
+                                  className="px-2 py-1 text-xs font-bold rounded-xl"
                                   style={{ background: '#FFC107', color: '#222', border: 'none' }}
                                 >
                                   낙찰
@@ -546,7 +546,7 @@ const AuctionDetail = () => {
                               {session.loginUser.memIdx === bid.bidderIdx && bid.bidStatusIdx === 1 && (
                                 <button
                                   onClick={() => handleBidCancel(bid.bidIdx)}
-                                  className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded hover:bg-red-50"
+                                  className="px-2 py-1 text-xs border border-red-300 text-red-600 rounded-xl hover:bg-red-50"
                                 >
                                   취소
                                 </button>
@@ -554,7 +554,7 @@ const AuctionDetail = () => {
                               {session.loginUser.memRoleIdx === 2 && bid.bidStatusIdx === 1 && (
                                 <button
                                   onClick={() => handleAdminBidDelete(bid.bidIdx)}
-                                  className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                                  className="px-2 py-1 text-xs bg-red-600 text-white rounded-xl hover:bg-red-700"
                                 >
                                   🛡️ 관리자 삭제
                                 </button>
@@ -601,7 +601,7 @@ const AuctionDetail = () => {
           onClick={() => setProfileModal(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
             <Profile
