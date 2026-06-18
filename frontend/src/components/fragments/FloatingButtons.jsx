@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ChatOverlay from "../chat/ChatOverlay";
+import PickyChatOverlay from "../picky/PickyChatOverlay";
 
 const FloatingButtons = ({ realtimeUnreadCount = 0, onChatOpen }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [chatOpen, setChatOpen] = useState(false);
+    const [pickyOpen, setPickyOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // 피키 대화 저장용
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -18,6 +21,14 @@ const FloatingButtons = ({ realtimeUnreadCount = 0, onChatOpen }) => {
         };
         window.addEventListener('scroll', toggleVisibility);
         return () => window.removeEventListener('scroll', toggleVisibility);
+    }, []);
+
+    // 로그인 여부 확인 (피키 대화 저장 분기용)
+    useEffect(() => {
+        fetch('/members/auth/check', { credentials: 'include' })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => { if (data) setIsLoggedIn(data.isLoggedIn); })
+            .catch(() => {});
     }, []);
 
     // 마운트 시 + 채팅 닫힐 때 초기 unread 조회
@@ -58,9 +69,27 @@ const FloatingButtons = ({ realtimeUnreadCount = 0, onChatOpen }) => {
         }
     };
 
+    // 피키 열기 — 로그인 여부 무관하게 열림 (비로그인도 사용 가능)
+    const handlePickyOpen = () => {
+        setPickyOpen(true);
+        setChatOpen(false); // 채팅창이 열려있으면 닫기
+    };
+
     return (
         <>
             <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
+
+                {/* 피키 버튼 */}
+                <button
+                    className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-violet-500 to-purple-600 rounded-full shadow-lg hover:opacity-90 transition-all"
+                    onClick={handlePickyOpen}
+                    title="피키에게 물어보기"
+                >
+                    {/* ##수정 - 피키 로고 이미지 추가 예정 */}
+                    {/* <img src="/images/picky-logo.png" alt="피키" className="w-6 h-6" /> */}
+                    <span className="text-white font-bold text-sm">P</span>
+                </button>
+
                 {/* 채팅 버튼 */}
                 <div className="relative">
                     <button
@@ -94,6 +123,14 @@ const FloatingButtons = ({ realtimeUnreadCount = 0, onChatOpen }) => {
             </div>
 
             {chatOpen && <ChatOverlay onClose={() => setChatOpen(false)} />}
+
+            {/* 피키 채팅창 */}
+            {pickyOpen && (
+                <PickyChatOverlay
+                    onClose={() => setPickyOpen(false)}
+                    isLoggedIn={isLoggedIn}
+                />
+            )}
         </>
     );
 };

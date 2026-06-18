@@ -629,6 +629,52 @@ CREATE TABLE notification (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='알림 테이블';
 
 /* ==========================================
+   피키 (Picky) AI 챗봇 테이블
+   ========================================== */
+
+-- picky_chat_session: 대화 세션 (로그인 사용자만)
+-- picky_chat_message: 개별 메시지 (user / assistant 구분)
+
+-- 세션 테이블: 로그인 사용자의 대화 묶음
+CREATE TABLE picky_chat_session (
+                                    session_idx   BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'PK',
+                                    mem_idx       BIGINT        NOT NULL               COMMENT 'FK → member.mem_idx (로그인 사용자)',
+                                    session_title VARCHAR(200)  DEFAULT NULL           COMMENT '세션 제목 (첫 메시지 앞 20자 자동 생성)',
+                                    created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '세션 생성일',
+                                    updated_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                        ON UPDATE CURRENT_TIMESTAMP COMMENT '마지막 메시지 시각',
+                                    is_deleted    CHAR(1)       NOT NULL DEFAULT 'N'   COMMENT '삭제 여부 Y/N',
+
+                                    PRIMARY KEY (session_idx),
+                                    KEY idx_picky_session_mem (mem_idx),
+
+                                    CONSTRAINT ck_picky_session_deleted CHECK (is_deleted IN ('Y','N')),
+                                    CONSTRAINT fk_picky_session_member
+                                        FOREIGN KEY (mem_idx) REFERENCES member(mem_idx) ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='피키 AI 챗봇 대화 세션';
+
+
+-- 메시지 테이블: 세션 내 개별 메시지
+CREATE TABLE picky_chat_message (
+                                    message_idx   BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'PK',
+                                    session_idx   BIGINT        NOT NULL               COMMENT 'FK → picky_chat_session.session_idx',
+                                    role          VARCHAR(10)   NOT NULL               COMMENT '발화자: user / assistant',
+                                    content       TEXT          NOT NULL               COMMENT '메시지 내용',
+                                    created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '메시지 생성일',
+
+                                    PRIMARY KEY (message_idx),
+                                    KEY idx_picky_message_session (session_idx),
+
+                                    CONSTRAINT ck_picky_message_role CHECK (role IN ('user','assistant')),
+                                    CONSTRAINT fk_picky_message_session
+                                        FOREIGN KEY (session_idx) REFERENCES picky_chat_session(session_idx) ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='피키 AI 챗봇 메시지';
+
+
+
+/* ==========================================
    7. 코드 테이블 기본 데이터
    ========================================== */
 
