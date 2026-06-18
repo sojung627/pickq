@@ -133,7 +133,11 @@ function AuctionListSection({ title, subtitle, items, morePath, emptyMessage = E
 
       <div className="grid gap-6 grid-cols-4">
         {items && items.length > 0 ? items.map((item) => (
-          <div key={item.auctionIdx} className="cursor-pointer">
+          <div
+            key={item.auctionIdx}
+            onClick={() => navigate(`/auctions/${item.auctionIdx}`)}
+            className="cursor-pointer"
+          >
             <div className="w-full aspect-square overflow-hidden mb-3 bg-[#f9f9f9] rounded-xl">
               <img src={item.auctionThumbnailImg || "https://via.placeholder.com/300"} className="w-full h-full object-cover" alt="thumb" />
             </div>
