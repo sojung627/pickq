@@ -81,13 +81,12 @@ const FloatingButtons = ({ realtimeUnreadCount = 0, onChatOpen }) => {
 
                 {/* 피키 버튼 */}
                 <button
-                    className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-violet-500 to-purple-600 rounded-full shadow-lg hover:opacity-90 transition-all"
+                    className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg hover:bg-gray-50 transition-all"
                     onClick={handlePickyOpen}
                     title="피키에게 물어보기"
                 >
                     {/* ##수정 - 피키 로고 이미지 추가 예정 */}
-                    {/* <img src="/images/picky-logo.png" alt="피키" className="w-6 h-6" /> */}
-                    <span className="text-white font-bold text-sm">P</span>
+                    <img src="/images/ai/PickyAI.png" alt="피키" className="w-6 h-6" />
                 </button>
 
                 {/* 채팅 버튼 */}
