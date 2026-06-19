@@ -35,6 +35,7 @@ export default function MyOrders() {
   const mapPurchase = (p) => {
     let orderStatusCode = "PAID";
     if (p.payStatus === "CONFIRMED") orderStatusCode = "CONFIRMED";
+    else if (p.deliveryStatus === "DELIVERED") orderStatusCode = "CONFIRMED";
     else if (p.deliveryStatus === "SHIPPING") orderStatusCode = "SHIPPED";
 
     return {
@@ -44,7 +45,7 @@ export default function MyOrders() {
       itemName: p.itemName,
       userRole: "BUYER",
       orderAmount: p.payAmount,
-      paymentStatusName: p.payStatus === "CONFIRMED" ? "구매확정" : "결제완료",
+      paymentStatusName: (p.payStatus === "CONFIRMED" || p.deliveryStatus === "DELIVERED") ? "구매확정" : "결제완료",
       shippingStatusName: getShippingName(p.deliveryStatus),
       shippingStatusCode: p.deliveryStatus,
       orderStatusCode,

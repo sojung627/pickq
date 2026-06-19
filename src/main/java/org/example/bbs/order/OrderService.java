@@ -95,6 +95,8 @@ public class OrderService {
 
         payment.setPayStatus("CONFIRMED");
         payment.setConfirmedAt(LocalDateTime.now());
+        payment.setDeliveryStatus("DELIVERED");
+        orderRepository.save(payment);
 
         // 구매자, 판매자 크레딧 +30 / 페널티 -1
         Long buyerIdx = payment.getMember().getMemIdx();

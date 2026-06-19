@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { ToastProvider, useToast } from "./components/notification/ToastContext";
+import { useParams } from 'react-router-dom';
 
 /* 헤더 푸터 메인 등등 */
 import Header from "./components/fragments/Header";
@@ -130,16 +131,9 @@ function AppInner() {
               selectedCategory={null}
             />
           } />
-          <Route path="/auctions/category/:category" element={
-            <AuctionList
-              statusFilter={new URLSearchParams(window.location.search).get('statusFilter') || 'open'}
-              sortBy={new URLSearchParams(window.location.search).get('sortBy') || 'latest'}
-              keyword={new URLSearchParams(window.location.search).get('keyword') || ''}
-              selectedCategory={window.location.pathname.split('/').pop()}
-            />
-          } />
           <Route path="/auctions/new" element={<AuctionWrite />} />
           <Route path="/auctions/:auctionIdx" element={<AuctionDetail />} />
+          <Route path="/auctions/category/:category" element={<AuctionCategoryPage />} />
           <Route path="/boards" element={<BoardList />} />
           <Route path="/boards/:typeCode/new" element={<BoardWrite />} />
           <Route path="/boards/:boardTypeCode/:boardIdx" element={<BoardDetail />} />
@@ -195,6 +189,11 @@ function App() {
       </ToastProvider>
     </Router>
   );
+}
+
+function AuctionCategoryPage() {
+  const { category } = useParams();
+  return <AuctionList selectedCategory={category} />;
 }
 
 export default App;
