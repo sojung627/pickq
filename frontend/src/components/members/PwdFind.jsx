@@ -65,6 +65,7 @@ export default function PwdFind() {
         if (result === "success") {
           setIsAuthOk(true);
           setIsAuthError(false);
+          setAuthMsg("");
         } else {
           setIsAuthOk(false);
           setIsAuthError(true);
