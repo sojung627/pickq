@@ -2,15 +2,15 @@ package org.example.bbs.order;
 
 import org.example.bbs.payment.PaymentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
-
-    // 마이페이지 - 판매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
     @Query("""
             SELECT p FROM PaymentEntity p
@@ -24,7 +24,6 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             """)
     List<PaymentEntity> findSalesBySellerMemId(@Param("memId") String memId);
 
-    // 운송장 등록 시 해당 결제 건 조회 (판매자 본인 검증 포함)
     @Query("""
             SELECT p FROM PaymentEntity p
             JOIN FETCH p.bid b
@@ -39,9 +38,6 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             @Param("memId") String memId
     );
 
-    // 마이페이지 - 구매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
-    // 구매 내역 조회 (payment.member = 구매자 기준)
     @Query("""
             SELECT p FROM PaymentEntity p
             JOIN FETCH p.bid b
@@ -53,7 +49,6 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             """)
     List<PaymentEntity> findPurchasesByBuyerMemId(@Param("memId") String memId);
 
-    // 구매확정용 조회 (구매자 본인 검증 포함)
     @Query("""
             SELECT p FROM PaymentEntity p
             JOIN FETCH p.member buyer
@@ -68,4 +63,27 @@ public interface OrderRepository extends JpaRepository<PaymentEntity, Long> {
             @Param("memId") String memId
     );
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE PaymentEntity p
+               SET p.payStatus = 'CONFIRMED',
+                   p.deliveryStatus = 'DELIVERED',
+                   p.confirmedAt = :confirmedAt
+             WHERE p.payIdx = :payIdx
+               AND p.payStatus = 'DONE'
+               AND p.deliveryStatus = 'SHIPPING'
+            """)
+    int confirmReceiptAtomically(@Param("payIdx") Long payIdx,
+                                 @Param("confirmedAt") LocalDateTime confirmedAt);
+
+    // 과거 데이터가 pay_status=CONFIRMED, delivery_status=SHIPPING으로 남은 경우 자체 복구
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE PaymentEntity p
+               SET p.deliveryStatus = 'DELIVERED'
+             WHERE p.payIdx = :payIdx
+               AND p.payStatus = 'CONFIRMED'
+               AND (p.deliveryStatus IS NULL OR p.deliveryStatus <> 'DELIVERED')
+            """)
+    int synchronizeConfirmedDeliveryStatus(@Param("payIdx") Long payIdx);
 }

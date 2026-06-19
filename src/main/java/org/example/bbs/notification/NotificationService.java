@@ -347,4 +347,55 @@ public class NotificationService {
 
 
 
+
+    // 회원 점수 / 등급 알림 -------------------------------------------------
+
+    @Transactional
+    public void notifyCreditChanged(MemberEntity receiver, int delta,
+                                    int beforeCredit, int afterCredit, String reason) {
+        String signedDelta = (delta > 0 ? "+" : "") + delta;
+
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .notificationType(NotificationTypeCode.CREDIT_CHANGED.name())
+                .notificationTitle(delta >= 0 ? "회원 점수가 올랐어요" : "회원 점수가 변경되었어요")
+                .notificationMessage(reason + ": " + signedDelta + "점 ("
+                        + beforeCredit + "점 → " + afterCredit + "점)")
+                .targetUrl("/mypage/info")
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
+
+    @Transactional
+    public void notifyPenaltyIssued(MemberEntity receiver, int deduction,
+                                    int beforeCredit, int afterCredit, String reason) {
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .notificationType(NotificationTypeCode.PENALTY_ISSUED.name())
+                .notificationTitle("회원 점수가 차감되었어요")
+                .notificationMessage(reason + ": -" + deduction + "점 ("
+                        + beforeCredit + "점 → " + afterCredit + "점)")
+                .targetUrl("/mypage/info")
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
+
+    @Transactional
+    public void notifyGradeChanged(MemberEntity receiver,
+                                   String oldGradeName, String newGradeName) {
+        NotificationEntity noti = NotificationEntity.builder()
+                .receiver(receiver)
+                .notificationType(NotificationTypeCode.GRADE_CHANGED.name())
+                .notificationTitle("회원 등급이 변경되었어요")
+                .notificationMessage(oldGradeName + " → " + newGradeName)
+                .targetUrl("/mypage/info")
+                .build();
+
+        notificationRepository.save(noti);
+        pushToClient(receiver.getMemIdx(), NotificationDTO.from(noti));
+    }
 }

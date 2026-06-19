@@ -6,6 +6,7 @@ import org.example.bbs.bid.BidRepository;
 import org.example.bbs.grade.GradeService;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
+import org.example.bbs.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,58 +18,39 @@ public class PenaltyService {
     private final MemberRepository memberRepository;
     private final GradeService gradeService;
     private final BidRepository bidRepository;
+    private final NotificationService notificationService;
 
-    /*
-     * penalty_score: member_penalty 테이블에 기록되는 패널티 누적 점수
-     * 사진 기준 크레딧 변동 수치와 동일하게 맞춤
-     * (기존 코드는 별도의 getPenaltyScore()를 사용해 잘못된 값이 DB에 저장되고 있었음)
-     */
     private int getPenaltyScore(String penaltyCode) {
         return switch (penaltyCode) {
-            case "NO_PAYMENT"    -> 30;
-            case "NO_SHIPMENT"   -> 30;
-            case "LATE_CANCEL"   -> 15;
-            case "LATE_PAYMENT"  -> 10;
-            case "LATE_SHIPMENT" -> 10;
-            case "FRAUD_REPORT"  -> 50;
+            case "NO_PAYMENT"    -> 30; // 낙찰 후 3일 내 미결제
+            case "NO_SHIPMENT"   -> 30; // 결제 후 3일 내 미발송
+            case "LATE_PAYMENT"  -> 10; // 낙찰 후 3일을 넘겨 결제
+            case "LATE_SHIPMENT" -> 10; // 결제 후 3일을 넘겨 발송
+            case "LATE_CANCEL"   -> 15; // 기존 코드 호환
+            case "FRAUD_REPORT"  -> 50; // 기존 코드 호환
             default -> 5;
         };
     }
 
-    /*
-     * mem_credit에서 차감할 크레딧 값
-     * 사진의 크레딧 변동 기준과 동일
-     */
-    private int getCreditDeduction(String penaltyCode) {
-        return switch (penaltyCode) {
-            case "NO_PAYMENT"    -> 30;
-            case "NO_SHIPMENT"   -> 30;
-            case "LATE_CANCEL"   -> 15;
-            case "LATE_PAYMENT"  -> 10;
-            case "LATE_SHIPMENT" -> 10;
-            case "FRAUD_REPORT"  -> 50;
-            default -> 5;
-        };
-    }
-
-    // 페널티 부과 (bidIdx 없는 경우 - 수동 부과 등)
     @Transactional
     public void applyPenalty(Long memIdx, String penaltyCode, String reason) {
         applyPenalty(memIdx, null, penaltyCode, reason);
     }
 
-    // 페널티 부과 (bidIdx 있는 경우 - 스케줄러 자동 부과)
     @Transactional
     public void applyPenalty(Long memIdx, Long bidIdx, String penaltyCode, String reason) {
         MemberEntity member = memberRepository.findById(memIdx)
                 .orElseThrow(() -> new RuntimeException("회원 없음"));
 
-        int penaltyScore = getPenaltyScore(penaltyCode);
-        int creditDeduction = getCreditDeduction(penaltyCode);
+        // 스케줄러가 여러 번 실행되어도 같은 회원/거래/사유는 한 번만 반영
+        if (bidIdx != null && memberPenaltyRepository
+                .existsByMember_MemIdxAndBid_BidIdxAndPenaltyCode(memIdx, bidIdx, penaltyCode)) {
+            return;
+        }
 
-        member.setMemPenalty(member.getMemPenalty() + penaltyScore);
-        member.setMemCredit(Math.max(0, member.getMemCredit() - creditDeduction));
-        memberRepository.save(member);
+        int penaltyScore = getPenaltyScore(penaltyCode);
+        int beforeCredit = member.getMemCredit() != null ? member.getMemCredit() : 50;
+        int afterCredit = beforeCredit - penaltyScore; // 음수 점수도 정책상 허용
 
         MemberPenaltyEntity.MemberPenaltyEntityBuilder builder = MemberPenaltyEntity.builder()
                 .member(member)
@@ -76,11 +58,6 @@ public class PenaltyService {
                 .penaltyReason(reason)
                 .penaltyScore(penaltyScore);
 
-        /*
-         * bidIdx가 있을 경우 BidEntity를 조회하여 bid와 auction을 함께 설정
-         * 기존 코드는 bid만 설정하고 auction을 누락하여 auction_idx가 항상 NULL로 저장됨
-         * BidEntity.getAuction()을 통해 연관된 AuctionEntity를 가져와 함께 저장
-         */
         if (bidIdx != null) {
             BidEntity bid = bidRepository.findById(bidIdx).orElse(null);
             if (bid != null) {
@@ -89,49 +66,59 @@ public class PenaltyService {
             }
         }
 
-        memberPenaltyRepository.save(builder.build());
+        // 이력을 먼저 저장한 뒤 누적 페널티를 이력 합계로 재동기화
+        memberPenaltyRepository.saveAndFlush(builder.build());
+        long totalPenalty = memberPenaltyRepository.sumPenaltyScoreByMemberIdx(memIdx);
 
+        member.setMemCredit(afterCredit);
+        member.setMemPenalty(Math.toIntExact(totalPenalty));
+        memberRepository.save(member);
+
+        notificationService.notifyPenaltyIssued(
+                member, penaltyScore, beforeCredit, afterCredit, reason);
         gradeService.recalculateGrade(memIdx);
     }
 
-    // 거래 완료 크레딧 +30, 페널티 -1
+    // 거래 완료(구매확정): 구매자와 판매자 각각 +30
     @Transactional
     public void applyTradeComplete(Long memIdx) {
-        MemberEntity member = memberRepository.findById(memIdx)
-                .orElseThrow(() -> new RuntimeException("회원 없음"));
-
-        member.setMemCredit(member.getMemCredit() + 30);
-        member.setMemPenalty(Math.max(0, member.getMemPenalty() - 1));
-        memberRepository.save(member);
-
-        gradeService.recalculateGrade(memIdx);
+        changeCredit(memIdx, 30, "거래 완료(구매확정)");
     }
 
-    // 리뷰 작성 크레딧 +10
+    // 리뷰 작성: 작성자 +10
     @Transactional
     public void applyReviewWrite(Long memIdx) {
-        MemberEntity member = memberRepository.findById(memIdx)
-                .orElseThrow(() -> new RuntimeException("회원 없음"));
+        changeCredit(memIdx, 10, "리뷰 작성");
+    }
 
-        member.setMemCredit(member.getMemCredit() + 10);
-        memberRepository.save(member);
+    // 리뷰 별점 수신: 5점 +5 / 1~2점 -5 / 3~4점 변동 없음
+    @Transactional
+    public void applyStarReceived(Long memIdx, int star) {
+        if (star == 5) {
+            changeCredit(memIdx, 5, "리뷰 별점 5점 수신");
+            return;
+        }
+        if (star <= 2) {
+            changeCredit(memIdx, -5, "리뷰 별점 " + star + "점 수신");
+            return;
+        }
 
+        // 점수 변동은 없어도 평균 별점이 달라졌으므로 등급은 재계산
         gradeService.recalculateGrade(memIdx);
     }
 
-    // 별점 받았을 때 크레딧 조정
-    @Transactional
-    public void applyStarReceived(Long memIdx, int star) {
+    private void changeCredit(Long memIdx, int delta, String reason) {
         MemberEntity member = memberRepository.findById(memIdx)
                 .orElseThrow(() -> new RuntimeException("회원 없음"));
 
-        if (star == 5) {
-            member.setMemCredit(member.getMemCredit() + 5);
-        } else if (star <= 2) {
-            member.setMemCredit(Math.max(0, member.getMemCredit() - 5));
-        }
+        int beforeCredit = member.getMemCredit() != null ? member.getMemCredit() : 50;
+        int afterCredit = beforeCredit + delta;
+
+        member.setMemCredit(afterCredit);
         memberRepository.save(member);
 
+        notificationService.notifyCreditChanged(
+                member, delta, beforeCredit, afterCredit, reason);
         gradeService.recalculateGrade(memIdx);
     }
 }

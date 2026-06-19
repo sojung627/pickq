@@ -60,6 +60,9 @@ export default function MySales() {
             .catch(err => alert('오류가 발생했습니다: ' + err.message));
     };
 
+    const resolveDeliveryStatus = (sale) =>
+        sale.payStatus === 'CONFIRMED' ? 'DELIVERED' : sale.deliveryStatus;
+
     const getStatusBadge = (status) => {
         if (status === 'SHIPPING') return 'bg-blue-100 text-blue-700';
         if (status === 'DELIVERED') return 'bg-gray-200 text-gray-700';
@@ -68,7 +71,7 @@ export default function MySales() {
 
     const getStatusText = (status) => {
         if (status === 'SHIPPING') return '배송중';
-        if (status === 'DELIVERED') return '구매확정 완료';
+        if (status === 'DELIVERED') return '거래완료';
         return '배송준비중';
     };
 
@@ -117,8 +120,8 @@ export default function MySales() {
                                             결제일 {formatDate(sale.payRegdate)}
                                         </p>
                                     </div>
-                                    <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[11px] sm:text-xs font-semibold ${getStatusBadge(sale.deliveryStatus)}`}>
-                                        {getStatusText(sale.deliveryStatus)}
+                                    <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[11px] sm:text-xs font-semibold ${getStatusBadge(resolveDeliveryStatus(sale))}`}>
+                                        {getStatusText(resolveDeliveryStatus(sale))}
                                     </span>
                                 </div>
 
@@ -147,7 +150,7 @@ export default function MySales() {
                                     </div>
                                     <div>
                                         <div className="text-[11px] text-gray-400">배송 상태</div>
-                                        <div className="mt-0.5 text-sm text-gray-700">{sale.deliveryStatus ?? '배송준비중'}</div>
+                                        <div className="mt-0.5 text-sm text-gray-700">{getStatusText(resolveDeliveryStatus(sale))}</div>
                                     </div>
                                     <div className="col-span-2 lg:col-span-4">
                                         <div className="text-[11px] text-gray-400">배송지</div>
@@ -160,7 +163,7 @@ export default function MySales() {
                                 <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                     <div className="text-[11px] text-gray-500">판매자는 운송장 등록 후 배송을 시작할 수 있습니다.</div>
                                     <div className="flex justify-end">
-                                        {!sale.deliveryStatus && (
+                                        {!resolveDeliveryStatus(sale) && sale.payStatus !== 'CONFIRMED' && (
                                             <button
                                                 type="button"
                                                 onClick={() => openModal(sale.bidIdx)}

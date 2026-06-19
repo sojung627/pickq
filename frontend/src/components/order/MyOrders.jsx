@@ -67,7 +67,7 @@ export default function MyOrders() {
   // 주석: 판매내역(SalesResponseDTO) -> 화면용 거래 객체로 정규화
   const mapSale = (s) => {
     let orderStatusCode = "PAID";
-    if (s.deliveryStatus === "DELIVERED") orderStatusCode = "CONFIRMED";
+    if (s.payStatus === "CONFIRMED" || s.deliveryStatus === "DELIVERED") orderStatusCode = "CONFIRMED";
     else if (s.deliveryStatus === "SHIPPING") orderStatusCode = "SHIPPED";
 
     return {
@@ -77,9 +77,9 @@ export default function MyOrders() {
       itemName: s.itemName,
       userRole: "SELLER",
       orderAmount: s.payAmount,
-      paymentStatusName: "결제완료",
-      shippingStatusName: getShippingName(s.deliveryStatus),
-      shippingStatusCode: s.deliveryStatus,
+      paymentStatusName: s.payStatus === "CONFIRMED" ? "구매확정" : "결제완료",
+      shippingStatusName: getShippingName(s.payStatus === "CONFIRMED" ? "DELIVERED" : s.deliveryStatus),
+      shippingStatusCode: s.payStatus === "CONFIRMED" ? "DELIVERED" : s.deliveryStatus,
       orderStatusCode,
       orderStatusName: getStatusName(orderStatusCode),
       courierCompany: s.courierCompany,

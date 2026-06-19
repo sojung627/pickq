@@ -70,8 +70,8 @@ public class AuctionScheduler {
             if (!bid.getBidModdate().plusDays(3).isBefore(now)) continue;
 
             // 중복 방지: bid_idx + penalty_code 조합으로 체크
-            if (memberPenaltyRepository.existsByBid_BidIdxAndPenaltyCode(
-                    bid.getBidIdx(), "NO_PAYMENT")) continue;
+            if (memberPenaltyRepository.existsByMember_MemIdxAndBid_BidIdxAndPenaltyCode(
+                    bid.getAuction().getBuyer().getMemIdx(), bid.getBidIdx(), "NO_PAYMENT")) continue;
 
             Long buyerIdx = bid.getAuction().getBuyer().getMemIdx();
             penaltyService.applyPenalty(buyerIdx, bid.getBidIdx(),
@@ -88,21 +88,21 @@ public class AuctionScheduler {
             log.info("LATE_PAYMENT 페널티: buyerIdx={}, bidIdx={}", buyerIdx, payment.getBid().getBidIdx());
         }
 
-        // [3] NO_SHIPMENT: 결제 후 5일 지나도 발송 없음 → 쿼리에서 중복 방지 처리됨
-        List<PaymentEntity> noShipments = paymentRepository.findNoShipmentPayments(5);
+        // [3] NO_SHIPMENT: 결제 후 3일 지나도 발송 없음 → 쿼리에서 중복 방지 처리됨
+        List<PaymentEntity> noShipments = paymentRepository.findNoShipmentPayments(3);
         for (PaymentEntity payment : noShipments) {
             Long sellerIdx = payment.getBid().getBidder().getMemIdx();
             penaltyService.applyPenalty(sellerIdx, payment.getBid().getBidIdx(),
-                    "NO_SHIPMENT", "결제 후 5일 이내 미발송");
+                    "NO_SHIPMENT", "결제 후 3일 초과 미발송");
             log.info("NO_SHIPMENT 페널티: sellerIdx={}, bidIdx={}", sellerIdx, payment.getBid().getBidIdx());
         }
 
-        // [4] LATE_SHIPMENT: 5일 초과 발송 → 쿼리에서 중복 방지 처리됨
-        List<PaymentEntity> lateShipments = paymentRepository.findLateShipments(5);
+        // [4] LATE_SHIPMENT: 3일 초과 발송 → 쿼리에서 중복 방지 처리됨
+        List<PaymentEntity> lateShipments = paymentRepository.findLateShipments(3);
         for (PaymentEntity payment : lateShipments) {
             Long sellerIdx = payment.getBid().getBidder().getMemIdx();
             penaltyService.applyPenalty(sellerIdx, payment.getBid().getBidIdx(),
-                    "LATE_SHIPMENT", "발송 기한(5일) 초과 후 발송");
+                    "LATE_SHIPMENT", "발송 기한(3일) 초과 후 발송");
             log.info("LATE_SHIPMENT 페널티: sellerIdx={}, bidIdx={}", sellerIdx, payment.getBid().getBidIdx());
         }
     }

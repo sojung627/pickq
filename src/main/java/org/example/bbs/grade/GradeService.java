@@ -3,6 +3,8 @@ package org.example.bbs.grade;
 import lombok.RequiredArgsConstructor;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
+import org.example.bbs.notification.NotificationService;
+import org.example.bbs.payment.PaymentRepository;
 import org.example.bbs.review.ReviewRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,33 +16,51 @@ public class GradeService {
     private final MemberRepository memberRepository;
     private final GradeRepository gradeRepository;
     private final ReviewRepository reviewRepository;
+    private final PaymentRepository paymentRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public void recalculateGrade(Long memIdx) {
         MemberEntity member = memberRepository.findById(memIdx)
                 .orElseThrow(() -> new RuntimeException("회원 없음"));
 
-        // 거래 완료 수: 리뷰 수 기준 (리뷰가 bid_idx unique -> 거래 1건당 1리뷰)
-        long tradeCount = reviewRepository.countByBidder_MemIdx(memIdx);
+        // 관리자는 회원 거래 등급 자동 산정 대상에서 제외
+        if (Integer.valueOf(2).equals(member.getMemRoleIdx())) {
+            return;
+        }
 
-        // 평균 별점
-        Double avgStar = reviewRepository.findAvgStarByBidderIdx(memIdx);
-        double avg = (avgStar != null) ? avgStar : 0.0;
+        long completedTradeCount = paymentRepository.countCompletedSalesBySeller(memIdx);
+        Double avgStarValue = reviewRepository.findAvgStarByBidderIdx(memIdx);
+        double avgStar = avgStarValue != null ? avgStarValue : 0.0;
 
         int newGradeIdx;
-        if (tradeCount >= 100 && avg >= 4.5) {
+        if (completedTradeCount >= 100 && avgStar >= 4.5) {
             newGradeIdx = 5; // vip
-        } else if (tradeCount >= 30 && avg >= 4.0) {
+        } else if (completedTradeCount >= 30 && avgStar >= 4.0) {
             newGradeIdx = 4; // gold
-        } else if (tradeCount >= 10 && avg >= 3.5) {
+        } else if (completedTradeCount >= 5 && avgStar >= 4.0) {
             newGradeIdx = 3; // silver
-        } else if (tradeCount >= 3 && avg >= 3.0) {
+        } else if (completedTradeCount >= 3 && avgStar >= 4.0) {
             newGradeIdx = 2; // bronze
         } else {
             newGradeIdx = 1; // normal
         }
 
+        int oldGradeIdx = member.getMemGradeIdx() != null ? member.getMemGradeIdx() : 1;
+        if (oldGradeIdx == newGradeIdx) {
+            return;
+        }
+
+        String oldGradeName = gradeRepository.findById(oldGradeIdx)
+                .map(GradeEntity::getGradeName)
+                .orElse("normal");
+        String newGradeName = gradeRepository.findById(newGradeIdx)
+                .map(GradeEntity::getGradeName)
+                .orElse("normal");
+
         member.setMemGradeIdx(newGradeIdx);
         memberRepository.save(member);
+
+        notificationService.notifyGradeChanged(member, oldGradeName, newGradeName);
     }
 }

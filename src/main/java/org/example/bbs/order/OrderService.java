@@ -2,11 +2,8 @@ package org.example.bbs.order;
 
 import lombok.RequiredArgsConstructor;
 import org.example.bbs.bid.BidRepository;
-import org.example.bbs.grade.GradeService;
 import org.example.bbs.memberPenalty.PenaltyService;
 import org.example.bbs.notification.NotificationService;
-import org.example.bbs.order.SalesResponseDTO;
-import org.example.bbs.order.ShipRequestDTO;
 import org.example.bbs.payment.PaymentEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,12 +21,8 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final BidRepository bidRepository;
     private final PenaltyService penaltyService;
-    private final GradeService gradeService;
     private final NotificationService notificationService;
 
-    // 마이페이지 - 판매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
-    // 판매 내역 조회
     @Transactional(readOnly = true)
     public List<SalesResponseDTO> getSales(String memId) {
         return orderRepository.findSalesBySellerMemId(memId)
@@ -38,7 +31,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // 운송장 등록
     @Transactional
     public SalesResponseDTO registerShipping(ShipRequestDTO dto, String memId) {
         PaymentEntity payment = orderRepository
@@ -46,8 +38,13 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "해당 결제 건을 찾을 수 없거나 권한이 없습니다."));
 
-        // 이미 배송 처리된 경우 재처리 방지
-        if (payment.getDeliveryStatus() != null) {
+        if (!"DONE".equals(payment.getPayStatus())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "결제가 완료된 주문만 배송할 수 있습니다.");
+        }
+
+        if (payment.getDeliveryStatus() != null
+                && !"READY".equals(payment.getDeliveryStatus())) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "이미 배송 처리된 주문입니다.");
         }
@@ -56,17 +53,14 @@ public class OrderService {
         payment.setCourierCompany(dto.getCourierCompany());
         payment.setTrackingNumber(dto.getTrackingNumber());
         payment.setShippedAt(LocalDateTime.now());
+        orderRepository.saveAndFlush(payment);
 
-        // 배송 시작 알림: 구매자에게 전송
         notificationService.notifyDeliveryStarted(
                 payment.getMember(), payment.getBid().getBidder(), payment.getBid().getAuction());
 
         return SalesResponseDTO.from(payment);
     }
 
-    // 마이페이지 - 구매내역 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
-    // 구매내역 조회
     @Transactional(readOnly = true)
     public List<PurchaseResponseDTO> getPurchases(String memId) {
         return orderRepository.findPurchasesByBuyerMemId(memId)
@@ -75,7 +69,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // 구매확정
     @Transactional
     public PurchaseResponseDTO confirmReceipt(ConfirmReceiptRequestDTO dto, String memId) {
         PaymentEntity payment = orderRepository
@@ -83,40 +76,50 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "해당 결제 건을 찾을 수 없거나 권한이 없습니다."));
 
+        // 예전에 pay_status만 CONFIRMED로 저장된 데이터는 점수 중복 지급 없이 배송상태만 복구
         if ("CONFIRMED".equals(payment.getPayStatus())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "이미 구매확정된 주문입니다.");
+            orderRepository.synchronizeConfirmedDeliveryStatus(payment.getPayIdx());
+            return orderRepository.findByBidIdxAndBuyerMemId(dto.getBidIdx(), memId)
+                    .map(PurchaseResponseDTO::from)
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "구매확정 주문을 다시 조회할 수 없습니다."));
         }
 
-//        if (!"SHIPPING".equals(payment.getDeliveryStatus())) {
-//            throw new ResponseStatusException(
-//                    HttpStatus.BAD_REQUEST, "배송중 상태일 때만 구매확정이 가능합니다."); // 이거 추가하면 기능 작동(구매 확정 후 페널티)을 안함
-//        }
+        if (!"DONE".equals(payment.getPayStatus())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "결제가 완료된 주문만 구매확정할 수 있습니다.");
+        }
 
-        payment.setPayStatus("CONFIRMED");
-        payment.setConfirmedAt(LocalDateTime.now());
-        payment.setDeliveryStatus("DELIVERED");
-        orderRepository.save(payment);
+        if (!"SHIPPING".equals(payment.getDeliveryStatus())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "배송중 상태일 때만 구매확정이 가능합니다.");
+        }
 
-        // 구매자, 판매자 크레딧 +30 / 페널티 -1
-        Long buyerIdx = payment.getMember().getMemIdx();
-        Long sellerIdx = payment.getBid().getBidder().getMemIdx();
+        int updated = orderRepository.confirmReceiptAtomically(
+                payment.getPayIdx(), LocalDateTime.now());
+        if (updated != 1) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "주문 상태가 변경되었습니다. 새로고침 후 다시 시도해주세요.");
+        }
+
+        PaymentEntity confirmedPayment = orderRepository
+                .findByBidIdxAndBuyerMemId(dto.getBidIdx(), memId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "구매확정 주문을 다시 조회할 수 없습니다."));
+
+        Long buyerIdx = confirmedPayment.getMember().getMemIdx();
+        Long sellerIdx = confirmedPayment.getBid().getBidder().getMemIdx();
         penaltyService.applyTradeComplete(buyerIdx);
         penaltyService.applyTradeComplete(sellerIdx);
 
-        // 판매자 등급 재계산
-        gradeService.recalculateGrade(sellerIdx);
-
-        // 구매확정(배송 완료) 알림: 판매자에게 전송
         notificationService.notifyDeliveryConfirmed(
-                payment.getBid().getBidder(), payment.getMember(), payment.getBid().getAuction());
+                confirmedPayment.getBid().getBidder(),
+                confirmedPayment.getMember(),
+                confirmedPayment.getBid().getAuction());
 
-        return PurchaseResponseDTO.from(payment);
+        return PurchaseResponseDTO.from(confirmedPayment);
     }
 
-    // 마이페이지 - 결제 대기 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
-    // 결제 대기 낙찰 건 조회 (낙찰됐지만 아직 결제 안 된 건)
     @Transactional(readOnly = true)
     public List<PendingBidResponseDTO> getPendingBids(String memId) {
         return bidRepository.findPendingBidsByBuyerMemId(memId)
@@ -124,5 +127,4 @@ public class OrderService {
                 .map(PendingBidResponseDTO::from)
                 .collect(Collectors.toList());
     }
-
 }
