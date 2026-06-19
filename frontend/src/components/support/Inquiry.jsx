@@ -15,15 +15,6 @@ const SupportPage = () => {
     <div className="min-h-screen bg-gray-50 pb-20 relative">
 
       {/* 2. 메인 사이드 동글이 버튼 (고정 위치) */}
-      <div className="fixed right-6 bottom-24 flex flex-col gap-3 z-50">
-        <button className="w-14 h-14 bg-[#7CBD00] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#6BAD00] transition-all hover:scale-110">
-          <span className="text-xl">💬</span>
-        </button>
-        <button className="w-14 h-14 bg-white text-[#7CBD00] border-2 border-[#7CBD00] rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-all hover:scale-110">
-          <span className="text-xl">🔝</span>
-        </button>
-      </div>
-
       <main className="max-w-4xl mx-auto pt-10 px-4">
         <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
           {/* 고객문의 타이틀 */}

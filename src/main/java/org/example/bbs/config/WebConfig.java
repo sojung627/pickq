@@ -41,7 +41,7 @@ public class WebConfig implements WebMvcConfigurer {
                 )
                 // 로그인이 필요없는 경로
                 .excludePathPatterns(
-                        "/members/login", 
+                        "/members/login",
                         "/members/signUp",
                         "/css/**",
                         "/js/**",
