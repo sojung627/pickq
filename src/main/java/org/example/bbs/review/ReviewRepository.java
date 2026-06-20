@@ -185,4 +185,12 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     @Query("SELECT AVG(r.reviewStar) FROM ReviewEntity r WHERE r.bidder.memIdx = :memIdx AND r.reviewIsDeleted = 'N'")
     Double findAvgStarByBidderIdx(@Param("memIdx") Long memIdx);
 
+    // 키워드 백필 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 키워드가 없는 활성 리뷰만 조회 (AI 도입 이전 리뷰 대상)
+    @Query("SELECT r FROM ReviewEntity r " +
+            "WHERE r.reviewKeywords IS NULL " +
+            "AND r.reviewIsDeleted = 'N'")
+    List<ReviewEntity> findReviewsWithoutKeywords();
+
 }

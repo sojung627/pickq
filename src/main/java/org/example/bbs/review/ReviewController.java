@@ -203,4 +203,29 @@ public class ReviewController {
         return ResponseEntity.ok(Map.of("message", "영구 삭제되었습니다."));
     }
 
+    // 키워드 백필 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    // 기존 리뷰 키워드 일괄 생성 (AI 도입 이전 리뷰 백필) - 관리자 전용
+    @PostMapping("/admin/reviews/backfill-keywords")
+    public ResponseEntity<?> backfillKeywords(HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("loginMember") == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        String memId = (String) session.getAttribute("loginMember");
+        MemberEntity member = memberRepository.findByMemId(memId).orElseThrow();
+
+        // 관리자(roleIdx=2)만 실행 가능
+        if (member.getMemRoleIdx() != 2) {
+            return ResponseEntity.status(403).body(Map.of("message", "권한이 없습니다."));
+        }
+
+        int count = reviewService.backfillKeywords();
+        return ResponseEntity.ok(Map.of(
+                "message", count + "건의 리뷰에 키워드가 생성되었습니다."
+        ));
+    }
+
 }

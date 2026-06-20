@@ -10,6 +10,8 @@ import org.example.bbs.grade.GradeService;
 import org.example.bbs.member.MemberEntity;
 import org.example.bbs.member.MemberRepository;
 import org.example.bbs.memberPenalty.PenaltyService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.example.bbs.notification.NotificationService;
@@ -30,6 +32,7 @@ public class ReviewService {
     private final GradeService gradeService;
     private final NotificationService notificationService;
     private final GeminiService geminiService;
+    private static final Logger log = LoggerFactory.getLogger(ReviewService.class);
 
 
     // 리뷰 매니지먼트 페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -107,6 +110,62 @@ public class ReviewService {
     @Transactional
     public void hardDelete(Long reviewIdx) {
         reviewRepository.deleteById(reviewIdx);
+    }
+
+    // 키워드 백필 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+    /**
+     * AI 도입 이전 리뷰에 키워드를 일괄 생성합니다.
+     * - review_keywords가 NULL인 리뷰만 대상
+     * - 이미 키워드가 있는 리뷰는 건너뜀
+     * - Gemini API 실패 시 해당 리뷰만 skip하고 계속 진행
+     * @return 키워드 생성에 성공한 리뷰 수
+     */
+    @Transactional
+    public int backfillKeywords() {
+        List<ReviewEntity> targets = reviewRepository.findReviewsWithoutKeywords();
+
+        if (targets.isEmpty()) {
+            log.info("[backfill] 처리할 리뷰 없음");
+            return 0;
+        }
+
+        log.info("[backfill] 대상 리뷰 {}건 처리 시작", targets.size());
+        int successCount = 0;
+
+        for (ReviewEntity review : targets) {
+            try {
+                String content = review.getReviewContent();
+                if (content == null || content.isBlank()) {
+                    log.warn("[backfill] reviewIdx={} 본문 없음, 건너뜀", review.getReviewIdx());
+                    continue;
+                }
+
+                String keywords = geminiService.extractKeywords(content);
+
+                // Gemini가 빈 문자열을 반환한 경우(API 실패) 저장하지 않음
+                if (keywords != null && !keywords.isBlank()) {
+                    review.setReviewKeywords(keywords);
+                    successCount++;
+                    log.info("[backfill] reviewIdx={} 완료: {}", review.getReviewIdx(), keywords);
+                } else {
+                    log.warn("[backfill] reviewIdx={} 키워드 추출 결과 없음", review.getReviewIdx());
+                }
+
+                // Gemini API 과부하 방지 (100ms 간격)
+                Thread.sleep(100);
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("[backfill] 인터럽트 발생, 중단");
+                break;
+            } catch (Exception e) {
+                log.warn("[backfill] reviewIdx={} 처리 실패: {}", review.getReviewIdx(), e.getMessage());
+            }
+        }
+
+        log.info("[backfill] 완료 — 총 {}건 / 성공 {}건", targets.size(), successCount);
+        return successCount;
     }
 
 }
