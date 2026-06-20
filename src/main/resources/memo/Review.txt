@@ -1,0 +1,26 @@
+DB를 초기화 했을 때
+제미나이의 리뷰 키워드가 뜨지 않는다면
+PostMan을 사용해야 함
+
+1. Post로 설정 후 http://localhost:8080/members/login
+Header에는 반드시 Content-Type - application/json 있어야 함
+Body에는
+{
+   "memId": "admin",
+   "memPwd": 1234
+}
+
+조회 후 admin에 대한 JSON 뜨면 성공
+
+그 다음
+Body 내용 지우고
+http://localhost:8080/admin/reviews/backfill-keywords를 검색
+결과 값에
+{
+    "message": "5건의 리뷰에 키워드가 생성되었습니다."
+}
+라고 뜨면 성공
+
+그 이후
+SELECT * FROM review; 조회해서
+review_keywords 뜨는 지 확인 할 것
