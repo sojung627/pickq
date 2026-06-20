@@ -1,3 +1,4 @@
+-- 지피티
 USE final;
 
 /* ==========================================
@@ -171,52 +172,52 @@ INSERT INTO item (
     item_is_deleted
 ) VALUES
 -- 1~3: 러닝화 (카테고리 fitness = 5)
-('10km 대회용 러닝화 - 쿠션 좋은 모델', 5, 'ASICS',  'USED_A', NULL, NULL, 'N'),
-('경량 러닝화 - 전시 제품',                 5, 'NIKE',   'NEW',    NULL, NULL, 'N'),
-('초보자용 러닝화 - 한 달 사용',            5, 'HOKA',   'USED_B', NULL, NULL, 'N'),
+('10km 대회용 러닝화 - 쿠션 좋은 모델', 5, 'ASICS',  'USED_A', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('경량 러닝화 - 전시 제품',                 5, 'NIKE',   'NEW',    'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('초보자용 러닝화 - 한 달 사용',            5, 'HOKA',   'USED_B', 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 4~6: 골프 아이언 세트 (racket = 2)
-('중고 아이언 세트 - 사용감 있음',         2, 'Callaway',  'USED_B', NULL, NULL, 'N'),
-('아이언 세트 - 거의 새 제품',             2, 'TaylorMade','USED_A', NULL, NULL, 'N'),
-('연습용 아이언 세트',                     2, 'PING',      'USED_B', NULL, NULL, 'N'),
+('중고 아이언 세트 - 사용감 있음',         2, 'Callaway',  'USED_B', 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('아이언 세트 - 거의 새 제품',             2, 'TaylorMade','USED_A', 'https://images.unsplash.com/photo-1593111774240-d529f12cf4bb?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('연습용 아이언 세트',                     2, 'PING',      'USED_B', 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 7~8: 자전거 헬멧 (accessory = 8)
-('로드용 헬멧 A - 한 시즌 사용',           8, 'GIRO',   'USED_A', NULL, NULL, 'N'),
-('경량 로드 헬멧 B',                       8, 'KASK',   'USED_A', NULL, NULL, 'N'),
+('로드용 헬멧 A - 한 시즌 사용',           8, 'GIRO',   'USED_A', 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('경량 로드 헬멧 B',                       8, 'KASK',   'USED_A', 'https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 9~11: 홈트 세트 관련 (fitness = 5)
-('아령 세트 + 두꺼운 매트',                5, 'NoBrand', 'USED_A', NULL, NULL, 'N'),
-('브랜드 홈트 세트',                       5, 'IFIT',    'USED_A', NULL, NULL, 'N'),
-('가성비 홈트 세트',                       5, 'LOCAL',   'USED_B', NULL, NULL, 'N'),
+('아령 세트 + 두꺼운 매트',                5, 'NoBrand', 'USED_A', 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('브랜드 홈트 세트',                       5, 'IFIT',    'USED_A', 'https://images.unsplash.com/photo-1576678927484-cc907957088c?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('가성비 홈트 세트',                       5, 'LOCAL',   'USED_B', 'https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 12~14: 수영 세트 (swim = 7)
-('수영 입문 세트 A (수경+수모+수영복)',     7, 'Arena',  'NEW',    NULL, NULL, 'N'),
-('수영 세트 B - 수경 사용감 있음',         7, 'Speedo', 'USED_A', NULL, NULL, 'N'),
-('브랜드 수영 세트 C',                     7, 'Mizuno', 'USED_B', NULL, NULL, 'N'),
+('수영 입문 세트 A (수경+수모+수영복)',     7, 'Arena',  'NEW',    'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('수영 세트 B - 수경 사용감 있음',         7, 'Speedo', 'USED_A', 'https://images.unsplash.com/photo-1600965962361-9035dbfd1c50?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('브랜드 수영 세트 C',                     7, 'Mizuno', 'USED_B', 'https://images.unsplash.com/photo-1519315901367-f34ff9154487?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 15~16: 축구 스파이크 (ball = 1)
-('인조잔디용 축구 스파이크 A',             1, 'Adidas', 'USED_A', NULL, NULL, 'N'),
-('발볼 넓은 축구 스파이크 B',              1, 'Nike',   'USED_B', NULL, NULL, 'N'),
+('인조잔디용 축구 스파이크 A',             1, 'Adidas', 'USED_A', 'https://images.unsplash.com/photo-1511886929837-354d827aae26?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('발볼 넓은 축구 스파이크 B',              1, 'Nike',   'USED_B', 'https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 17: 스키 세트 (outdoor = 6)
-('스키 풀세트 (구형 장비)',                6, 'Rossignol', 'USED_B', NULL, NULL, 'N'),
+('스키 풀세트 (구형 장비)',                6, 'Rossignol', 'USED_B', 'https://images.unsplash.com/photo-1551524559-8af4e6624178?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 18: 요가 매트 (fitness = 5)
-('두꺼운 요가 매트',                       5, 'Reebok', 'USED_A', NULL, NULL, 'N'),
+('두꺼운 요가 매트',                       5, 'Reebok', 'USED_A', 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 19: 리조트 숙박권 (accessory = 8)
-('리조트 숙박권 1박',                      8, 'ResortX','NEW',   NULL, NULL, 'N'),
+('리조트 숙박권 1박',                      8, 'ResortX','NEW',   'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 20: 콘서트 티켓 (accessory = 8)
-('콘서트 티켓 2장',                        8, 'Ticket','NEW',   NULL, NULL, 'N'),
+('콘서트 티켓 2장',                        8, 'Ticket','NEW',   'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 공/볼 (카테고리 : 1번)
-('프리미어리그 공인구 - 미개봉 새제품', 1, 'NIKE', 'NEW', '/images/ball_01.jpg', NULL, 'N'),
-('KBL 공식 시합용 농구공', 1, 'Wilson', 'USED_A', '/images/ball_02.jpg', NULL, 'N'),
+('프리미어리그 공인구 - 미개봉 새제품', 1, 'NIKE', 'NEW', 'https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('KBL 공식 시합용 농구공', 1, 'Wilson', 'USED_A', 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
 
 -- 액세서리/잡화 (카테고리 : 8번)
-('대용량 스포츠 백팩 (신발주머니 포함)', 8, 'UnderArmour', 'USED_A', '/images/bag_01.jpg', NULL, 'N'),
-('겨울철 야외 러닝용 스마트폰 터치 장갑', 8, 'Adidas', 'NEW', '/images/gloves_01.jpg', NULL, 'N');
+('대용량 스포츠 백팩 (신발주머니 포함)', 8, 'UnderArmour', 'USED_A', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80', NULL, 'N'),
+('겨울철 야외 러닝용 스마트폰 터치 장갑', 8, 'Adidas', 'NEW', 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=800&q=80', NULL, 'N');
 
 /* ==========================================
   AUCTION 더미 데이터 (10건)
@@ -224,6 +225,7 @@ INSERT INTO item (
 
 INSERT INTO auction (
     buyer_idx, item_category_idx,
+    auction_thumbnail_img,
     auction_title, auction_desc,
     auction_target_price, auction_view_count,
     auction_start_at, auction_end_at, auction_decision_deadline,
@@ -233,6 +235,7 @@ INSERT INTO auction (
 ) VALUES
 -- 1. 진행중 경매 (open) - 러닝화
 (1, 4,
+ 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80',
  '10km 대회용 러닝화 추천받습니다',
  '10km 대회 출전 예정이라, 초보 러너에게 맞는 쿠션 좋은 러닝화 추천받고 싶습니다.',
  150000, 35,
@@ -245,6 +248,7 @@ INSERT INTO auction (
 
 -- 2. 진행중 경매 (open) - 골프 아이언
 (2, 2,
+ 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=800&q=80',
  '골프 아이언 세트 역경매 (중급자용)',
  '현재 핸디 90대 초반, 중급자용 아이언 세트 제안 부탁드립니다. 중고/새 제품 모두 가능.',
  800000, 42,
@@ -257,6 +261,7 @@ INSERT INTO auction (
 
 -- 3. 진행중 경매 (open) - 자전거 헬멧
 (9, 3,
+ 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80',
  '로드용 헬멧, 가벼운 모델 찾습니다',
  '자출+주말 라이딩용으로 쓸 헬멧 찾고 있습니다. M 사이즈, 통풍 잘 되는 모델로 제안 부탁드려요.',
  200000, 18,
@@ -269,6 +274,7 @@ INSERT INTO auction (
 
 -- 4. 정상 낙찰된 경매 (closed) - 헬스 홈트 세트
 (10, 5,
+ 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=800&q=80',
  '홈트용 아령 + 매트 세트 구합니다',
  '1~10kg 조절 가능한 아령과 두꺼운 요가매트 세트로 제안 부탁드려요.',
  250000, 57,
@@ -281,6 +287,7 @@ INSERT INTO auction (
 
 -- 5. 정상 낙찰된 경매 (closed) - 수영 용품 세트
 (8, 7,
+ 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80',
  '수영 입문용 세트 (수경+수모+수영복)',
  '성인 남성 수영 입문용 세트 제안 부탁드립니다. 브랜드는 크게 상관 없고 내구성 좋은 제품이면 좋겠습니다.',
  200000, 44,
@@ -293,6 +300,7 @@ INSERT INTO auction (
 
 -- 6. 마감 후 결정 진행중 느낌 (closed, 낙찰자 아직 확정 X) - 축구 스파이크
 (3, 4,
+ 'https://images.unsplash.com/photo-1511886929837-354d827aae26?auto=format&fit=crop&w=800&q=80',
  '인조잔디용 축구 스파이크 요청',
  '발볼 넓은 편이라, 발 편한 인조잔디용 스파이크 찾고 있습니다. 270mm 기준 제안 부탁드려요.',
  180000, 29,
@@ -305,6 +313,7 @@ INSERT INTO auction (
 
 -- 7. 유찰된 경매 (failed) - 스키 장비
 (4, 6,
+ 'https://images.unsplash.com/photo-1551524559-8af4e6624178?auto=format&fit=crop&w=800&q=80',
  '스키 풀세트(중고) 구합니다',
  '스키/부츠/폴/헬멧 풀세트로 중고 매물을 찾고 있습니다. 175cm, 70kg 기준 맞는 장비면 좋겠습니다.',
  500000, 12,
@@ -317,6 +326,7 @@ INSERT INTO auction (
 
 -- 8. 취소된 경매 (canceled) - 요가 매트 (구매자 취소)
 (7, 5,
+ 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?auto=format&fit=crop&w=800&q=80',
  '두꺼운 요가 매트 구합니다 (취소됨)',
  '무릎이 안 좋아서 두꺼운 요가 매트 찾아요. 집에서 사용하는 용도입니다.',
  80000, 9,
@@ -329,6 +339,7 @@ INSERT INTO auction (
 
 -- 9. 관리자 삭제된 경매 (is_deleted = Y) - 리조트 이용권 (법적 이슈 케이스)
 (5, 8,
+ 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
  '리조트 숙박권 양도 요청 (관리자 삭제)',
  '리조트 숙박권 양도 받으려고 합니다. 날짜는 협의 가능해요.',
  600000, 5,
@@ -341,6 +352,7 @@ INSERT INTO auction (
 
 -- 10. 관리자 삭제된 경매 (is_deleted = Y) - 콘서트 티켓 (정책 위반)
 (6, 8,
+ 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=800&q=80',
  '콘서트 티켓 양도 요청 (정책 위반)',
  '콘서트 티켓 구해봅니다. 연석이면 좋겠습니다.',
  400000, 7,
@@ -353,6 +365,7 @@ INSERT INTO auction (
 
 -- 11. 공/볼 (1번) 관련 경매
 (3, 1,
+ 'https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=800&q=80',
  '축구 소모임에서 쓸 공인구 여러 개 구해요',
  '상태 좋은 프리미어리그나 챔스 공인구 찾습니다. 낱개도 좋으니 제안 주세요.',
  120000, 15,
@@ -361,6 +374,7 @@ INSERT INTO auction (
 
 -- 12. 공/볼 (1번) 관련 경매
 (4, 1,
+ 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=800&q=80',
  '야외 우레탄 코트용 농구공 추천 바랍니다',
  '내구성 좋은 농구공 찾고 있습니다. 7호 사이즈 위주로 제안 부탁드려요.',
  60000, 22,
@@ -369,6 +383,7 @@ INSERT INTO auction (
 
 -- 13. 액세서리/잡화 (8번) 관련 경매
 (5, 8,
+ 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80',
  '헬스장 갈 때 들기 좋은 큰 가방 구합니다',
  '신발이랑 옷이 다 들어가는 넉넉한 사이즈의 백팩이나 더플백 찾고 있어요.',
  100000, 10,
@@ -377,6 +392,7 @@ INSERT INTO auction (
 
 -- 14. 액세서리/잡화 (8번) 관련 경매
 (6, 8,
+ 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=800&q=80',
  '야간 라이딩용 반사 장갑이나 양말 세트',
  '밤에 자전거 탈 때 안전을 위해 눈에 잘 띄는 잡화 세트 제안 부탁드립니다.',
  40000, 5,
@@ -518,7 +534,7 @@ INSERT INTO auction (
 ) VALUES
 -- 15. 스쿼트 랙 + 바벨 세트
 (1, 5,
- '/images/auction/23418b2b-cff1-404b-bfbc-862abc9d9b07_fit_dm.png',
+ 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
  '입문용 스쿼트 랙 + 바벨 세트 구해요! 🏋️‍♀️',
  '이제 막 홈짐 시작하려는 헬린이입니다. 아파트라 너무 크지 않은 미니 랙이나 분리형 랙이었으면 좋겠어요. 바벨은 탄력봉 아니어도 되니까 저렴하게 넘겨주실 판매자님 찾습니다!',
  200000,
@@ -535,7 +551,7 @@ INSERT INTO auction (
 
 -- 16. 요가매트
 (2, 5,
- '/images/auction/ea94aa3f-7d64-484c-af18-d72ec90cfffd_fit_dm2.png',
+ 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?auto=format&fit=crop&w=800&q=80',
  '요가매트 8mm 이상 두꺼운 거 파실 분? 🧘‍♀️',
  '무릎이 아파서 아주 푹신하고 두꺼운 TPE 소재 요가매트 찾습니다. 사용감 조금 있어도 괜찮으니까 찢어진 곳만 없으면 돼요! 색상은 가급적 파스텔톤이면 좋겠어요! (샤방샤방한 거 좋아함💖)',
  100000,
@@ -552,7 +568,7 @@ INSERT INTO auction (
 
 -- 17. 스텔스 농구공
 (3, 1,
- '/images/auction/6ad8833d-12a0-4759-83f6-62927b691267_ball_dm.png',
+ 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=800&q=80',
  '층간소음 없는 실내용 ''스텔스 농구공'' 구해요! 🏀',
  '밤에도 집에서 드리블 연습하고 싶어서 저소음 공 찾고 있어요! 7호 사이즈면 좋겠고, 상태 깨끗한 녀석으로 픽 하겠습니다! 🐯',
  50000,
@@ -569,7 +585,7 @@ INSERT INTO auction (
 
 -- 18. 요넥스 배드민턴 라켓 (버전 1)
 (4, 2,
- '/images/auction/auction_default.png',
+ 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80',
  '입문용 요넥스 배드민턴 라켓(경량) 구합니다 🏸',
  '손목이 약해서 4U~5U 정도의 가벼운 라켓 찾아요. 거트(줄) 새로 안 갈아도 바로 쓸 수 있는 상태면 더 좋습니다! 파스텔톤이면 바로 낙찰! 💖',
  100000,
@@ -586,7 +602,7 @@ INSERT INTO auction (
 
 -- 19. 요넥스 배드민턴 라켓 (버전 2)
 (4, 2,
- '/images/auction/6de1d54f-89fe-486f-bd2a-775d3dec2345_ra_dm.png',
+ 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80',
  '입문용 요넥스 배드민턴 라켓(경량) 구합니다 🏸',
  '손목이 약해서 4U~5U 정도의 가벼운 라켓 찾아요. 거트(줄) 새로 안 갈아도 바로 쓸 수 있는 상태면 더 좋습니다! 파스텔톤이면 바로 낙찰! 💖',
  100000,
@@ -603,7 +619,7 @@ INSERT INTO auction (
 
 -- 20. 무릎 니슬리브
 (5, 3,
- '/images/auction/aecff9f6-5ef3-49b6-83d4-6f01539b930b_pro_dm.png',
+ 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80',
  '러닝용 무릎 니슬리브 1세트 구함 (M사이즈) 🏃‍♀️',
  '무릎 지지력이 짱짱한 제품 찾아요! 세탁해도 냄새 안 나고 늘어남 없는 S급 상태였으면 좋겠습니다. 택배비 포함해서 좋은 가격 제시해주세요! ✨',
  60000,
@@ -620,7 +636,7 @@ INSERT INTO auction (
 
 -- 21. 러닝화
 (6, 1,
- '/images/auction/c726c0cf-efce-4da5-aa4b-5f8884d62502_sh_dm.png',
+ 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80',
  '나이키 에어줌 페가수스 러닝화 (240mm) 👟',
  '조깅 시작해보려고 해요! 핑크나 화이트 컬러 들어간 디자인 좋아합니다. 바닥창 거의 안 닳은 새거 같은 중고 부탁드려요!',
  100000,
@@ -637,7 +653,7 @@ INSERT INTO auction (
 
 -- 22. 스쿼트 머신
 (7, 5,
- '/images/auction/63f683a4-d760-4be1-ba09-84ddaa275534_fit_dm3.png',
+ 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=800&q=80',
  '멜킨 스쿼트 머신 (화이트 에디션) 구해요! 🏋️‍♀️',
  '거실 인테리어 해치지 않는 깔끔한 화이트 컬러 스쿼트 머신 삽니다! 사용감 적고 발등 스펀지 짱짱한 걸로 보내주실 분?',
  100000,
@@ -654,7 +670,7 @@ INSERT INTO auction (
 
 -- 23. 캠핑 랜턴
 (8, 6,
- '/images/auction/c0eb63d7-fd10-48e2-8bde-9c63020b626c_out_dm.png',
+ 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80',
  '감성 캠핑용 루미에르 랜턴 구합니다 🕯️',
  '캠핑 밤을 샤방샤방하게 밝혀줄 가스 랜턴 찾아요! 유리 갓에 금 안 가고 케이스까지 풀세트로 있으신 분 찾습니다. 분위기 장인 되고 싶어요! 🔥',
  50000,
@@ -671,7 +687,7 @@ INSERT INTO auction (
 
 -- 24. 수경
 (9, 7,
- '/images/auction/182adde3-dbca-43e6-b79f-d0f3dc30a8ed_sw_dm.png',
+ 'https://images.unsplash.com/photo-1600965962361-9035dbfd1c50?auto=format&fit=crop&w=800&q=80',
  '미즈노 엑셀아이 수경 (노패킹/미러) 🏊‍♀️',
  '눈 자국 덜 남는 노패킹 수경 찾아요! 렌즈에 기스 없는 거 선호하고, 컬러는 화려할수록 좋습니다. 수영장 인싸 되게 도와주세요! ✨',
  50000,
@@ -688,7 +704,7 @@ INSERT INTO auction (
 
 -- 25. 가민 충전 케이블
 (10, 8,
- '/images/auction/bdc9e624-0e28-41cf-9e54-29af4a83254c_ac_dm.png',
+ 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=800&q=80',
  '가민 스마트워치 충전 케이블(정품) 급구! ⚡',
  '충전기를 잃어버려서 운동 기록을 못 하고 있어요 ㅠㅠ 정품 케이블 단선 안 된 걸로 빨리 보내주실 판매자님 찾습니다!',
  1500000,
@@ -816,4 +832,3 @@ INSERT INTO payment (
  NOW() - INTERVAL 2 DAY, NULL,
  'DELIVERED', '우체국택배', '123123123123',
  NOW() - INTERVAL 3 DAY);
-

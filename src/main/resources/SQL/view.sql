@@ -5,11 +5,11 @@
 /* ==========================================
    6. 뷰 테이블
    ========================================== */
-   
-   DROP VIEW IF EXISTS auction_list_view;
-   DROP VIEW IF EXISTS auction_detail_view;
-   DROP VIEW IF EXISTS bid_list_view;
-   
+
+DROP VIEW IF EXISTS auction_list_view;
+DROP VIEW IF EXISTS auction_detail_view;
+DROP VIEW IF EXISTS bid_list_view;
+
 -- AuctionList
 CREATE OR REPLACE VIEW auction_list_view AS
 SELECT
@@ -33,10 +33,10 @@ SELECT
     a.auction_regdate,
     a.auction_is_deleted
 FROM auction a
-JOIN auction_status s      ON a.auction_status_idx  = s.auction_status_idx
-LEFT JOIN item_category ic ON a.item_category_idx   = ic.item_category_idx
-LEFT JOIN bid b            ON a.auction_idx          = b.auction_idx
-                          AND b.bid_status_idx NOT IN (4, 5)  -- ← 취소/삭제 제외
+         JOIN auction_status s      ON a.auction_status_idx  = s.auction_status_idx
+         LEFT JOIN item_category ic ON a.item_category_idx   = ic.item_category_idx
+         LEFT JOIN bid b            ON a.auction_idx          = b.auction_idx
+    AND b.bid_status_idx NOT IN (4, 5)  -- ← 취소/삭제 제외
 GROUP BY
     a.auction_idx, a.buyer_idx, a.item_category_idx,
     a.auction_thumbnail_img, a.auction_title, a.auction_desc, a.auction_target_price,
@@ -67,11 +67,11 @@ SELECT
     IFNULL(MIN(b.bid_price), 0) AS min_bid_price,
     a.auction_is_deleted
 FROM auction a
-JOIN auction_status s      ON a.auction_status_idx  = s.auction_status_idx
-LEFT JOIN member buyer     ON a.buyer_idx          = buyer.mem_idx
-LEFT JOIN item_category ic ON a.item_category_idx   = ic.item_category_idx
-LEFT JOIN bid b            ON a.auction_idx          = b.auction_idx
-                          AND b.bid_status_idx NOT IN (4, 5)  -- ← 취소/삭제 제외
+         JOIN auction_status s      ON a.auction_status_idx  = s.auction_status_idx
+         LEFT JOIN member buyer     ON a.buyer_idx          = buyer.mem_idx
+         LEFT JOIN item_category ic ON a.item_category_idx   = ic.item_category_idx
+         LEFT JOIN bid b            ON a.auction_idx          = b.auction_idx
+    AND b.bid_status_idx NOT IN (4, 5)  -- ← 취소/삭제 제외
 GROUP BY
     a.auction_idx, a.buyer_idx, buyer.mem_id, a.item_category_idx,
     a.auction_thumbnail_img, a.auction_title, a.auction_desc,
@@ -103,14 +103,14 @@ SELECT
     i.item_thumbnail_img,
     ic.item_category_name                   -- 카테고리명 추가
 FROM bid b
-JOIN member m      ON b.bidder_idx     = m.mem_idx
-JOIN bid_status bs ON b.bid_status_idx = bs.bid_status_idx
-LEFT JOIN grade g  ON m.mem_grade_idx  = g.grade_idx
-LEFT JOIN (
+         JOIN member m      ON b.bidder_idx     = m.mem_idx
+         JOIN bid_status bs ON b.bid_status_idx = bs.bid_status_idx
+         LEFT JOIN grade g  ON m.mem_grade_idx  = g.grade_idx
+         LEFT JOIN (
     SELECT bidder_idx, AVG(review_star) AS avg_rating
     FROM review
     WHERE review_is_deleted = 'N'
     GROUP BY bidder_idx
 ) r ON b.bidder_idx = r.bidder_idx
-LEFT JOIN item i   ON b.item_idx       = i.item_idx
-LEFT JOIN item_category ic ON i.item_category_idx = ic.item_category_idx;
+         LEFT JOIN item i   ON b.item_idx       = i.item_idx
+         LEFT JOIN item_category ic ON i.item_category_idx = ic.item_category_idx;

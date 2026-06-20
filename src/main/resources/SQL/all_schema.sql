@@ -49,6 +49,9 @@ DROP TABLE IF EXISTS member;
 DROP TABLE IF EXISTS grade;
 DROP TABLE IF EXISTS role;
 
+DROP TABLE IF EXISTS picky_chat_message;
+DROP TABLE IF EXISTS picky_chat_session;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 

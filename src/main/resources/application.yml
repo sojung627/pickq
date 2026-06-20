@@ -23,7 +23,7 @@ spring:
 
   jpa:
     hibernate:
-      # DB 자동 수정
+      # DB 자동 수정 update인데 일단 none으로 임시 수정
       ddl-auto: update
     # JPA가 실행하는 SQL들을 콘솔로 보여줌
     show-sql: true

@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Profile from '../profile/Profile';
 
+// 백엔드 API 서버 주소. 배포 시 이 값만 운영 도메인으로 변환해야함!
+const API_BASE_URL = 'http://localhost:8080';
+
+// 썸네일 경로가 https://... 같은 완전한 외부 URL이면 그대로 쓰고,
+// /uploads/... 같은 백엔드 상대경로면 API_BASE_URL을 붙여서 완성
+const resolveImageUrl = (path, fallback) => {
+  if (!path) return fallback;
+  return /^https?:\/\//.test(path) ? path : `${API_BASE_URL}${path}`;
+};
+
 const AuctionDetail = () => {
   const { auctionIdx } = useParams();
   const navigate = useNavigate();
@@ -22,12 +32,12 @@ const AuctionDetail = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+    fetch(`${API_BASE_URL}/mypage/info`, { credentials: "include" })
       .then(res => res.ok ? res.json() : null)
       .then(data => setSession(data ? { loginUser: data } : null))
       .catch(() => setSession(null));
 
-    fetch(`http://localhost:8080/auctions/${auctionIdx}`, { credentials: "include" })
+    fetch(`${API_BASE_URL}/auctions/${auctionIdx}`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         setDetail(data.detail);
@@ -38,7 +48,7 @@ const AuctionDetail = () => {
 
   const openProfileModal = (memIdx) => {
     if (!memIdx) return;
-    fetch(`http://localhost:8080/mypage/profile/modal/${memIdx}`, { credentials: 'include' })
+    fetch(`${API_BASE_URL}/mypage/profile/modal/${memIdx}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => setProfileModal(data))
       .catch(err => console.error('프로필 조회 에러:', err));
@@ -70,13 +80,13 @@ const AuctionDetail = () => {
     });
     formData.append('itemCategoryIdx', detail.itemCategoryIdx);
 
-    fetch(`http://localhost:8080/auctions/${auctionIdx}/bids`, {
+    fetch(`${API_BASE_URL}/auctions/${auctionIdx}/bids`, {
       method: 'POST', credentials: 'include', body: formData
     })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          fetch(`http://localhost:8080/auctions/${auctionIdx}`, { credentials: 'include' })
+          fetch(`${API_BASE_URL}/auctions/${auctionIdx}`, { credentials: 'include' })
             .then(res => res.json())
             .then(res => {
               setDetail(res.detail);
@@ -94,28 +104,28 @@ const AuctionDetail = () => {
 
   const handleWin = (bidIdx) => {
     if (!window.confirm('이 입찰을 낙찰하시겠습니까?')) return;
-    fetch(`http://localhost:8080/auctions/${auctionIdx}/bids/${bidIdx}/win`, {
+    fetch(`${API_BASE_URL}/auctions/${auctionIdx}/bids/${bidIdx}/win`, {
       method: 'POST', credentials: 'include'
     }).then(() => window.location.reload());
   };
 
   const handleCancel = () => {
     if (!window.confirm('정말 취소하시겠습니까?')) return;
-    fetch(`http://localhost:8080/auctions/${auctionIdx}/delete`, {
+    fetch(`${API_BASE_URL}/auctions/${auctionIdx}/delete`, {
       method: 'POST', credentials: 'include'
     }).then(() => navigate('/auctions'));
   };
 
   const handleClose = () => {
     if (!window.confirm('경매를 마감하시겠습니까?')) return;
-    fetch(`http://localhost:8080/auctions/${auctionIdx}/close`, {
+    fetch(`${API_BASE_URL}/auctions/${auctionIdx}/close`, {
       method: 'POST', credentials: 'include'
     }).then(() => window.location.reload());
   };
 
   const handleBidCancel = (bidIdx) => {
     if (!window.confirm('입찰을 취소하시겠습니까?')) return;
-    fetch(`http://localhost:8080/bids/${bidIdx}/cancel`, {
+    fetch(`${API_BASE_URL}/bids/${bidIdx}/cancel`, {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ auctionIdx })
@@ -124,7 +134,7 @@ const AuctionDetail = () => {
 
   const handleAdminBidDelete = (bidIdx) => {
     if (!window.confirm('[관리자] 이 입찰을 삭제하시겠습니까?')) return;
-    fetch(`http://localhost:8080/bids/${bidIdx}/admin-cancel`, {
+    fetch(`${API_BASE_URL}/bids/${bidIdx}/admin-cancel`, {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ auctionIdx })
@@ -133,7 +143,7 @@ const AuctionDetail = () => {
 
   const handleAdminDelete = () => {
     if (!window.confirm('[관리자] 이 경매를 삭제하시겠습니까?')) return;
-    fetch(`http://localhost:8080/auctions/${auctionIdx}/admin-delete`, {
+    fetch(`${API_BASE_URL}/auctions/${auctionIdx}/admin-delete`, {
       method: 'POST', credentials: 'include'
     }).then(() => navigate('/auctions'));
   };
@@ -204,9 +214,7 @@ const AuctionDetail = () => {
                         <div className="w-full max-w-[220px]">
                           <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-100">
                             <img
-                              src={detail.auctionThumbnailImg
-                                ? `http://localhost:8080${detail.auctionThumbnailImg}`
-                                : '/images/auction/auction_default.png'}
+                              src={resolveImageUrl(detail.auctionThumbnailImg, '/images/auction/auction_default.png')}
                               className="w-full h-full object-cover" alt="경매 이미지"
                             />
                           </div>
@@ -395,9 +403,7 @@ const AuctionDetail = () => {
 
                       <div className="mb-3">
                         <img
-                          src={selectedBid.itemThumbnailImg
-                            ? `http://localhost:8080${selectedBid.itemThumbnailImg}`
-                            : '/images/bid/bid_default.png'}
+                          src={resolveImageUrl(selectedBid.itemThumbnailImg, '/images/bid/bid_default.png')}
                           className="rounded-xl max-h-[300px] object-cover w-4/5" alt="입찰 이미지"
                         />
                       </div>
