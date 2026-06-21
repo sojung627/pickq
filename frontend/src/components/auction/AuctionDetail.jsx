@@ -18,7 +18,7 @@ const AuctionDetail = () => {
 
   const [detail, setDetail] = useState(null);
   const [bidList, setBidList] = useState([]);
-  const [selectedBid, setSelectedBid] = useState(null);
+  const [selectedBid, setSelectedBid] = useState(null);   
   const [mode, setMode] = useState('list');
   const [session, setSession] = useState(null);
   const [profileModal, setProfileModal] = useState(null);
