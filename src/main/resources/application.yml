@@ -14,12 +14,19 @@ spring:
 #      resources:
 #        add-mapping: false
 
-  # DB 설정
+  # DB 설정 - 로컬
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://localhost:3306/final?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+#    username: final
+#    password: final
+
+  # DB 설정 - Docker
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/final?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
-    username: final
-    password: final
+    url: ${DB_URL:jdbc:mysql://localhost:3306/final?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:final}
+    password: ${DB_PASSWORD:final}
 
   jpa:
     hibernate:
