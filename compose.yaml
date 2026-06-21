@@ -1,0 +1,29 @@
+name: pickq
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pickq-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - pickq-uploads:/app/uploads
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pickq-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pickq-uploads:

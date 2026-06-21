@@ -23,7 +23,7 @@ const BoardDetail = () => {
   const [totalReplyPages, setTotalReplyPages] = useState(1);
 
   const fetchReplies = () => {
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
+    fetch(`/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=${replyPage}`, {
       credentials: "include"
     })
       .then(res => res.json())
@@ -52,19 +52,19 @@ const BoardDetail = () => {
 
   const openProfileModal = (memIdx) => {
     if (!memIdx) return;
-    fetch(`http://localhost:8080/mypage/profile/modal/${memIdx}`, { credentials: 'include' })
+    fetch(`/mypage/profile/modal/${memIdx}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => setProfileModal(data))
       .catch(err => console.error('프로필 조회 에러:', err));
   };
 
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+    fetch("/mypage/info", { credentials: "include" })
       .then(res => res.ok ? res.json() : null)
       .then(data => setMember(data))
       .catch(() => setMember(null));
 
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`)
+    fetch(`/boards/${boardTypeCode}/${boardIdx}`)
       .then(res => res.json())
       .then(data => setBoard(data))
       .catch(err => console.error("게시글 상세 조회 에러:", err));
@@ -76,7 +76,7 @@ const BoardDetail = () => {
 
   const handleLike = () => {
     if (!member) { navigate('/members/login'); return; }
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/like`, {
+    fetch(`/boards/${boardTypeCode}/${boardIdx}/like`, {
       method: 'POST',
       credentials: 'include'
     })
@@ -87,7 +87,7 @@ const BoardDetail = () => {
 
   const handleReplySubmit = () => {
     if (!replyContent.trim()) return;
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+    fetch(`/boards/${boardTypeCode}/${boardIdx}/replies`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -102,7 +102,7 @@ const BoardDetail = () => {
   };
 
   const goToReplyAfterSubmit = () => {
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=1`, {
+    fetch(`/boards/${boardTypeCode}/${boardIdx}/replies?sort=${sortType}&page=1`, {
       credentials: "include"
     })
       .then(res => res.json())
@@ -128,7 +128,7 @@ const BoardDetail = () => {
 
   const handleReplyLike = (rid) => {
     if (!member) { navigate('/members/login'); return; }
-    fetch(`http://localhost:8080/boards/replies/${rid}/like`, {
+    fetch(`/boards/replies/${rid}/like`, {
       method: 'POST',
       credentials: 'include'
     })
@@ -148,7 +148,7 @@ const BoardDetail = () => {
 
   const handleReplyEdit = (rid) => {
     if (!editContent.trim()) return;
-    fetch(`http://localhost:8080/boards/replies/${rid}`, {
+    fetch(`/boards/replies/${rid}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -165,7 +165,7 @@ const BoardDetail = () => {
 
   const handleReplyDelete = (rid) => {
     if (!confirm('삭제하시겠습니까?')) return;
-    fetch(`http://localhost:8080/boards/replies/${rid}`, {
+    fetch(`/boards/replies/${rid}`, {
       method: 'DELETE',
       credentials: 'include'
     })
@@ -175,7 +175,7 @@ const BoardDetail = () => {
 
   const handleChildReplySubmit = (parentIdx) => {
     if (!childReplyContent.trim()) return;
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/replies`, {
+    fetch(`/boards/${boardTypeCode}/${boardIdx}/replies`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -192,7 +192,7 @@ const BoardDetail = () => {
 
   const handleBoardDelete = () => {
     if (!confirm('삭제하시겠습니까?')) return;
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`, {
+    fetch(`/boards/${boardTypeCode}/${boardIdx}`, {
       method: 'DELETE',
       credentials: 'include'
     })
@@ -207,7 +207,7 @@ const BoardDetail = () => {
 
   const getProfileImgUrl = (memProfileImg, memIdx) => {
     if (memProfileImg) {
-      return `http://localhost:8080/uploads/profile/${memProfileImg}`;
+      return `/uploads/profile/${memProfileImg}`;
     }
     const defaultNum = (Number(memIdx) % 5) + 1;
     return `/images/profile/profile_default_${defaultNum}.png`;

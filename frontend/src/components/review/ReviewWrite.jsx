@@ -27,7 +27,7 @@ export default function ReviewWrite() {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch("http://localhost:8080/mypage/reviews/reviewAll", {
+    fetch("/mypage/reviews/reviewAll", {
       credentials: "include"
     })
       .then(res => res.json())
@@ -44,7 +44,7 @@ export default function ReviewWrite() {
     setIsLoading(true);
     setIsSearched(true);
 
-    fetch(`http://localhost:8080/mypage/reviews/reviewSearch?searchType=${searchType}&keyword=${encodeURIComponent(keyword)}`, {
+    fetch(`/mypage/reviews/reviewSearch?searchType=${searchType}&keyword=${encodeURIComponent(keyword)}`, {
       credentials: "include"
     })
       .then((response) => {
@@ -83,7 +83,7 @@ export default function ReviewWrite() {
         content: reviewContent
       };
 
-      fetch("http://localhost:8080/mypage/reviews/reviewWrite", {
+      fetch("/mypage/reviews/reviewWrite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -99,7 +99,7 @@ export default function ReviewWrite() {
             setTitleTouched(false);
             setContentTouched(false);
             setStarTouched(false);
-            return fetch("http://localhost:8080/mypage/reviews/reviewAll", { credentials: "include" })
+            return fetch("/mypage/reviews/reviewAll", { credentials: "include" })
               .then(res => res.json())
               .then(data => setReviewList(data.reviewList || []));
           } else {
@@ -120,7 +120,7 @@ export default function ReviewWrite() {
     reviewContent.trim().length > 300 ||
     reviewStar === 0;
 
-  // ✅ 각 필드 에러 메시지 조건
+  // 각 필드 에러 메시지 조건
   const titleError = titleTouched && reviewTitle.trim().length < 5
     ? "리뷰 제목은 5글자 이상 입력해주세요."
     : "";

@@ -1,0 +1,97 @@
+# React Router의 직접 접속·새로고침 요청은 보통 text/html을 포함한다.
+# fetch/axios API 요청은 보통 */* 또는 application/json을 사용한다.
+map $http_accept $serve_react_app {
+    default      0;
+    ~*text/html  1;
+}
+
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
+server {
+    listen ${PORT};
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # React 빌드 정적 파일
+    # 없는 정적 파일을 Spring Boot로 보내지 않는다.
+    location ^~ /assets/ {
+        try_files $uri =404;
+        access_log off;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location = /favicon.ico {
+        try_files $uri =404;
+        access_log off;
+    }
+
+    # SPA 진입 파일
+    # 내부 리다이렉트가 다시 API 판별 로직으로 들어가는 것을 방지한다.
+    location = /index.html {
+        try_files /index.html =404;
+        add_header Cache-Control "no-cache";
+    }
+
+    # SockJS / STOMP / WebSocket
+    # 일반 React·API 처리보다 먼저 검사한다.
+    location ^~ /ws-chat {
+        proxy_pass ${BACKEND_URL};
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Host $http_host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+    }
+
+    # 실제 정적 파일은 Nginx가 제공한다.
+    # 파일이 없으면 React 페이지인지 API 요청인지 판별한다.
+    location / {
+        try_files $uri $uri/ @react_or_backend;
+    }
+
+    # 브라우저 직접 접속·새로고침:
+    # Accept 헤더에 text/html이 있으면 React index.html
+    #
+    # fetch/axios API 요청:
+    # Spring Boot로 전달
+    location @react_or_backend {
+        error_page 418 = /index.html;
+
+        if ($serve_react_app) {
+            return 418;
+        }
+
+        proxy_pass ${BACKEND_URL};
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Host $http_host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+}

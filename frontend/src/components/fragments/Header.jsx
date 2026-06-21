@@ -17,7 +17,7 @@ export default function Header() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:8080/members/auth/check", { credentials: "include" })
+    fetch("/members/auth/check", { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         setIsLoggedIn(data.isLoggedIn);
@@ -29,7 +29,7 @@ export default function Header() {
   }, []);
 
   const handleLogout = () => {
-    fetch("http://localhost:8080/members/logout", {
+    fetch("/members/logout", {
       method: "POST",
       credentials: "include"
     })
@@ -40,7 +40,7 @@ export default function Header() {
 
   // 알림 빨간색 점
   const fetchUnreadCount = () => {
-    fetch("http://localhost:8080/api/notifications/unread-count", { credentials: "include" })
+    fetch("/api/notifications/unread-count", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setUnreadCount(data.count || 0))
       .catch(() => {});
@@ -114,7 +114,7 @@ export default function Header() {
                 <button
                   onClick={async () => {
                     const res = await fetch(
-                      `http://localhost:8080/mypage/profile/modal/${loginUser.memIdx}`,
+                      `/mypage/profile/modal/${loginUser.memIdx}`,
                       { credentials: "include" }
                     );
                     const data = await res.json();

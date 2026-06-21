@@ -9,7 +9,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notifications")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+//@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class NotificationController {
 
     private final NotificationService notificationService;

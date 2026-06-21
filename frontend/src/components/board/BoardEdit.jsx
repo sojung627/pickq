@@ -17,7 +17,7 @@ const BoardEdit = () => {
   const [hasTouched, setHasTouched] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}`, {
+    fetch(`/boards/${boardTypeCode}/${boardIdx}`, {
       credentials: 'include'
     })
       .then(res => res.json())
@@ -71,7 +71,7 @@ const BoardEdit = () => {
       return;
     }
 
-    fetch(`http://localhost:8080/boards/${boardTypeCode}/${boardIdx}/edit`, {
+    fetch(`/boards/${boardTypeCode}/${boardIdx}/edit`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

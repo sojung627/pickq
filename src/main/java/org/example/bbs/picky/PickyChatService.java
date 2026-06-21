@@ -21,16 +21,13 @@ public class PickyChatService {
     private final PickyChatMessageRepository messageRepository;
     private final MemberRepository memberRepository;
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // 채팅 메인 로직
-    // ─────────────────────────────────────────────────────────────────────────────
-
     @Transactional
     public PickyChatResponseDTO chat(PickyChatRequestDTO request, String memId) {
 
         boolean isLoggedIn = (memId != null);
 
-        // ① 대화 히스토리 구성 (멀티턴)
+        // 대화 히스토리 구성 (멀티턴)
         List<PickyChatMessageEntity> history = List.of();
         PickyChatSessionEntity session = null;
 
@@ -39,10 +36,10 @@ public class PickyChatService {
             history = messageRepository.findTop20BySessionSessionIdxOrderByCreatedAtAsc(session.getSessionIdx());
         }
 
-        // ② Gemini 호출
+        // Gemini 호출
         String answer = geminiService.chat(request.getMessage(), history);
 
-        // ③ 로그인 사용자면 DB 저장
+        // 로그인 사용자면 DB 저장
         if (isLoggedIn && session != null) {
             messageRepository.save(PickyChatMessageEntity.of(session, "user", request.getMessage()));
             messageRepository.save(PickyChatMessageEntity.of(session, "assistant", answer));
@@ -57,10 +54,7 @@ public class PickyChatService {
                 .build();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // 세션 조회 / 생성
-    // ─────────────────────────────────────────────────────────────────────────────
-
     private PickyChatSessionEntity resolveSession(PickyChatRequestDTO request, String memId) {
         MemberEntity member = memberRepository.findByMemId(memId)
                 .orElseThrow(() -> new IllegalStateException("회원 정보 없음: " + memId));
@@ -82,10 +76,7 @@ public class PickyChatService {
         return sessionRepository.save(session);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // 세션 목록 조회 (로그인 사용자 전용)
-    // ─────────────────────────────────────────────────────────────────────────────
-
     @Transactional(readOnly = true)
     public List<PickySessionDTO> getSessions(String memId) {
         MemberEntity member = memberRepository.findByMemId(memId)
@@ -98,10 +89,7 @@ public class PickyChatService {
                 .collect(Collectors.toList());
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // 특정 세션의 메시지 조회 (로그인 사용자 전용)
-    // ─────────────────────────────────────────────────────────────────────────────
-
     @Transactional(readOnly = true)
     public List<PickyMessageDTO> getMessages(Long sessionIdx, String memId) {
         MemberEntity member = memberRepository.findByMemId(memId)
@@ -118,10 +106,7 @@ public class PickyChatService {
                 .collect(Collectors.toList());
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // 세션 삭제 (소프트 딜리트)
-    // ─────────────────────────────────────────────────────────────────────────────
-
     @Transactional
     public void deleteSession(Long sessionIdx, String memId) {
         MemberEntity member = memberRepository.findByMemId(memId)

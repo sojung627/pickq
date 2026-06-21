@@ -8,7 +8,7 @@ export default function ReviewAdmin() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/reviews/admin/api", {
+    fetch("/mypage/reviews/admin/api", {
       credentials: "include"
     })
       .then(res => res.json())
@@ -22,7 +22,7 @@ export default function ReviewAdmin() {
 
   const handleTempDelete = (reviewIdx) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    fetch(`http://localhost:8080/reviewDelete?reviewIdx=${reviewIdx}`, {
+    fetch(`/reviewDelete?reviewIdx=${reviewIdx}`, {
       method: "POST",
       credentials: "include"
     }).then(res => {
@@ -35,7 +35,7 @@ export default function ReviewAdmin() {
   };
 
   const handleCancelDelete = (reviewIdx) => {
-    fetch(`http://localhost:8080/review/reviewCancel?reviewIdx=${reviewIdx}`, {
+    fetch(`/review/reviewCancel?reviewIdx=${reviewIdx}`, {
       credentials: "include"
     }).then(res => {
       if (res.ok) {
@@ -48,7 +48,7 @@ export default function ReviewAdmin() {
 
   const handleHardDelete = (reviewIdx) => {
     if (!window.confirm("⚠️ 정말 영구삭제 하시겠습니까?\n삭제된 리뷰는 되돌릴 수 없습니다")) return;
-    fetch(`http://localhost:8080/review/hardDelete?reviewIdx=${reviewIdx}`, {
+    fetch(`/review/hardDelete?reviewIdx=${reviewIdx}`, {
       credentials: "include"
     }).then(res => {
       if (res.ok) {

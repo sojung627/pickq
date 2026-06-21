@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Profile from '../profile/Profile';
 
-// 백엔드 API 서버 주소. 배포 시 이 값만 운영 도메인으로 변환해야함!
-const API_BASE_URL = 'http://localhost:8080';
+// 백엔드 API 서버 주소. 배포 시 이 값만 운영 도메인으로 변환!
+const API_BASE_URL = '';
 
 // 썸네일 경로가 https://... 같은 완전한 외부 URL이면 그대로 쓰고,
-// /uploads/... 같은 백엔드 상대경로면 API_BASE_URL을 붙여서 완성
+// /uploads/... 같은 백엔드 상대경로면 API_BASE_URL을 붙여야 함 수정하지마 소정아!!!
 const resolveImageUrl = (path, fallback) => {
   if (!path) return fallback;
   return /^https?:\/\//.test(path) ? path : `${API_BASE_URL}${path}`;

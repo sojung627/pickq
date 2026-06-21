@@ -27,17 +27,7 @@ export default function Login() {
             if (msg) {
                 setLoginMsg(msg);
             }
-
-//         if (window.naver) {
-//             const naverLogin = new window.naver.LoginWithNaverId({
-//                 clientId: "2Rk518jWd9bxOQoKuUnD",
-//                 callbackUrl: "http://localhost:8080/members/naverCallback",
-//                 isPopup: false,
-//                 loginButton: { color: "green", type: 3, height: 30 }
-//             });
-//             naverLogin.init();
-//         }
-    }, []);
+        }, []);
 
     // 네이버 로그인
     const handleNaverLogin = () => {
@@ -45,7 +35,7 @@ export default function Login() {
         const params = new URLSearchParams({
             response_type: "code",
             client_id: "2Rk518jWd9bxOQoKuUnD",
-            redirect_uri: "http://localhost:8080/members/naverCallback",
+            redirect_uri: "/members/naverCallback",
             state: state,
         });
         window.location.href =
@@ -82,7 +72,7 @@ export default function Login() {
 
         const loginData = { memId, memPwd };
 
-        fetch("http://localhost:8080/members/login", {
+        fetch("/members/login", {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },

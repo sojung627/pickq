@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const SupportPage = () => {
-  // 1. 회원가입/문의 폼 상태 관리 (아이디 중복, 비밀번호 일치 체크 로직용)
+  // 회원가입/문의 폼 상태 관리 (아이디 중복, 비밀번호 일치 체크 로직용)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,7 +14,7 @@ const SupportPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 relative">
 
-      {/* 2. 메인 사이드 동글이 버튼 (고정 위치) */}
+      {/* 메인 사이드 동글이 버튼 (고정 위치) */}
       <main className="max-w-4xl mx-auto pt-10 px-4">
         <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
           {/* 고객문의 타이틀 */}

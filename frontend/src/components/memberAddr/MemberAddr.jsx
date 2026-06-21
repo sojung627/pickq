@@ -7,12 +7,12 @@ const AddressManagement = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+    fetch("/mypage/info", { credentials: "include" })
       .then(res => res.json())
       .then(data => setMember(data))
       .catch(err => console.error("회원 정보 조회 에러:", err));
 
-    fetch("http://localhost:8080/mypage/addresses", { credentials: "include" })
+    fetch("/mypage/addresses", { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         // 불러올 때부터 대표 배송지가 맨 위로 오도록 정렬해서 저장
@@ -26,7 +26,7 @@ const AddressManagement = () => {
 
   const deleteAddr = (addrIdx) => {
     if (window.confirm("주소를 삭제하시겠습니까?")) {
-      fetch(`http://localhost:8080/mypage/addresses/delete?addrIdx=${addrIdx}`, {
+      fetch(`/mypage/addresses/delete?addrIdx=${addrIdx}`, {
         method: "DELETE",
         credentials: "include"
       })
@@ -40,13 +40,13 @@ const AddressManagement = () => {
   };
 
   const setPrimary = (addrIdx) => {
-    fetch(`http://localhost:8080/mypage/addresses/primary?addrIdx=${addrIdx}`, {
+    fetch(`/mypage/addresses/primary?addrIdx=${addrIdx}`, {
       method: "PUT",
       credentials: "include"
     })
       .then(res => {
         if (res.ok) {
-          fetch("http://localhost:8080/mypage/addresses", { credentials: "include" })
+          fetch("/mypage/addresses", { credentials: "include" })
             .then(res => res.json())
             .then(data => {
               const sorted = [...data].sort((a, b) =>

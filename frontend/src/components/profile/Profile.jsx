@@ -68,7 +68,7 @@ export default function Profile({
                     ? defaultImg
                     : profile.memImg.startsWith("profile_default_")
                       ? `/images/profile/${profile.memImg}`
-                      : `http://localhost:8080/uploads/profile/${profile.memImg}`
+                      : `/uploads/profile/${profile.memImg}`
                 }
                 alt="프로필 이미지"
                 className="w-full h-full object-cover"

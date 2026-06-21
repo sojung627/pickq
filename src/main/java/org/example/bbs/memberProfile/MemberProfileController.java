@@ -13,7 +13,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/mypage/profile")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+//@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class MemberProfileController {
 
     private final MemberProfileService memberProfileService;

@@ -15,7 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/mypage")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+//@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class MemberUpdateController {
 
     private final MemberUpdateService memberService;

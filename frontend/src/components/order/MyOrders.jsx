@@ -4,15 +4,15 @@ import { useNavigate } from "react-router-dom";
 export default function MyOrders() {
   const navigate = useNavigate();
 
-  // 주석: 합쳐진 전체 거래 목록 (구매 + 판매)
+  // 합쳐진 전체 거래 목록 (구매 + 판매)
   const [orders, setOrders] = useState([]);
   const [viewType, setViewType] = useState("all"); // 주석: 'all', 'buy', 'sell'
   const [isLoading, setIsLoading] = useState(true);
 
-  // 주석: 토스트 및 알림 메시지 상태 관리
+  // 토스트 및 알림 메시지 상태 관리
   const [toast, setToast] = useState({ success: null, error: null });
 
-  // 주석: 배송 상태 코드 -> 한글 라벨
+  // 배송 상태 코드 -> 한글 라벨
   const getShippingName = (deliveryStatus) => {
     if (!deliveryStatus) return "배송준비중";
     if (deliveryStatus === "SHIPPING") return "배송중";
@@ -20,7 +20,7 @@ export default function MyOrders() {
     return deliveryStatus;
   };
 
-  // 주석: 주문 상태 코드 -> 한글 라벨
+  // 주문 상태 코드 -> 한글 라벨
   const getStatusName = (statusCode) => {
     if (statusCode === "CREATED") return "결제대기";
     if (statusCode === "PAID") return "결제완료";
@@ -29,9 +29,9 @@ export default function MyOrders() {
     return "결제대기";
   };
 
-  // 주석: 구매내역(PurchaseResponseDTO) -> 화면용 거래 객체로 정규화
-  // TODO: 백엔드에 실제 거래(order) 식별자, auctionIdx, sellerIdx, reviewIdx가 추가되면
-  //       아래 null 처리된 필드들을 채워서 리뷰 작성 / 결제 이동 기능을 완성할 것
+  // 구매내역(PurchaseResponseDTO) -> 화면용 거래 객체로 정규화
+  // 백엔드에 실제 거래(order) 식별자, auctionIdx, sellerIdx, reviewIdx가 추가되면
+  // 아래 null 처리된 필드들을 채워서 리뷰 작성 / 결제 이동 기능을 완성할 것
   const mapPurchase = (p) => {
     let orderStatusCode = "PAID";
     if (p.payStatus === "CONFIRMED") orderStatusCode = "CONFIRMED";
@@ -64,7 +64,7 @@ export default function MyOrders() {
     };
   };
 
-  // 주석: 판매내역(SalesResponseDTO) -> 화면용 거래 객체로 정규화
+  // 판매내역(SalesResponseDTO) -> 화면용 거래 객체로 정규화
   const mapSale = (s) => {
     let orderStatusCode = "PAID";
     if (s.payStatus === "CONFIRMED" || s.deliveryStatus === "DELIVERED") orderStatusCode = "CONFIRMED";
@@ -122,7 +122,7 @@ export default function MyOrders() {
     confirmedAt: null,
   });
 
-  // 주석: 구매내역 + 판매내역 + 결제 대기 낙찰 건을 같이 불러와서 하나의 리스트로 합치는 함수
+  // 구매내역 + 판매내역 + 결제 대기 낙찰 건을 같이 불러와서 하나의 리스트로 합치는 함수
   const fetchOrders = () => {
     setIsLoading(true);
 
@@ -144,7 +144,7 @@ export default function MyOrders() {
           ...(pendingBids || []).map(mapPending),
         ];
 
-        // 주석: 최신 거래가 위로 오도록 정렬
+        // 최신 거래가 위로 오도록 정렬
         merged.sort((a, b) => {
           if (!a.orderRegdate) return 1;
           if (!b.orderRegdate) return -1;
@@ -160,19 +160,19 @@ export default function MyOrders() {
       });
   };
 
-  // 주석: 최초 1회만 전체 데이터를 불러오고, 탭 전환은 클라이언트에서 필터링으로 처리
+  // 최초 1회만 전체 데이터를 불러오고, 탭 전환은 클라이언트에서 필터링으로 처리
   useEffect(() => {
     fetchOrders();
   }, []);
 
-  // 주석: 현재 선택된 탭(viewType)에 맞춰 화면에 보여줄 목록 필터링
+  // 현재 선택된 탭(viewType)에 맞춰 화면에 보여줄 목록 필터링
   const displayOrders = orders.filter((order) => {
     if (viewType === "buy") return order.userRole === "BUYER";
     if (viewType === "sell") return order.userRole === "SELLER";
     return true;
   });
 
-  // 주석: 탭별 헤더 타이틀/설명/빈 목록 안내 문구
+  // 탭별 헤더 타이틀/설명/빈 목록 안내 문구
   const headerInfo = {
     all: {
       pageTitle: "나의 거래",
@@ -191,9 +191,9 @@ export default function MyOrders() {
     },
   }[viewType];
 
-  // 주석: 구매확정 div 이벤트 핸들러 (form 태그 대신 fetch 사용)
+  // 구매확정 div 이벤트 핸들러 (form 태그 대신 fetch 사용)
   const handleConfirmOrder = (e, bidIdx) => {
-    e.stopPropagation(); // 주석: 카드 전체 클릭 이벤트(상세보기 이동) 전파 차단
+    e.stopPropagation(); // 카드 전체 클릭 이벤트(상세보기 이동) 전파 차단
 
     if (!window.confirm("구매확정을 진행하시겠습니까?")) return;
 
@@ -217,19 +217,18 @@ export default function MyOrders() {
       });
   };
 
-  // 주석: 카드를 누르면 거래 상세 페이지(SaleDetail.jsx)로 이동
-  //       이미 정규화해둔 order 객체를 state로 같이 넘겨서, SaleDetail에서 별도 API 호출 없이 바로 표시
+  // 카드를 누르면 거래 상세 페이지(SaleDetail.jsx)로 이동
   const goToDetail = (order) => {
     navigate(`/mypage/orders/${order.orderIdx}`, { state: { order } });
   };
 
-  // 주석: 금액에 천 단위 쉼표 추가하는 함수
+  // 금액에 천 단위 쉼표 추가하는 함수
   const formatPrice = (price) => {
     if (price === undefined || price === null) return "0원";
     return `${price.toLocaleString()}원`;
   };
 
-  // 주석: 주문 상태 코드별 배지 색상 반환 함수
+  // 주문 상태 코드별 배지 색상 반환 함수
   const getStatusBadgeClass = (statusCode) => {
     if (statusCode === "CREATED") return " bg-amber-50 text-amber-700";
     if (statusCode === "PAID") return " bg-[#E6F4D6] text-[#4C7C00]";
@@ -241,7 +240,7 @@ export default function MyOrders() {
   return (
     <div className="bg-white border border-gray-100 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] overflow-hidden">
 
-      {/* 주석: 기존 타임리프의 토스트 메시지 조건을 리액트 상태 창으로 구현 */}
+      {/* 기존 타임리프의 토스트 메시지 조건을 리액트 상태 창으로 구현 */}
       {toast.success && (
         <div className="bg-green-50 text-green-800 p-3 text-sm border-b border-green-100">{toast.success}</div>
       )}
@@ -254,7 +253,7 @@ export default function MyOrders() {
         <h2 className="text-lg sm:text-xl font-semibold text-[#222222]">{headerInfo.pageTitle}</h2>
         <p className="mt-1 text-xs sm:text-sm text-[#767676]">{headerInfo.pageDescription}</p>
 
-        {/* 주석: 탭 필터 네비게이션 */}
+        {/* 탭 필터 네비게이션 */}
         <div className="mt-4 flex items-center gap-2 text-xs sm:text-sm">
           <button
             type="button"
@@ -286,17 +285,17 @@ export default function MyOrders() {
         </div>
       </div>
 
-      {/* 본문: 주문 카드 리스트 */}
+      {/* 주문 카드 리스트 */}
       <div className="px-4 py-4 sm:px-6 sm:py-5">
         {isLoading ? (
           <div className="py-10 text-center text-sm text-gray-500">로딩 중...</div>
         ) : displayOrders.length === 0 ? (
-          /* 주석: 데이터가 비어있을 때 */
+          /* 데이터가 비어있을 때 */
           <div className="py-10 text-center text-sm text-gray-400 border border-dashed border-gray-200 rounded-lg">
             <span>{headerInfo.emptyMessage}</span>
           </div>
         ) : (
-          /* 주석: 데이터가 있을 때 반복문 매핑 */
+          /* 데이터가 있을 때 반복문 매핑 */
           <div className="space-y-3">
             {displayOrders.map((order) => (
               <div
@@ -373,7 +372,6 @@ export default function MyOrders() {
                 </div>
 
                 {/* 하단 버튼 영역 */}
-                {/* 하단 버튼 영역 - div 하나로 통합 */}
                 <div className="mt-3 flex justify-end gap-2">
 
                   {/* 결제하기 */}

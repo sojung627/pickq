@@ -13,7 +13,7 @@ const AddressInsert = ({ redirectAfterSave = "" }) => {
   const [isBtnDisabled, setIsBtnDisabled] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+    fetch("/mypage/info", { credentials: "include" })
       .then(res => res.json())
       .then(data => setMember(data));
   }, []);
@@ -69,7 +69,7 @@ const AddressInsert = ({ redirectAfterSave = "" }) => {
       isPrimary: primaryValue
     };
 
-    fetch("http://localhost:8080/mypage/addresses/new", {
+    fetch("/mypage/addresses/new", {
       method: "POST",
       credentials: "include", // 400 에러 원인(f12가 알려줌)
       headers: { "Content-Type": "application/json" },

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 
 // 백엔드 API 서버 주소. 배포 시 이 값만 운영 도메인으로 바꾸면 됩니다.
 // (추후 .env로 분리할 경우 이 한 줄만 import.meta.env.VITE_API_BASE_URL 등으로 교체)
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = '';
 
 // 썸네일 경로가 https://... 같은 완전한 외부 URL이면 그대로 쓰고,
 // /uploads/auction/xxx.jpg 같은 백엔드 상대경로면 API_BASE_URL을 붙여서 완성합니다.

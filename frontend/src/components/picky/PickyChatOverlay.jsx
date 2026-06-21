@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const BASE = 'http://localhost:8080';
+const BASE = '';
 
 const PickyAvatar = () => (
   <div style={{

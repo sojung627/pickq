@@ -28,7 +28,7 @@ export default function MainPage() {
   ];
 
   useEffect(() => {
-    axios.get("http://localhost:8080/")
+    axios.get("/")
       .then(res => setData(res.data))
       .catch(err => console.error(err));
 

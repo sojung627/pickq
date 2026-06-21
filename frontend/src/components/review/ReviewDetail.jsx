@@ -18,7 +18,7 @@ export default function ReviewDetail() {
   useEffect(() => {
     const currentIdx = reviewIdx || "1";
 
-    fetch(`http://localhost:8080/mypage/reviews/api/detail?reviewIdx=${currentIdx}`, {
+    fetch(`/mypage/reviews/api/detail?reviewIdx=${currentIdx}`, {
       credentials: "include"
     })
       .then((response) => {

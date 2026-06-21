@@ -31,18 +31,18 @@ const BoardList = () => {
 
   /* ---------- 데이터 로드 ---------- */
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+    fetch("/mypage/info", { credentials: "include" })
       .then(res => (res.status === 401 ? null : res.json()))
       .then(setMember)
       .catch(() => setMember(null));
 
-    fetch("http://localhost:8080/boards/types")
+    fetch("/boards/types")
       .then(res => res.json())
       .then(setBoardTypes)
       .catch(err => console.error("게시판 타입 조회 에러:", err));
 
     fetch(
-      `http://localhost:8080/boards/?page=${currentPage}&searchType=${searchType}` +
+      `/boards/?page=${currentPage}&searchType=${searchType}` +
       `&keyword=${keyword}&sortType=${sortType}${typeCode ? `&typeCode=${typeCode}` : ''}`
     )
       .then(res => res.json())

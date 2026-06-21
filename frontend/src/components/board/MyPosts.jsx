@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 
 export default function MyPosts() {
-  // 주석: 게시글 목록 상태 관리
+  // 게시글 목록 상태 관리
   const [boards, setBoards] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 주석: 컴포넌트 마운트 시 백엔드 API에서 데이터 조회
-  // 주석: 컴포넌트 마운트 시 백엔드 API에서 데이터 조회
+  // 컴포넌트 마운트 시 백엔드 API에서 데이터 조회
   useEffect(() => {
-    // 주석: fetch의 두 번째 인자로 객체를 넘겨 credentials를 설정함
-    fetch("http://localhost:8080/mypage/boards", {
+    // fetch의 두 번째 인자로 객체를 넘겨 credentials를 설정함
+    fetch("/mypage/boards", {
       credentials: "include"
     })
       .then((response) => {
@@ -27,26 +26,8 @@ export default function MyPosts() {
         setIsLoading(false);
       });
   }, []);
-//   useEffect(() => {
-//     fetch("http://localhost:8080/mypage/boards")
-//       credentials: "include"
-//       .then((response) => {
-//         if (!response.ok) {
-//           throw new Error("네트워크 응답이 올바르지 않습니다.");
-//         }
-//         return response.json();
-//       })
-//       .then((data) => {
-//         setBoards(data);
-//         setIsLoading(false);
-//       })
-//       .catch((error) => {
-//         console.error("데이터를 가져오는 중 오류 발생:", error);
-//         setIsLoading(false);
-//       });
-//   }, []);
 
-  // 주석: 날짜 포맷팅 함수 (yyyy-MM-dd HH:mm 형식)
+  // 날짜 포맷팅 함수 (yyyy-MM-dd HH:mm 형식)
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -72,13 +53,13 @@ export default function MyPosts() {
 
       {/* 내용 */}
       <div className="px-6 py-6">
-        {/* 주석: 게시글이 없을 때 */}
+        {/* 게시글이 없을 때 */}
         {boards.length === 0 ? (
           <div className="py-10 text-center text-sm text-gray-500">
             작성한 게시글이 없습니다.
           </div>
         ) : (
-          /* 주석: 게시글 목록이 있을 때 */
+          /* 게시글 목록이 있을 때 */
           <div className="space-y-3">
             {/* 헤더 라인 (테이블 헤더 역할) */}
             <div className="hidden md:grid md:grid-cols-[1.5fr_3fr_1fr_1fr_1fr_1.7fr] text-[11px] text-gray-500 px-2 pb-2 border-b border-gray-100">
@@ -90,7 +71,7 @@ export default function MyPosts() {
               <span className="text-right">작성일</span>
             </div>
 
-            {/* 주석: 각 게시글 카드/행 반복 랜더링 */}
+            {/* 각 게시글 카드/행 반복 랜더링 */}
             {boards.map((board) => (
               <div
                 key={board.boardIdx}

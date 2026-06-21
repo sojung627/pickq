@@ -13,7 +13,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/boards")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+//@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class BoardController {
 
     private final BoardService boardService;

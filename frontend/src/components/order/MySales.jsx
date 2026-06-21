@@ -42,7 +42,7 @@ export default function MySales() {
             alert('운송장번호를 입력해주세요.');
             return;
         }
-        fetch('http://localhost:8080/api/payment/ship', {
+        fetch('/api/payment/ship', {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },

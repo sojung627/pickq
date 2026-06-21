@@ -9,7 +9,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/mypage/addresses")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+//@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class MemberAddrController {
 
     private final MemberAddrService memberAddrService;

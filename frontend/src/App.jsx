@@ -17,7 +17,7 @@ import AuctionList from "./components/auction/AuctionList";
 import AuctionWrite from "./components/auction/AuctionWrite";
 
 /* 입찰 */
-import Mybids from "./components/bid/Mybids";
+import Mybids from "./components/bid/MyBids";
 
 /* 구매 및 판매 */
 import MyOrders from "./components/order/MyOrders";
@@ -40,9 +40,9 @@ import PwdFind from "./components/members/PwdFind";
 /* 회원 */
 import MemberUpdate from "./components/members/MemberUpdate";
 /* 회원 주소 */
-import AddressManagement from "./components/memberAddr/memberAddr";
-import AddressInsert from "./components/memberAddr/memberAddrInsert";
-import AddressUpdate from "./components/memberAddr/memberAddrUpdate";
+import AddressManagement from "./components/memberAddr/MemberAddr";
+import AddressInsert from "./components/memberAddr/MemberAddrInsert";
+import AddressUpdate from "./components/memberAddr/MemberAddrUpdate";
 /* 회원 프로필 */
 import MemberProfileUpdate from "./components/memberProfile/MemberProfileUpdate";
 /* 요약 프로필 */
@@ -82,7 +82,7 @@ function AppInner() {
   const [realtimeUnreadCount, setRealtimeUnreadCount] = useState(0); // ← 추가
 
   useEffect(() => {
-    fetch("http://localhost:8080/members/auth/check", { credentials: "include" })
+    fetch("/members/auth/check", { credentials: "include" })
       .then(r => r.json())
       .then(data => {
         if (data.isLoggedIn) setLoginMemIdx(data.member.memIdx);
@@ -94,7 +94,7 @@ function AppInner() {
     if (!loginMemIdx) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws-chat"),
+      webSocketFactory: () => new SockJS("/ws-chat"),
       reconnectDelay: 5000,
       onConnect: () => {
         client.subscribe(`/topic/notifications/${loginMemIdx}`, (frame) => {

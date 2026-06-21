@@ -23,8 +23,8 @@ const MemberProfileUpdate = () => {
   // 2. 초기 데이터 로드
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:8080/mypage/profile/data", { credentials: "include" }).then(res => res.json()),
-      fetch("http://localhost:8080/mypage/session", { credentials: "include" }).then(res => res.json())
+      fetch("/mypage/profile/data", { credentials: "include" }).then(res => res.json()),
+      fetch("/mypage/session", { credentials: "include" }).then(res => res.json())
     ]).then(([data, session]) => {
       const memIdx = session.memIdx;
       const defaultImages = [
@@ -46,7 +46,7 @@ const MemberProfileUpdate = () => {
       if (initialImg.startsWith('profile_default_')) {
         setPreviewUrl(`/images/profile/${initialImg}`);
       } else {
-        setPreviewUrl(`http://localhost:8080/uploads/profile/${initialImg}`);
+        setPreviewUrl(`/uploads/profile/${initialImg}`);
       }
     });
   }, []);
@@ -59,7 +59,7 @@ const MemberProfileUpdate = () => {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:8080/mypage/profile/members/checkNickname`, {
+      const response = await fetch(`/mypage/profile/members/checkNickname`, {
         method: 'POST',
         credentials: "include",
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -140,7 +140,7 @@ const MemberProfileUpdate = () => {
       formData.append('memIntro', profile.memIntro);
       if (selectedFile) formData.append('memImgFile', selectedFile);
 
-      fetch("http://localhost:8080/mypage/profile", {
+      fetch("/mypage/profile", {
           method: "POST",
           credentials: "include",
           body: formData

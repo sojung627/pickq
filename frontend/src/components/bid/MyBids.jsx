@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
 export default function MyBids() {
-  // 주석: 입찰 목록 상태 관리
+  // 입찰 목록 상태 관리
   const [bids, setBids] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 주석: 컴포넌트 마운트 시 내 입찰 목록 API 호출
+  // 컴포넌트 마운트 시 내 입찰 목록 API 호출
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/bids", {
+    fetch("/mypage/bids", {
       credentials: "include"
     })
       .then((response) => {
@@ -26,13 +26,13 @@ export default function MyBids() {
       });
   }, []);
 
-  // 주석: 숫자를 천 단위 콤마 포맷으로 변경하는 함수
+  // 숫자를 천 단위 콤마 포맷으로 변경하는 함수
   const formatPrice = (price) => {
     if (price === undefined || price === null) return "0원";
     return `${price.toLocaleString()}원`;
   };
 
-  // 주석: 날짜 포맷팅 함수 (yyyy-MM-dd HH:mm 형식)
+  // 날짜 포맷팅 함수 (yyyy-MM-dd HH:mm 형식)
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -44,7 +44,7 @@ export default function MyBids() {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
-  // 주석: 입찰 상태별 Tailwind CSS v4 스타일 클래스 반환 함수
+  // 입찰 상태별 Tailwind CSS v4 스타일 클래스 반환 함수
   const getStatusClass = (statusIdx) => {
     if (statusIdx === 1) return " bg-[#E6F4D6] text-[#4C7C00]";
     if (statusIdx === 2) return " bg-blue-50 text-blue-700";
@@ -76,13 +76,13 @@ export default function MyBids() {
 
       {/* 본문 */}
       <div className="px-4 py-4 sm:px-6 sm:py-5">
-        {/* 주석: 참여한 입찰 데이터가 없을 때 */}
+        {/* 참여한 입찰 데이터가 없을 때 */}
         {bids.length === 0 ? (
           <div className="py-10 text-center text-sm text-gray-400 border border-dashed border-gray-200 rounded-lg">
             참여한 입찰이 없습니다.
           </div>
         ) : (
-          /* 주석: 참여한 입찰 데이터가 있을 때 */
+          /* 참여한 입찰 데이터가 있을 때 */
           <div className="space-y-3">
             {/* 데스크탑: 헤더 */}
             <div className="hidden md:grid md:grid-cols-[3fr_2fr_1.5fr_1.5fr_1.5fr_2fr] text-[11px] text-gray-500 px-2 pb-2 border-b border-gray-100">
@@ -94,7 +94,7 @@ export default function MyBids() {
               <span className="text-center">입찰일</span>
             </div>
 
-            {/* 주석: 각 입찰 항목 루프 돌며 카드/행 렌더링 */}
+            {/* 각 입찰 항목 루프 돌며 카드/행 렌더링 */}
             {bids.map((bid) => (
               <div
                 key={bid.bidIdx}

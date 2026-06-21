@@ -24,7 +24,7 @@ export default function ReviewManagement() {
 
   // 컴포넌트 마운트 시 내가 남긴 리뷰와 받은 리뷰 데이터를 단 한 번의 fetch로 가져옴
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/reviews/api", {
+    fetch("/mypage/reviews/api", {
       credentials: "include"
     })
       .then((response) => {
@@ -49,7 +49,7 @@ export default function ReviewManagement() {
   const handleDeleteReview = (reviewIdx) => {
     if (!window.confirm("정말로 이 리뷰를 삭제하시겠습니까?")) return;
 
-    fetch(`http://localhost:8080/reviewDelete?reviewIdx=${reviewIdx}`, {
+    fetch(`/reviewDelete?reviewIdx=${reviewIdx}`, {
       method: "POST",
       credentials: "include"
     })

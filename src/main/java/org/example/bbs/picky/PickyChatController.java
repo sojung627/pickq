@@ -16,9 +16,7 @@ public class PickyChatController {
 
     private final PickyChatService pickyChatService;
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // POST /picky/chat — 메시지 전송 (비로그인/로그인 통합)
-    // ─────────────────────────────────────────────────────────────────────────────
     @PostMapping("/chat")
     public ResponseEntity<PickyChatResponseDTO> chat(
             @RequestBody PickyChatRequestDTO request,
@@ -31,9 +29,7 @@ public class PickyChatController {
         return ResponseEntity.ok(response);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // GET /picky/sessions — 내 세션 목록 (로그인 필수)
-    // ─────────────────────────────────────────────────────────────────────────────
     @GetMapping("/sessions")
     public ResponseEntity<?> getSessions(HttpServletRequest httpRequest) {
         String memId = getLoginMemId(httpRequest);
@@ -45,9 +41,7 @@ public class PickyChatController {
         return ResponseEntity.ok(sessions);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // GET /picky/sessions/{sessionIdx}/messages — 세션 메시지 조회 (로그인 필수)
-    // ─────────────────────────────────────────────────────────────────────────────
     @GetMapping("/sessions/{sessionIdx}/messages")
     public ResponseEntity<?> getMessages(
             @PathVariable Long sessionIdx,
@@ -62,9 +56,7 @@ public class PickyChatController {
         return ResponseEntity.ok(messages);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // DELETE /picky/sessions/{sessionIdx} — 세션 삭제 (로그인 필수)
-    // ─────────────────────────────────────────────────────────────────────────────
     @DeleteMapping("/sessions/{sessionIdx}")
     public ResponseEntity<?> deleteSession(
             @PathVariable Long sessionIdx,
@@ -79,9 +71,7 @@ public class PickyChatController {
         return ResponseEntity.ok(Map.of("result", "deleted"));
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // 세션에서 memId 추출 헬퍼
-    // ─────────────────────────────────────────────────────────────────────────────
     private String getLoginMemId(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) return null;

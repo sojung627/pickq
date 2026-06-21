@@ -10,7 +10,7 @@ export default function NotificationPage() {
 
   // 백엔드 API로부터 알림 데이터 로드 (fetch 사용)
   useEffect(() => {
-    fetch("http://localhost:8080/api/notifications", { credentials: "include" })
+    fetch("/api/notifications", { credentials: "include" })
       .then((res) => {
         if (!res.ok) return;  // 404 등 에러 응답이면 그냥 빈 배열 유지
         return res.json();
@@ -35,7 +35,7 @@ export default function NotificationPage() {
   const handleMarkAsRead = (idx, e) => {
     e.stopPropagation(); // 카드 클릭 이벤트와 겹치지 않도록 방지
 
-    fetch(`http://localhost:8080/api/notifications/${idx}/read`, {
+    fetch(`/api/notifications/${idx}/read`, {
       method: "POST",
       credentials: "include",
     })
@@ -52,7 +52,7 @@ export default function NotificationPage() {
 
   // 모든 알림 읽음 처리 함수
   const handleMarkAllAsRead = () => {
-    fetch("http://localhost:8080/api/notifications/read-all", {
+    fetch("/api/notifications/read-all", {
       method: "POST",
       credentials: "include",
     })
@@ -70,7 +70,7 @@ export default function NotificationPage() {
   const handleDelete = (idx, e) => {
     e.stopPropagation();
 
-    fetch(`http://localhost:8080/api/notifications/${idx}`, {
+    fetch(`/api/notifications/${idx}`, {
       method: "DELETE",
       credentials: "include",
     })

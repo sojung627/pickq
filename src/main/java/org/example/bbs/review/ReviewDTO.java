@@ -10,10 +10,10 @@ import java.time.LocalDateTime;
 public class ReviewDTO {
 
     private Long reviewIdx;
-    private Double reviewStar;        // Integer → Double 변환
+    private Double reviewStar;
     private String reviewTitle;
     private LocalDateTime reviewRegdate;
-    private String auctionTitle;      // auction 테이블 join 필요
+    private String auctionTitle;
     private String itemName;
-    private String reviewKeywords; // Gemini 추출 키워드 필드 추가
+    private String reviewKeywords;
 }

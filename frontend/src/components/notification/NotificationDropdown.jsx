@@ -7,7 +7,7 @@ export default function NotificationDropdown({ onClose }) {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/notifications/recent', { credentials: 'include' })
+    fetch('/api/notifications/recent', { credentials: 'include' })
       .then(r => r.ok ? r.json() : [])
       .then(data => Array.isArray(data) ? setNotifications(data) : null)
       .catch(() => {});

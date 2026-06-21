@@ -72,7 +72,7 @@ const BoardWrite = () => {
     if (!titleValid || !contentValid) return;
 
     setErrorMsg('');
-    fetch(`http://localhost:8080/boards/${selectedTypeCode}`, {
+    fetch(`/boards/${selectedTypeCode}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

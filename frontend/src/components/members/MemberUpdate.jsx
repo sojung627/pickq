@@ -16,7 +16,7 @@ const MemberUpdate = () => {
   const [memCredit, setMemCredit] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+    fetch("/mypage/info", { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         const loaded = {
@@ -53,7 +53,7 @@ const MemberUpdate = () => {
   };
 
   const handleUpdate = async () => {
-    const res = await fetch("http://localhost:8080/mypage/info", {
+    const res = await fetch("/mypage/info", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -111,7 +111,7 @@ const MemberUpdate = () => {
       setIsSubmitDisabled(true);
       return;
     }
-    fetch("http://localhost:8080/mypage/checkPwd", {
+    fetch("/mypage/checkPwd", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

@@ -298,7 +298,7 @@ const AuctionWrite = () => {
     formData.append('auctionDesc', auctionDesc);
 
     try {
-      const response = await fetch('http://localhost:8080/auctions', {
+      const response = await fetch('/auctions', {
         method: 'POST',
         body: formData,
         credentials: 'include',

@@ -15,11 +15,11 @@ const AddressUpdate = () => {
   const [showNoChangeMsg, setShowNoChangeMsg] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8080/mypage/info", { credentials: "include" })
+    fetch("/mypage/info", { credentials: "include" })
       .then(res => res.json())
       .then(data => setMember(data));
 
-    fetch(`http://localhost:8080/mypage/addresses/${addrIdx}`, { credentials: "include" })
+    fetch(`/mypage/addresses/${addrIdx}`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         const loaded = {
@@ -72,7 +72,7 @@ const AddressUpdate = () => {
   const saveAddr = () => {
     const { memZipcode, memAddr, memAddrDetail, isPrimary } = addressData;
 
-    fetch(`http://localhost:8080/mypage/addresses/edit`, {
+    fetch(`/mypage/addresses/edit`, {
       method: "PUT",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

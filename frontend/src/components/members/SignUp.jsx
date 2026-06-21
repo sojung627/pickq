@@ -18,7 +18,7 @@ export default function SignUp() {
     const params = new URLSearchParams({
       response_type: "code",
       client_id: "2Rk518jWd9bxOQoKuUnD",
-      redirect_uri: "http://localhost:8080/members/naverCallback",
+      redirect_uri: "/members/naverCallback",
       state: state,
     });
     window.location.href =
@@ -50,7 +50,7 @@ export default function SignUp() {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:8080/members/check_id?memId=${encodeURIComponent(formData.memId)}`);
+      const res = await fetch(`/members/check_id?memId=${encodeURIComponent(formData.memId)}`);
       const data = await res.text();
       if (data.trim() === "ok") {
         setIdMsg({ text: "✔ 사용 가능한 아이디입니다.", isError: false });
@@ -88,7 +88,7 @@ export default function SignUp() {
       ...rest,
       memEmail: formData.memEmail + formData.emailDomain
     };
-    const res = await fetch("http://localhost:8080/members/signUp", {
+    const res = await fetch("/members/signUp", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

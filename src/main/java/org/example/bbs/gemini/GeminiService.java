@@ -23,12 +23,6 @@ public class GeminiService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    /**
-     * 리뷰 내용에서 핵심 키워드를 추출합니다.
-     * @param reviewContent 리뷰 본문
-     * @return 쉼표로 구분된 키워드 문자열 (예: "친절,빠른배송,좋은품질")
-     *         실패 시 빈 문자열 반환
-     */
     public String extractKeywords(String reviewContent) {
         // 제미나이 일하는지 확인용
         log.info("[GeminiService] API KEY 앞 5자리: {}",
