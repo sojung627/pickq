@@ -10,7 +10,7 @@ Body에는
    "memPwd": 1234
 }
 
-조회 후 admin에 대한 JSON 뜨면 성공
+조회 후 admin에 대한 JSON 뜨면 성공  
 
 그 다음
 Body 내용 지우고
