@@ -28,7 +28,7 @@ export default function MainPage() {
   ];
 
   useEffect(() => {
-    axios.get("/")
+    axios.get("/api/home")
       .then(res => setData(res.data))
       .catch(err => console.error(err));
 

@@ -1,13 +1,18 @@
 package org.example.bbs.member;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/members")
@@ -176,36 +181,69 @@ public class MemberController {
 
     // 네이버 로그인 api ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
+    @GetMapping("/naverLogin")
+    public void naverLogin(
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+
+        String state = UUID.randomUUID().toString();
+        HttpSession session = request.getSession(true);
+        session.setAttribute("naverOauthState", state);
+
+        response.sendRedirect(naverAuthService.createAuthorizationUrl(state));
+    }
+
     @GetMapping("/naverCallback")
     public void naverCallback(
             @RequestParam(value = "code", required = false) String code,
             @RequestParam(value = "state", required = false) String state,
-            @RequestParam(value = "access_token", required = false) String accessToken,
+            @RequestParam(value = "error", required = false) String error,
+            @RequestParam(value = "error_description", required = false) String errorDescription,
             HttpServletRequest request,
-            jakarta.servlet.http.HttpServletResponse response) throws Exception {
+            HttpServletResponse response) throws IOException {
 
-        // access_token이 직접 오는 경우
-        String token = accessToken;
-
-        // code가 오는 경우 (인가코드 방식) — 추후 확장용
-        if (token == null && code != null) {
-            token = naverAuthService.getAccessToken(code, state);
-        }
-        if (token == null) {
-            response.sendRedirect("/members/login");
+        if (error != null) {
+            redirectToLogin(response,
+                    "네이버 로그인이 취소되었거나 실패했습니다. "
+                            + (errorDescription == null ? "" : errorDescription));
             return;
         }
 
-        MemberEntity member = naverAuthService.processNaverLoginByToken(token);
+        HttpSession session = request.getSession(false);
+        String savedState = session == null
+                ? null
+                : (String) session.getAttribute("naverOauthState");
 
-        if ("Y".equals(member.getMemIsDeleted())) {
-            response.sendRedirect("/members/login");
+        if (session != null) {
+            session.removeAttribute("naverOauthState");
+        }
+
+        if (code == null || state == null || savedState == null || !savedState.equals(state)) {
+            redirectToLogin(response, "네이버 로그인 인증 정보가 일치하지 않습니다.");
             return;
         }
 
-        HttpSession session = request.getSession();
-        session.setAttribute("loginMember", member.getMemId());
-        response.sendRedirect("http://localhost:5173");
+        try {
+            String accessToken = naverAuthService.getAccessToken(code, state);
+            MemberEntity member = naverAuthService.processNaverLoginByToken(accessToken);
+
+            if ("Y".equals(member.getMemIsDeleted())) {
+                redirectToLogin(response, "탈퇴한 회원입니다.");
+                return;
+            }
+
+            session.setAttribute("loginMember", member.getMemId());
+
+            // Nginx를 통해 접속한 현재 프론트 origin의 메인 페이지로 이동
+            response.sendRedirect("/");
+        } catch (Exception e) {
+            redirectToLogin(response, "네이버 로그인 처리에 실패했습니다.");
+        }
+    }
+
+    private void redirectToLogin(HttpServletResponse response, String message) throws IOException {
+        String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8);
+        response.sendRedirect("/members/login?msg=" + encodedMessage);
     }
 
 }

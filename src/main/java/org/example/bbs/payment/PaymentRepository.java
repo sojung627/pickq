@@ -25,8 +25,8 @@ public interface PaymentRepository extends JpaRepository<PaymentEntity, Long> {
         SELECT p.* FROM payment p
         JOIN bid b ON p.bid_idx = b.bid_idx
         WHERE p.pay_status IN ('DONE', 'CONFIRMED')
-          AND b.bid_moddate IS NOT NULL
-          AND TIMESTAMPDIFF(HOUR, b.bid_moddate, p.pay_regdate) >= (:days * 24)
+          AND b.won_at IS NOT NULL
+          AND TIMESTAMPDIFF(HOUR, b.won_at, p.pay_regdate) >= (:days * 24)
           AND NOT EXISTS (
               SELECT 1 FROM member_penalty mp
               WHERE mp.mem_idx = p.mem_idx

@@ -127,13 +127,13 @@ export default function MyOrders() {
     setIsLoading(true);
 
     Promise.all([
-      fetch("http://localhost:8080/api/mypage/orders", { credentials: "include" }).then((res) =>
+      fetch("/api/mypage/orders", { credentials: "include" }).then((res) =>
         res.ok ? res.json() : []
       ),
-      fetch("http://localhost:8080/api/mypage/sales", { credentials: "include" }).then((res) =>
+      fetch("/api/mypage/sales", { credentials: "include" }).then((res) =>
         res.ok ? res.json() : []
       ),
-      fetch("http://localhost:8080/api/mypage/pending-bids", { credentials: "include" }).then((res) =>
+      fetch("/api/mypage/pending-bids", { credentials: "include" }).then((res) =>
         res.ok ? res.json() : []
       ),
     ])
@@ -197,7 +197,7 @@ export default function MyOrders() {
 
     if (!window.confirm("구매확정을 진행하시겠습니까?")) return;
 
-    fetch("http://localhost:8080/api/payment/confirm-receipt", {
+    fetch("/api/payment/confirm-receipt", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -240,7 +240,6 @@ export default function MyOrders() {
   return (
     <div className="bg-white border border-gray-100 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] overflow-hidden">
 
-      {/* 기존 타임리프의 토스트 메시지 조건을 리액트 상태 창으로 구현 */}
       {toast.success && (
         <div className="bg-green-50 text-green-800 p-3 text-sm border-b border-green-100">{toast.success}</div>
       )}
@@ -395,7 +394,7 @@ export default function MyOrders() {
                       className="px-3 py-1.5 rounded-lg bg-[#222222] text-white text-[11px] sm:text-xs font-semibold hover:bg-[#444444]"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate("/mypage/sales");
+                        navigate("/mypage/sales", { state: { openShippingBidIdx: order.bidIdx } });
                       }}
                     >
                       배송시작

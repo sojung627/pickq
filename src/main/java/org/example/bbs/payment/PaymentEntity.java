@@ -87,5 +87,6 @@ public class PaymentEntity {
     public void prePersist() {
         if (this.payRegdate == null) this.payRegdate = LocalDateTime.now();
         if (this.payStatus == null) this.payStatus = "READY";
+        if (this.deliveryStatus == null) this.deliveryStatus = "READY";
     }
 }

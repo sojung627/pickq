@@ -58,6 +58,11 @@ public class PaymentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "결제 권한이 없습니다.");
         }
 
+        if (bid.getBidStatus() == null
+                || !"won".equals(bid.getBidStatus().getBidStatusCode())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "낙찰된 입찰만 결제할 수 있습니다.");
+        }
+
         paymentRepository.findByBid_BidIdx(bidIdx).ifPresent(p -> {
             if ("DONE".equals(p.getPayStatus()) || "CONFIRMED".equals(p.getPayStatus())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 결제가 완료된 주문입니다.");
@@ -88,6 +93,11 @@ public class PaymentService {
         MemberEntity buyer = bid.getAuction().getBuyer();
         if (!buyer.getMemId().equals(memId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "결제 권한이 없습니다.");
+        }
+
+        if (bid.getBidStatus() == null
+                || !"won".equals(bid.getBidStatus().getBidStatusCode())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "낙찰된 입찰만 결제할 수 있습니다.");
         }
 
         long expectedAmount = bid.getBidPrice() * bid.getBidQuantity();

@@ -25,9 +25,12 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     FROM bid b
     JOIN auction a ON b.auction_idx = a.auction_idx
     JOIN item i ON b.item_idx = i.item_idx
+    JOIN bid_status bs ON bs.bid_status_idx = b.bid_status_idx
+    JOIN payment p ON p.bid_idx = b.bid_idx
     LEFT JOIN review r ON r.bid_idx = b.bid_idx AND r.review_is_deleted = 'N'
     WHERE a.buyer_idx = :buyerIdx
-      AND b.bid_status_idx = 2
+      AND bs.bid_status_code = 'won'
+      AND p.pay_status = 'CONFIRMED'
       AND r.review_idx IS NULL
     """, nativeQuery = true)
     List<Map<String, Object>> findAllReviewTargets(@Param("buyerIdx") Long buyerIdx);
@@ -68,7 +71,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
       AND r.review_is_deleted = 'N'
     ORDER BY r.review_regdate DESC
     """, nativeQuery = true)
-        List<Map<String, Object>> findReceivedReviews(@Param("memIdx") Long memIdx);
+    List<Map<String, Object>> findReceivedReviews(@Param("memIdx") Long memIdx);
 
     // 평균 별점
     @Query(value = """
@@ -92,9 +95,12 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
         FROM bid b
         JOIN auction a ON b.auction_idx = a.auction_idx
         JOIN item i ON b.item_idx = i.item_idx
+        JOIN bid_status bs ON bs.bid_status_idx = b.bid_status_idx
+        JOIN payment p ON p.bid_idx = b.bid_idx
         LEFT JOIN review r ON r.bid_idx = b.bid_idx AND r.review_is_deleted = 'N'
         WHERE a.buyer_idx = :buyerIdx
-          AND b.bid_status_idx = 2
+          AND bs.bid_status_code = 'won'
+          AND p.pay_status = 'CONFIRMED'
           AND r.review_idx IS NULL
           AND (
             (:searchType = 'auctionTitle' AND a.auction_title LIKE CONCAT('%', :keyword, '%'))

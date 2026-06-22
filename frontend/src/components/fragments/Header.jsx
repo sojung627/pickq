@@ -53,6 +53,7 @@ export default function Header() {
     // 알림 페이지에서 읽음 처리 후 헤더 카운트 재조회
     const handleRefresh = () => fetchUnreadCount();
     window.addEventListener("notification-read", handleRefresh);
+    window.addEventListener("notification-created", handleRefresh);
 
     // 탭 전환 시(다른 페이지에서 읽음 처리 후 돌아왔을 때) 재조회
     const handleVisibility = () => {
@@ -61,8 +62,9 @@ export default function Header() {
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      window.removeEventListener("notification-read", handleRefresh);
-      document.removeEventListener("visibilitychange", handleVisibility);
+        window.removeEventListener("notification-read", handleRefresh);
+        window.removeEventListener("notification-created", handleRefresh);
+        document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [isLoggedIn]);
 

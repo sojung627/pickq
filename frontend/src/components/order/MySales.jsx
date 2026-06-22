@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function MySales() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [sales, setSales] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedBidIdx, setSelectedBidIdx] = useState(null);
@@ -24,6 +25,18 @@ export default function MySales() {
     useEffect(() => {
         fetchSales();
     }, []);
+
+    useEffect(() => {
+        const bidIdx = location.state?.openShippingBidIdx;
+        if (bidIdx == null) return;
+
+        setSelectedBidIdx(bidIdx);
+        setTrackingNumber('');
+        setCourierCompany('CJ대한통운');
+        setModalOpen(true);
+
+        navigate(location.pathname, { replace: true, state: null });
+    }, [location.pathname, location.state, navigate]);
 
     const openModal = (bidIdx) => {
         setSelectedBidIdx(bidIdx);
@@ -163,7 +176,8 @@ export default function MySales() {
                                 <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                     <div className="text-[11px] text-gray-500">판매자는 운송장 등록 후 배송을 시작할 수 있습니다.</div>
                                     <div className="flex justify-end">
-                                        {!resolveDeliveryStatus(sale) && sale.payStatus !== 'CONFIRMED' && (
+                                        {(resolveDeliveryStatus(sale) === 'READY' || !resolveDeliveryStatus(sale))
+                                            && sale.payStatus === 'DONE' && (
                                             <button
                                                 type="button"
                                                 onClick={() => openModal(sale.bidIdx)}

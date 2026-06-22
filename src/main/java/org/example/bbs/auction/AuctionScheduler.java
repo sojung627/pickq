@@ -66,8 +66,8 @@ public class AuctionScheduler {
         // [1] NO_PAYMENT: 낙찰 후 3일 지나도 결제 없는 경우 → 구매자 페널티
         List<BidEntity> wonBids = bidRepository.findWonBidsWithoutPayment();
         for (BidEntity bid : wonBids) {
-            if (bid.getBidModdate() == null) continue;
-            if (!bid.getBidModdate().plusDays(3).isBefore(now)) continue;
+            if (bid.getWonAt() == null) continue;
+            if (bid.getWonAt().plusDays(3).isAfter(now)) continue;
 
             // 중복 방지: bid_idx + penalty_code 조합으로 체크
             if (memberPenaltyRepository.existsByMember_MemIdxAndBid_BidIdxAndPenaltyCode(

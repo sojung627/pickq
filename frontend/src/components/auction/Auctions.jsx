@@ -40,7 +40,7 @@ const Auctions = () => {
         </div>
         <div>
           <button
-            onClick={() => navigate('/mypage/payments')}
+            onClick={() => navigate('/mypage/orders')}
             className="inline-flex items-center px-4 py-2.5 rounded-md border border-gray-300 text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
           >
             구매 내역 보기

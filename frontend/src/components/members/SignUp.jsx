@@ -14,15 +14,8 @@ export default function SignUp() {
   const [showPwd, setShowPwd] = useState(false);
 
   const handleNaverLogin = () => {
-    const state = Math.random().toString(36).substring(2, 12);
-    const params = new URLSearchParams({
-      response_type: "code",
-      client_id: "2Rk518jWd9bxOQoKuUnD",
-      redirect_uri: "/members/naverCallback",
-      state: state,
-    });
-    window.location.href =
-      "https://nid.naver.com/oauth2.0/authorize?" + params.toString();
+    // state 생성/검증과 redirect_uri 관리는 백엔드에서 처리한다.
+    window.location.assign("/members/naverLogin");
   };
 
   // 전화번호 포맷팅

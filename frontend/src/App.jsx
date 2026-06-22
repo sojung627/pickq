@@ -99,7 +99,12 @@ function AppInner() {
       onConnect: () => {
         client.subscribe(`/topic/notifications/${loginMemIdx}`, (frame) => {
           const noti = JSON.parse(frame.body);
-          addToast(noti.notificationMessage, noti.targetUrl, noti.notificationTitle);
+          addToast(
+              noti.notificationMessage,
+              noti.targetUrl,
+              noti.notificationTitle
+          );
+          window.dispatchEvent(new CustomEvent("notification-created"));
           // 채팅 메시지면 플로팅 버튼 카운트 +1 ← 추가
           if (noti.notificationType === 'CHAT_MESSAGE') {
             setRealtimeUnreadCount(prev => prev + 1);

@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,25 +149,32 @@ public class BidService {
         }
 
         // 낙찰 상태 조회 (bid_status_idx = 2 = 낙찰)
-        BidStatusEntity wonStatus = bidStatusRepository.findById(2)
-                .orElseThrow(() -> new IllegalArgumentException("낙찰 상태를 찾을 수 없습니다."));
+        BidStatusEntity wonStatus =
+                bidStatusRepository.findByBidStatusCode("won")
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("낙찰 상태를 찾을 수 없습니다."));
 
         // 유찰 상태 조회 (bid_status_idx = 4 = 유찰)
-        BidStatusEntity lostStatus = bidStatusRepository.findById(4)
-                .orElseThrow(() -> new IllegalArgumentException("유찰 상태를 찾을 수 없습니다."));
+        BidStatusEntity lostStatus =
+                bidStatusRepository.findByBidStatusCode("lost")
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("유찰 상태를 찾을 수 없습니다."));
 
         // 낙찰 입찰 상태 변경
         winBid.setBidStatus(wonStatus);
+        winBid.setWonAt(LocalDateTime.now());
 
         // 나머지 입찰 유찰 처리
         List<BidEntity> allBids = bidRepository.findByAuction_AuctionIdxOrderByBidRegdateDesc(auctionIdx);
         allBids.stream()
-                .filter(b -> !b.getBidIdx().equals(bidIdx) && b.getBidStatus().getBidStatusIdx() == 1)
+                .filter(b -> !b.getBidIdx().equals(bidIdx) && "normal".equals(b.getBidStatus().getBidStatusCode()))
                 .forEach(b -> b.setBidStatus(lostStatus));
 
         // 경매 상태를 마감(3)으로 변경
-        AuctionStatusEntity closedStatus = auctionStatusRepository.findById(3)
-                .orElseThrow(() -> new IllegalArgumentException("경매 상태를 찾을 수 없습니다."));
+        AuctionStatusEntity closedStatus =
+                auctionStatusRepository.findByAuctionStatusCode("closed")
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("경매 상태를 찾을 수 없습니다."));
         auction.setAuctionStatus(closedStatus);
         notificationService.notifyAuctionDecided(auction, winBid);
     }

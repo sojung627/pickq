@@ -57,6 +57,10 @@ public class BidEntity {
     @Column(name = "bid_moddate")
     private LocalDateTime bidModdate;
 
+    // 추가
+    @Column(name = "won_at")
+    private LocalDateTime wonAt;
+
     @PrePersist
     public void prePersist() {
         if (this.bidRegdate == null) {

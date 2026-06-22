@@ -30,16 +30,9 @@ export default function Login() {
         }, []);
 
     // 네이버 로그인
+    // state 생성/검증과 redirect_uri 관리는 백엔드에서 처리한다.
     const handleNaverLogin = () => {
-        const state = Math.random().toString(36).substring(2, 12);
-        const params = new URLSearchParams({
-            response_type: "code",
-            client_id: "2Rk518jWd9bxOQoKuUnD",
-            redirect_uri: "/members/naverCallback",
-            state: state,
-        });
-        window.location.href =
-            "https://nid.naver.com/oauth2.0/authorize?" + params.toString();
+        window.location.assign("/members/naverLogin");
     };
 
     // 시간 타이머 로직

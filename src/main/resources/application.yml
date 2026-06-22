@@ -6,20 +6,20 @@ spring:
     resources:
       static-locations: classpath:/static/,file:uploads/
 
-# 에러 핸들링용
-#  mvc:
-#    throw-exception-if-no-handler-found: true
-#
-#  web:
-#      resources:
-#        add-mapping: false
+  # 에러 핸들링용
+  #  mvc:
+  #    throw-exception-if-no-handler-found: true
+  #
+  #  web:
+  #      resources:
+  #        add-mapping: false
 
   # DB 설정 - 로컬
-#  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://localhost:3306/final?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
-#    username: final
-#    password: final
+  #  datasource:
+  #    driver-class-name: com.mysql.cj.jdbc.Driver
+  #    url: jdbc:mysql://localhost:3306/final?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+  #    username: final
+  #    password: final
 
   # DB 설정 - Docker
   datasource:
@@ -83,7 +83,7 @@ solapi:
 naver:
   client-id: ${NAVER_CLIENT_ID}
   client-secret: ${NAVER_CLIENT_SECRET}
-  redirect-uri: http://localhost:8080/members/naverCallback
+  redirect-uri: ${NAVER_REDIRECT_URI:http://localhost:3000/members/naverCallback}
 
 toss:
   secret-key: ${TOSS_SECRET_KEY:test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6}

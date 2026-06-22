@@ -19,7 +19,7 @@ public class HomeController {
 
     private final AuctionService auctionService;
 
-    @GetMapping("/")
+    @GetMapping("/api/home")
     public Map<String, Object> home() {
         List<AuctionListDTO> hotList      = auctionService.findAllAuctions(null, "views",    "open", null);
         List<AuctionListDTO> deadlineList = auctionService.findAllAuctions(null, "deadline", "open", null);

@@ -21,7 +21,9 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -202,16 +204,53 @@ public class BoardService {
 
         // 알림 서비스 분기 처리
         if (parent != null) {
-            // 주석: 답글인 경우 부모 댓글 작성자에게 알림 발송
+            // 부모 댓글 작성자에게 답글 알림
             if (parent.getMember() != null) {
-                notificationService.notifyBoardReply(parent.getMember(), member, board, reply);
+                notificationService.notifyBoardReply(
+                        parent.getMember(),
+                        member,
+                        board,
+                        reply
+                );
+            }
+
+            // 게시글 작성자에게도 알림
+            // 게시글 작성자와 부모 댓글 작성자가 같으면 중복 발송하지 않음
+            if (board.getMember() != null
+                    && (parent.getMember() == null
+                    || !Objects.equals(
+                    board.getMember().getMemIdx(),
+                    parent.getMember().getMemIdx()))) {
+
+                notificationService.notifyBoardComment(
+                        board.getMember(),
+                        member,
+                        board,
+                        reply
+                );
             }
         } else {
-            // 주석: 일반 댓글인 경우 게시글 작성자에게 알림 발송
+            // 일반 댓글은 게시글 작성자에게 알림
             if (board.getMember() != null) {
-                notificationService.notifyBoardComment(board.getMember(), member, board, reply);
+                notificationService.notifyBoardComment(
+                        board.getMember(),
+                        member,
+                        board,
+                        reply
+                );
             }
         }
+//        if (parent != null) {
+//            // 답글인 경우 부모 댓글 작성자에게 알림 발송
+//            if (parent.getMember() != null) {
+//                notificationService.notifyBoardReply(parent.getMember(), member, board, reply);
+//            }
+//        } else {
+//            // 일반 댓글인 경우 게시글 작성자에게 알림 발송
+//            if (board.getMember() != null) {
+//                notificationService.notifyBoardComment(board.getMember(), member, board, reply);
+//            }
+//        }
     }
 
     // 댓글 리스트 조회 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
