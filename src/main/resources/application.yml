@@ -4,7 +4,7 @@ spring:
 
   web:
     resources:
-      static-locations: classpath:/static/,file:uploads/
+      static-locations: classpath:/static/
 
   # 에러 핸들링용
   #  mvc:
@@ -47,6 +47,10 @@ spring:
       # 이미지 전체당 512MB
       max-request-size: 512MB
 
+app:
+  upload:
+    root-dir: ${UPLOAD_ROOT_DIR:./uploads}
+
 server:
   port: 8080
 
@@ -83,7 +87,7 @@ solapi:
 naver:
   client-id: ${NAVER_CLIENT_ID}
   client-secret: ${NAVER_CLIENT_SECRET}
-  redirect-uri: ${NAVER_REDIRECT_URI:http://localhost:3000/members/naverCallback}
+  redirect-uri: ${NAVER_REDIRECT_URI}
 
 toss:
   secret-key: ${TOSS_SECRET_KEY:test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6}

@@ -182,12 +182,27 @@ export default function ChatOverlay({ onClose }) {
     );
   }
 
-  const openProfileModal = (memIdx) => {
+  const openProfileModal = async (memIdx) => {
     if (!memIdx) return;
-    fetch(`/mypage/profile/modal/${memIdx}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => setProfileModal(data))
-      .catch(err => console.error('프로필 조회 에러:', err));
+
+    try {
+      const response = await fetch(`/mypage/profile/modal/${memIdx}`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`프로필 조회 실패: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data?.profile) {
+        throw new Error('프로필 데이터가 없습니다.');
+      }
+
+      setProfileModal(data);
+    } catch (error) {
+      console.error('프로필 조회 에러:', error);
+    }
   };
 
   return (

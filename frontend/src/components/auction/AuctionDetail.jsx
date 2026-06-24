@@ -46,12 +46,27 @@ const AuctionDetail = () => {
       .catch(err => console.error("경매 상세 조회 에러:", err));
   }, [auctionIdx]);
 
-  const openProfileModal = (memIdx) => {
+  const openProfileModal = async (memIdx) => {
     if (!memIdx) return;
-    fetch(`${API_BASE_URL}/mypage/profile/modal/${memIdx}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => setProfileModal(data))
-      .catch(err => console.error('프로필 조회 에러:', err));
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/mypage/profile/modal/${memIdx}`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`프로필 조회 실패: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data?.profile) {
+        throw new Error('프로필 데이터가 없습니다.');
+      }
+
+      setProfileModal(data);
+    } catch (error) {
+      console.error('프로필 조회 에러:', error);
+    }
   };
 
   const handleBidClick = (bid) => {

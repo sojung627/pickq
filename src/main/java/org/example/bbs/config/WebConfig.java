@@ -1,54 +1,64 @@
 package org.example.bbs.config;
 
 import org.example.bbs.interceptor.LoginInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-      // Docker 배포할 때만 주석
-//    @Override
-//    public void addCorsMappings(CorsRegistry registry) {
-//        registry.addMapping("/**")
-//                .allowedOrigins("http://localhost:5173") // 프론트 주소
-//                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-//                .allowCredentials(true);
-//    }
 
-    // 이미지용
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + System.getProperty("user.dir") + "/uploads/");
+    private final LoginInterceptor loginInterceptor;
+    private final String uploadRootDir;
+
+    public WebConfig(
+            LoginInterceptor loginInterceptor,
+            @Value("${app.upload.root-dir:./uploads}") String uploadRootDir
+    ) {
+        this.loginInterceptor = loginInterceptor;
+        this.uploadRootDir = uploadRootDir;
     }
 
-    // 로그인 인터셉터용
-    @Autowired
-    private LoginInterceptor loginInterceptor;
+    /**
+     * 사용자 업로드 파일을 /uploads/** URL로 노출한다.
+     * Railway에서는 UPLOAD_ROOT_DIR=/app/uploads 로 지정하고
+     * 같은 경로에 Volume을 마운트해야 재배포 후에도 파일이 유지된다.
+     */
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        Path uploadPath = Paths.get(uploadRootDir)
+                .toAbsolutePath()
+                .normalize();
+
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations(uploadPath.toUri().toString());
+    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginInterceptor)
-                // 로그인이 필요한 경로
                 .addPathPatterns(
                         "/mypage/**",
                         "/boards/**/new",
-                        "/boards/**/edit",
-                        "/mypage/session"
+                        "/boards/**/edit"
                 )
-                // 로그인이 필요없는 경로
                 .excludePathPatterns(
                         "/members/login",
                         "/members/signUp",
+                        // 다른 사용자의 프로필 모달은 비로그인 상태에서도 볼 수 있어야 한다.
+                        "/mypage/profile/modal/**",
                         "/css/**",
                         "/js/**",
                         "/images/**",
-                        "/fragments/**"
+                        "/uploads/**",
+                        "/fragments/**",
+                        "/error",
+                        "/api/error"
                 );
     }
-
 }

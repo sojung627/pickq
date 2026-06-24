@@ -50,12 +50,27 @@ const BoardDetail = () => {
   };
   const toggleReplyForm = (rid) => setReplyFormId(replyFormId === rid ? null : rid);
 
-  const openProfileModal = (memIdx) => {
+  const openProfileModal = async (memIdx) => {
     if (!memIdx) return;
-    fetch(`/mypage/profile/modal/${memIdx}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => setProfileModal(data))
-      .catch(err => console.error('프로필 조회 에러:', err));
+
+    try {
+      const response = await fetch(`/mypage/profile/modal/${memIdx}`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`프로필 조회 실패: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data?.profile) {
+        throw new Error('프로필 데이터가 없습니다.');
+      }
+
+      setProfileModal(data);
+    } catch (error) {
+      console.error('프로필 조회 에러:', error);
+    }
   };
 
   useEffect(() => {
@@ -190,14 +205,25 @@ const BoardDetail = () => {
       .catch(err => console.error("답글 등록 에러:", err));
   };
 
-  const handleBoardDelete = () => {
+  const handleBoardDelete = async () => {
     if (!confirm('삭제하시겠습니까?')) return;
-    fetch(`/boards/${boardTypeCode}/${boardIdx}`, {
-      method: 'DELETE',
-      credentials: 'include'
-    })
-      .then(() => navigate(`/boards?from=${from}&page=${page}`))
-      .catch(err => console.error("게시글 삭제 에러:", err));
+
+    try {
+      const response = await fetch(`/boards/${boardTypeCode}/${boardIdx}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(errorBody || `게시글 삭제 실패: ${response.status}`);
+      }
+
+      navigate(`/boards?from=${from}&page=${page}`);
+    } catch (error) {
+      console.error('게시글 삭제 에러:', error);
+      alert('게시글 삭제 중 오류가 발생했습니다.');
+    }
   };
 
   if (!board) return <div className="py-20 text-center">로딩 중...</div>;
@@ -209,7 +235,10 @@ const BoardDetail = () => {
     if (memProfileImg) {
       return `/uploads/profile/${memProfileImg}`;
     }
-    const defaultNum = (Number(memIdx) % 5) + 1;
+    const numericMemIdx = Number(memIdx);
+    const defaultNum = Number.isFinite(numericMemIdx)
+      ? (numericMemIdx % 5) + 1
+      : 1;
     return `/images/profile/profile_default_${defaultNum}.png`;
   };
 
@@ -254,7 +283,10 @@ const BoardDetail = () => {
                       alt="프로필"
                       className="w-6 h-6 rounded-full object-cover"
                       onError={(e) => {
-                        const fallback = (Number(board.memIdx) % 5) + 1;
+                        const numericMemIdx = Number(board.memIdx);
+                        const fallback = Number.isFinite(numericMemIdx)
+                          ? (numericMemIdx % 5) + 1
+                          : 1;
                         e.target.src = `/images/profile/profile_default_${fallback}.png`;
                       }}
                     />
@@ -374,7 +406,10 @@ const BoardDetail = () => {
                               alt="프로필"
                               className="h-8 w-8 rounded-full object-cover bg-gray-100"
                               onError={(e) => {
-                                const fallback = (Number(r.memIdx) % 5) + 1;
+                                const numericMemIdx = Number(r.memIdx);
+                                const fallback = Number.isFinite(numericMemIdx)
+                                  ? (numericMemIdx % 5) + 1
+                                  : 1;
                                 e.target.src = `/images/profile/profile_default_${fallback}.png`;
                               }}
                             />

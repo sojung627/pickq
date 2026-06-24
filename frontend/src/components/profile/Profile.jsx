@@ -40,7 +40,11 @@ export default function Profile({
     return keywords.split(",").map((k) => k.trim()).filter((k) => k.length > 0).slice(0, max);
   };
 
-  const defaultImg = `/images/profile/profile_default_${(profile?.memIdx % 5) + 1}.png`;
+  const numericMemIdx = Number(profile?.memIdx);
+  const defaultNumber = Number.isFinite(numericMemIdx)
+    ? (numericMemIdx % 5) + 1
+    : 1;
+  const defaultImg = `/images/profile/profile_default_${defaultNumber}.png`;
 
   return (
     <section className="max-w-full mx-auto px-4 py-6">
@@ -72,6 +76,10 @@ export default function Profile({
                 }
                 alt="프로필 이미지"
                 className="w-full h-full object-cover"
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = defaultImg;
+                }}
               />
             </div>
 

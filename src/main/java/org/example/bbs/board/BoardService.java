@@ -417,7 +417,18 @@ public class BoardService {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
 
+        /*
+         * 운영 DB의 FK 설정이 로컬 스키마와 달라도 삭제가 실패하지 않도록
+         * 자식 데이터와 알림 참조를 명시적으로 정리한다.
+         */
+        notificationRepository.clearReplyReferencesByBoardIdx(boardIdx);
+        notificationRepository.clearBoardReferencesByBoardIdx(boardIdx);
+        replyLikeRepository.deleteAllByBoardIdx(boardIdx);
+        replyRepository.deleteAllByBoardIdx(boardIdx);
+        boardLikeRepository.deleteAllByBoardIdx(boardIdx);
+
         boardRepository.delete(board);
+        boardRepository.flush();
     }
 
     // 게시글 작성 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ

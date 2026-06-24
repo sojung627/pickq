@@ -145,7 +145,13 @@ const MemberProfileUpdate = () => {
           credentials: "include",
           body: formData
       })
-      .then(res => res.text())
+      .then(async (res) => {
+          const result = await res.text();
+          if (!res.ok) {
+              throw new Error(result || `프로필 저장 실패: ${res.status}`);
+          }
+          return result;
+      })
       .then(result => {
           if (result === "success") {
               setOriginalData({ ...profile });
@@ -153,6 +159,10 @@ const MemberProfileUpdate = () => {
               setWasModified(false);
               setIsDirty(false);
           }
+      })
+      .catch(error => {
+          console.error("프로필 저장 에러:", error);
+          alert("프로필 저장 중 오류가 발생했습니다.");
       });
   };
 
@@ -168,7 +178,17 @@ const MemberProfileUpdate = () => {
         <div className="flex items-start gap-6">
           <div className="flex-shrink-0">
             <div className="w-[140px] h-[140px] aspect-square rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
-              {previewUrl && <img src={previewUrl} alt="프로필" className="w-full h-full object-cover" />}
+              {previewUrl && (
+                <img
+                  src={previewUrl}
+                  alt="프로필"
+                  className="w-full h-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = "/images/profile/profile_default_1.png";
+                  }}
+                />
+              )}
             </div>
           </div>
           <div className="flex-1 min-w-0">
