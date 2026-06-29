@@ -70,7 +70,7 @@ export default function MainPage() {
         {/* 카테고리 */}
         <section className="max-w-[1200px] mx-auto w-full px-10 py-[60px] box-border">
           <h2 className="text-[20px] font-bold mb-10">카테고리</h2>
-          <div className="grid grid-cols-4 gap-y-10 gap-x-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-5">
             {[
               { name: "공/볼", img: "https://images.unsplash.com/photo-1760177379323-2b22f8d41707?q=80&w=400", path: "/auctions/category/ball?sortBy=latest&statusFilter=open" },
               { name: "라켓/배트/클럽", img: "https://images.unsplash.com/photo-1773452549497-05f51a391451?q=80&w=400", path: "/auctions/category/racket?sortBy=latest&statusFilter=open" },
@@ -131,12 +131,12 @@ function AuctionListSection({ title, subtitle, items, morePath, emptyMessage = E
         <span onClick={() => navigate(morePath)} className="text-[14px] font-medium cursor-pointer">더보기</span>
       </div>
 
-      <div className="grid gap-6 grid-cols-4">
-        {items && items.length > 0 ? items.map((item) => (
+      <div className="grid gap-6 grid-cols-2 md:grid-cols-4">
+        {items && items.length > 0 ? items.map((item, index) => (
           <div
             key={item.auctionIdx}
             onClick={() => navigate(`/auctions/${item.auctionIdx}`)}
-            className="cursor-pointer"
+            className={`cursor-pointer ${index >= 2 ? "hidden md:block" : "block"}`}
           >
             <div className="w-full aspect-square overflow-hidden mb-3 bg-[#f9f9f9] rounded-xl">
               <img src={item.auctionThumbnailImg || "https://via.placeholder.com/300"} className="w-full h-full object-cover" alt="thumb" />
