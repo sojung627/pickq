@@ -261,7 +261,7 @@ export default function ChatOverlay({ onClose }) {
               <button
                 type="button"
                 onClick={handleBackToList}
-                className="md:hidden w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 -ml-1"
+                className="flex md:hidden w-7 h-7 items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 -ml-1"
               >
                 ←
               </button>
