@@ -4,6 +4,7 @@ import { Client } from "@stomp/stompjs";
 import Profile from "../profile/Profile";
 
 function ChatPanel({ chatroomIdx, currentUserIdx }) {
+  // ... 기존 ChatPanel 코드 전부 동일, 수정 없음 ...
   const [messageList, setMessageList] = useState([]);
   const [messageContent, setMessageContent] = useState("");
   const [websocketConnected, setWebsocketConnected] = useState(false);
@@ -52,14 +53,8 @@ function ChatPanel({ chatroomIdx, currentUserIdx }) {
           }
         });
         const sub2 = client.subscribe(`/topic/chatroom/${chatroomIdx}/read`, (frame) => {
-          console.log('📨 /read 이벤트 수신:', frame.body);
           const { readerIdx } = JSON.parse(frame.body);
-          console.log('readerIdx:', readerIdx, '| currentUserIdx:', currentUserIdx);
-          if (Number(readerIdx) === Number(currentUserIdx)) {
-            console.log('본인 이벤트라 무시');
-            return;
-          }
-          console.log('안읽음 제거 실행');
+          if (Number(readerIdx) === Number(currentUserIdx)) return;
           setMessageList((prev) =>
             prev.map((msg) =>
               Number(msg.senderIdx) === Number(currentUserIdx)
@@ -146,6 +141,8 @@ export default function ChatOverlay({ onClose }) {
   const [currentUserIdx, setCurrentUserIdx] = useState(null);
   const [roomList, setRoomList] = useState([]);
   const [profileModal, setProfileModal] = useState(null);
+  // 모바일 전용: 목록 화면 / 채팅 화면 전환
+  const [mobileView, setMobileView] = useState("list"); // "list" | "chat"
 
   useEffect(() => {
     fetch("/mypage/session", { credentials: "include" })
@@ -170,7 +167,6 @@ export default function ChatOverlay({ onClose }) {
       .catch(() => {});
   }, []);
 
-  // 채팅방 클릭 시 선택 및 해당 방의 읽지 않은 수 즉시 초기화
   function handleSelectRoom(room) {
     setSelectedRoom(room);
     setRoomList(prev =>
@@ -180,35 +176,55 @@ export default function ChatOverlay({ onClose }) {
           : r
       )
     );
+    setMobileView("chat"); // 모바일에서 방 선택하면 채팅화면으로 전환
   }
 
   const openProfileModal = async (memIdx) => {
     if (!memIdx) return;
-
     try {
-      const response = await fetch(`/mypage/profile/modal/${memIdx}`, {
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`프로필 조회 실패: ${response.status}`);
-      }
-
+      const response = await fetch(`/mypage/profile/modal/${memIdx}`, { credentials: 'include' });
+      if (!response.ok) throw new Error(`프로필 조회 실패: ${response.status}`);
       const data = await response.json();
-      if (!data?.profile) {
-        throw new Error('프로필 데이터가 없습니다.');
-      }
-
+      if (!data?.profile) throw new Error('프로필 데이터가 없습니다.');
       setProfileModal(data);
     } catch (error) {
       console.error('프로필 조회 에러:', error);
     }
   };
 
+  const roomListContent = (
+    <div className="flex-1 overflow-auto">
+      {roomList.map((room) => {
+        const isSelected = selectedRoom?.chatroomIdx === room.chatroomIdx;
+        return (
+          <div
+            key={room.chatroomIdx}
+            onClick={() => handleSelectRoom(room)}
+            className={`px-5 py-4 cursor-pointer border-b border-gray-50 transition-colors ${
+              isSelected ? "bg-gray-50 border-l-[5px] border-l-[#7CBD00]" : "hover:bg-gray-50"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <p className={`text-sm font-semibold ${isSelected ? "text-gray-900" : "text-gray-800"}`}>
+                {room.opponentName}
+              </p>
+              {room.unreadCount > 0 && (
+                <span className="min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                  {room.unreadCount > 99 ? "99+" : room.unreadCount}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-400 mt-0.5 truncate">{room.lastMessage}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <>
-      {/* 우측 하단 플로팅 채팅창 */}
-      <div className="fixed bottom-28 right-8 z-50 flex w-[750px] h-[500px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-100">
+      {/* 데스크톱: 우측 하단 플로팅 채팅창 (그대로 유지) */}
+      <div className="hidden md:flex fixed bottom-28 right-8 z-50 w-[750px] h-[500px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-100">
         <div className="w-[250px] border-r border-gray-100 flex flex-col">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <span className="text-base font-semibold text-gray-900">채팅 목록</span>
@@ -220,33 +236,7 @@ export default function ChatOverlay({ onClose }) {
               ✕
             </button>
           </div>
-          <div className="flex-1 overflow-auto">
-            {roomList.map((room) => {
-              const isSelected = selectedRoom?.chatroomIdx === room.chatroomIdx;
-              return (
-                <div
-                  key={room.chatroomIdx}
-                  onClick={() => handleSelectRoom(room)}
-                  className={`px-5 py-4 cursor-pointer border-b border-gray-50 transition-colors ${
-                    isSelected ? "bg-gray-50 border-l-[5px] border-l-[#7CBD00]" : "hover:bg-gray-50"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <p className={`text-sm font-semibold ${isSelected ? "text-gray-900" : "text-gray-800"}`}>
-                      {room.opponentName}
-                    </p>
-                    {/* 읽지 않은 메시지 수 뱃지 */}
-                    {room.unreadCount > 0 && (
-                      <span className="min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
-                        {room.unreadCount > 99 ? "99+" : room.unreadCount}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-400 mt-0.5 truncate">{room.lastMessage}</p>
-                </div>
-              );
-            })}
-          </div>
+          {roomListContent}
         </div>
         <div className="flex-1 flex flex-col overflow-hidden">
           {selectedRoom && (
@@ -261,6 +251,51 @@ export default function ChatOverlay({ onClose }) {
           )}
           <ChatPanel chatroomIdx={selectedRoom?.chatroomIdx} currentUserIdx={currentUserIdx} />
         </div>
+      </div>
+
+      {/* 모바일: 풀스크린, 목록 화면 ↔ 채팅 화면 전환 */}
+      <div className="md:hidden fixed inset-0 z-50 bg-white flex flex-col">
+        {mobileView === "list" ? (
+          <>
+            <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
+              <span className="text-base font-semibold text-gray-900">채팅 목록</span>
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            {roomListContent}
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-100">
+              <button
+                type="button"
+                onClick={() => setMobileView("list")}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500"
+              >
+                ←
+              </button>
+              <span
+                className="text-sm font-semibold text-gray-900 flex-1 truncate cursor-pointer"
+                onClick={() => openProfileModal(selectedRoom?.opponentIdx)}
+              >
+                {selectedRoom?.opponentName}
+              </span>
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400"
+              >
+                ✕
+              </button>
+            </div>
+            <ChatPanel chatroomIdx={selectedRoom?.chatroomIdx} currentUserIdx={currentUserIdx} />
+          </>
+        )}
       </div>
 
       {profileModal && (

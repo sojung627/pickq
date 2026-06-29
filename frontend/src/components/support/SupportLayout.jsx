@@ -68,7 +68,7 @@ const SupportLayout = ({ children, currentTab }) => {
           <div className="px-5 py-4 border-b border-gray-100 bg-gray-50">
             <h2 className="font-bold text-[#222222] text-sm">고객지원</h2>
           </div>
-          <nav className="flex gap-2 p-3 overflow-x-auto">
+          <nav className="flex gap-2 p-3 overflow-x-auto justify-center">
             {menus.map((m) => (
               <button
                 key={m.id}
