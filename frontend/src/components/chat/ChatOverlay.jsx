@@ -141,6 +141,15 @@ export default function ChatOverlay({ onClose }) {
   const [roomList, setRoomList] = useState([]);
   const [profileModal, setProfileModal] = useState(null);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   useEffect(() => {
     fetch("/mypage/session", { credentials: "include" })
       .then((res) => { if (!res.ok) return null; return res.json(); })
@@ -258,14 +267,15 @@ export default function ChatOverlay({ onClose }) {
         >
           {selectedRoom && (
             <div className="px-5 py-4 border-b border-gray-100 bg-white flex-shrink-0 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleBackToList}
-                className=" flex md:hidden w-7 h-7 items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 -ml-1"
-                aria-label="채팅 목록으로 돌아가기"
-              >
-                ←
-              </button>
+              {isMobile && (
+                <button
+                  type="button"
+                  onClick={handleBackToList}
+                  className="flex w-7 h-7 items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 -ml-1"
+                >
+                  ←
+                </button>
+              )}
               <span
                 className="text-sm font-semibold text-gray-900 cursor-pointer hover:text-[#7CBD00]"
                 onClick={() => openProfileModal(selectedRoom.opponentIdx)}
