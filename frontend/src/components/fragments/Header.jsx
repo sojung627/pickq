@@ -3,9 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import Profile from '../profile/Profile';
 import NotificationDropdown from '../notification/NotificationDropdown';
 
-// 모바일 기준 너비 (px)
-const MOBILE_BREAKPOINT = 768;
-
 export default function Header() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -16,16 +13,6 @@ export default function Header() {
   const [reviewData, setReviewData] = useState([]);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  // Tailwind 반응형 클래스 미동작 → JS로 직접 모바일 여부 감지
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   useEffect(() => {
     fetch("/members/auth/check", { credentials: "include" })
@@ -40,12 +27,8 @@ export default function Header() {
   }, []);
 
   const handleLogout = () => {
-    fetch("/members/logout", {
-      method: "POST",
-      credentials: "include"
-    }).then(() => {
-      window.location.href = "/";
-    });
+    fetch("/members/logout", { method: "POST", credentials: "include" })
+      .then(() => { window.location.href = "/"; });
   };
 
   const fetchUnreadCount = () => {
@@ -75,204 +58,193 @@ export default function Header() {
     };
   }, [isLoggedIn]);
 
-  useEffect(() => {
-    document.body.style.overflow = isDrawerOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [isDrawerOpen]);
-
-  const handleProfileOpen = async () => {
-    const res = await fetch(`/mypage/profile/modal/${loginUser.memIdx}`, {
-      credentials: "include"
-    });
-    const data = await res.json();
-    setProfileData(data.profile);
-    setReviewData(data.reviews);
-    setIsProfileOpen(true);
-  };
-
-  const NAV_LINKS = [
-    { to: "/auctions",        label: "경매" },
-    { to: "/boards",          label: "커뮤니티" },
-    { to: "/mypage/auctions", label: "마이페이지" },
-    { to: "/support/guide",   label: "고객지원" },
-  ];
-
-  // 알림 버튼 (모바일/데스크탑 공통 사용)
-  const NotificationButton = () => (
-    <div className="relative">
-      <button
-        onClick={() => setIsNotificationOpen(prev => !prev)}
-        className="relative p-2 bg-transparent border-none cursor-pointer flex items-center"
-      >
-        <i className="bi bi-bell text-[22px] text-[#222]"></i>
-        {unreadCount > 0 && (
-          <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-        )}
-      </button>
-      {isNotificationOpen && (
-        <NotificationDropdown onClose={() => setIsNotificationOpen(false)} />
-      )}
-    </div>
-  );
-
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100">
-      <div className="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between">
+      <div
+        style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 clamp(4px, 1vw, 16px)',
+          height: 'clamp(52px, 8vw, 64px)',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', width: '100%', alignItems: 'center' }}>
 
-        {/* 로고 */}
-        <Link to="/" className="flex items-center no-underline flex-shrink-0">
-          <img
-            src="/images/pickq_logo.png"
-            alt="PickQ 로고"
-            className="h-10 w-auto cursor-pointer"
-          />
-        </Link>
-
-        {/* 데스크탑 레이아웃 */}
-        {!isMobile && (
-          <>
-            <nav className="flex items-center gap-1">
-              {NAV_LINKS.map(({ to, label }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  className="px-4 py-2 text-[16px] font-medium text-[#222] no-underline hover:text-green-600 transition-colors"
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
-
-            <div className="flex items-center gap-3">
-              {isLoggedIn ? (
-                <>
-                  <NotificationButton />
-                  <button
-                    onClick={handleProfileOpen}
-                    className="p-2 bg-transparent border-none cursor-pointer flex items-center"
-                  >
-                    <i className="bi bi-person text-2xl text-[#222]"></i>
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="bg-[#333] text-white px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-1.5 hover:bg-black transition-colors cursor-pointer"
-                  >
-                    <i className="bi bi-box-arrow-right"></i>
-                    로그아웃
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => navigate('/members/login')}
-                    className="bg-transparent border-none text-[16px] text-[#222] cursor-pointer font-medium"
-                  >
-                    로그인
-                  </button>
-                  <button
-                    onClick={() => navigate('/members/signUp')}
-                    className="bg-[#7CBD00] text-white px-4 py-2 rounded text-[16px] font-bold hover:bg-[#6aa600] transition-colors cursor-pointer"
-                  >
-                    회원가입
-                  </button>
-                </>
-              )}
-            </div>
-          </>
-        )}
-
-        {/* 모바일 레이아웃 */}
-        {isMobile && (
-          <div className="flex items-center gap-1">
-            {isLoggedIn && <NotificationButton />}
-            <button
-              onClick={() => setIsDrawerOpen(prev => !prev)}
-              className="p-2 bg-transparent border-none cursor-pointer flex items-center"
-              aria-label="메뉴 열기"
-            >
-              <i className={`bi ${isDrawerOpen ? 'bi-x-lg' : 'bi-list'} text-[24px] text-[#222]`}></i>
-            </button>
+          {/* 로고 */}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+              <img
+                src="/images/pickq_logo.png"
+                alt="PickQ 로고"
+                style={{
+                  height: 'clamp(42px, 9vw, 100px)',
+                  width: 'auto',
+                  cursor: 'pointer',
+                }}
+              />
+            </Link>
           </div>
-        )}
-      </div>
 
-      {/* 모바일 드로어 */}
-      {isMobile && isDrawerOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40"
-          onClick={() => setIsDrawerOpen(false)}
-        >
-          <div
-            className="absolute top-0 right-0 h-full w-64 bg-white shadow-xl flex flex-col"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <span className="text-base font-semibold text-[#222]">메뉴</span>
-              <button
-                onClick={() => setIsDrawerOpen(false)}
-                className="p-1 bg-transparent border-none cursor-pointer"
-                aria-label="메뉴 닫기"
+          {/* 메뉴 */}
+          <nav style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(0px, 0.5vw, 8px)' }}>
+            {[
+              { to: "/auctions",        label: "경매" },
+              { to: "/boards",          label: "커뮤니티" },
+              { to: "/mypage/auctions", label: "마이페이지" },
+              { to: "/support/guide",   label: "고객지원" },
+            ].map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                style={{
+                  padding: 'clamp(4px, 0.8vw, 8px) clamp(4px, 1.2vw, 16px)',
+                  fontSize: 'clamp(10px, 1.4vw, 16px)',
+                  fontWeight: 500,
+                  color: '#222',
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = '#16a34a'}
+                onMouseLeave={e => e.currentTarget.style.color = '#222'}
               >
-                <i className="bi bi-x-lg text-[20px] text-[#222]"></i>
-              </button>
-            </div>
+                {label}
+              </Link>
+            ))}
+          </nav>
 
-            <nav className="flex flex-col py-2">
-              {NAV_LINKS.map(({ to, label }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="px-5 py-3.5 text-[15px] font-medium text-[#222] no-underline hover:bg-gray-50 hover:text-green-600 transition-colors"
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
+          {/* 우측 액션 */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 'clamp(2px, 0.8vw, 16px)' }}>
+            {isLoggedIn ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(2px, 0.8vw, 12px)' }}>
 
-            <div className="border-t border-gray-100 mx-5" />
-
-            <div className="px-5 py-4 flex flex-col gap-3 mt-auto">
-              {isLoggedIn ? (
-                <>
+                {/* 알림 아이콘 */}
+                <div style={{ position: 'relative' }}>
                   <button
-                    onClick={async () => {
-                      setIsDrawerOpen(false);
-                      await handleProfileOpen();
+                    onClick={() => setIsNotificationOpen(prev => !prev)}
+                    style={{
+                      position: 'relative',
+                      padding: 'clamp(2px, 0.5vw, 8px)',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
-                    className="w-full flex items-center gap-2 px-0 py-2 bg-transparent border-none cursor-pointer text-[15px] font-medium text-[#222] hover:text-green-600 transition-colors"
                   >
-                    <i className="bi bi-person text-[18px]"></i>
-                    내 프로필
+                    <i
+                      className="bi bi-bell text-[#222]"
+                      style={{ fontSize: 'clamp(14px, 2vw, 22px)' }}
+                    ></i>
+                    {unreadCount > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        top: '6px',
+                        right: '6px',
+                        width: '6px',
+                        height: '6px',
+                        background: '#ef4444',
+                        borderRadius: '50%',
+                      }}></span>
+                    )}
                   </button>
-                  <button
-                    onClick={() => { setIsDrawerOpen(false); handleLogout(); }}
-                    className="w-full bg-[#333] text-white py-2.5 rounded text-sm font-semibold flex items-center justify-center gap-2 hover:bg-black transition-colors cursor-pointer"
-                  >
-                    <i className="bi bi-box-arrow-right"></i>
-                    로그아웃
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => { setIsDrawerOpen(false); navigate('/members/login'); }}
-                    className="w-full border border-gray-300 text-[#222] py-2.5 rounded text-sm font-semibold hover:bg-gray-50 transition-colors cursor-pointer bg-transparent"
-                  >
-                    로그인
-                  </button>
-                  <button
-                    onClick={() => { setIsDrawerOpen(false); navigate('/members/signUp'); }}
-                    className="w-full bg-[#7CBD00] text-white py-2.5 rounded text-sm font-bold hover:bg-[#6aa600] transition-colors cursor-pointer"
-                  >
-                    회원가입
-                  </button>
-                </>
-              )}
-            </div>
+                  {isNotificationOpen && (
+                    <NotificationDropdown onClose={() => setIsNotificationOpen(false)} />
+                  )}
+                </div>
+
+                {/* 프로필 아이콘 */}
+                <button
+                  onClick={async () => {
+                    const res = await fetch(`/mypage/profile/modal/${loginUser.memIdx}`, { credentials: "include" });
+                    const data = await res.json();
+                    setProfileData(data.profile);
+                    setReviewData(data.reviews);
+                    setIsProfileOpen(true);
+                  }}
+                  style={{
+                    padding: 'clamp(2px, 0.5vw, 8px)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <i
+                    className="bi bi-person text-[#222]"
+                    style={{ fontSize: 'clamp(16px, 2.2vw, 24px)' }}
+                  ></i>
+                </button>
+
+                {/* 로그아웃 버튼 */}
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    background: '#333',
+                    color: '#fff',
+                    padding: 'clamp(3px, 0.5vw, 6px) clamp(4px, 0.8vw, 12px)',
+                    borderRadius: '4px',
+                    fontSize: 'clamp(10px, 1.2vw, 14px)',
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'clamp(2px, 0.4vw, 6px)',
+                    whiteSpace: 'nowrap',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#000'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#333'}
+                >
+                  <i className="bi bi-box-arrow-right"></i>
+                  로그아웃
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.8vw, 12px)' }}>
+                <button
+                  onClick={() => navigate('/members/login')}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: 'clamp(10px, 1.4vw, 16px)',
+                    color: '#222',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  로그인
+                </button>
+                <button
+                  onClick={() => navigate('/members/signUp')}
+                  style={{
+                    background: '#7CBD00',
+                    color: '#fff',
+                    padding: 'clamp(4px, 0.6vw, 8px) clamp(6px, 1vw, 16px)',
+                    borderRadius: '4px',
+                    fontSize: 'clamp(10px, 1.4vw, 16px)',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#6aa600'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#7CBD00'}
+                >
+                  회원가입
+                </button>
+              </div>
+            )}
           </div>
+
         </div>
-      )}
+      </div>
 
       {/* 프로필 모달 */}
       {isProfileOpen && (
