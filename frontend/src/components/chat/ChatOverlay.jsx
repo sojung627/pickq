@@ -175,6 +175,11 @@ export default function ChatOverlay({ onClose }) {
     );
   }
 
+  // 모바일 전용: 채팅방에서 목록으로 돌아가기
+  function handleBackToList() {
+    setSelectedRoom(null);
+  }
+
   const openProfileModal = async (memIdx) => {
     if (!memIdx) return;
     try {
@@ -190,7 +195,6 @@ export default function ChatOverlay({ onClose }) {
 
   return (
     <>
-      {/* 모달 하나 그대로 유지. flex-col(세로) → md:flex-row(가로)만 전환 */}
       <div
         className="
           fixed z-50 bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-100
@@ -200,8 +204,14 @@ export default function ChatOverlay({ onClose }) {
           md:flex-row md:w-[750px] md:h-[500px]
         "
       >
-        {/* 방 목록: 모바일은 위쪽 일부 높이, 데스크톱은 좌측 250px */}
-        <div className="flex flex-col border-b md:border-b-0 md:border-r border-gray-100 max-h-[40%] md:max-h-none md:h-auto md:w-[250px] flex-shrink-0">
+        {/* 방 목록: 모바일에선 방 선택 시 완전히 숨김(hidden), 선택 전엔 풀높이로 표시 */}
+        <div
+          className={`
+            flex flex-col border-b md:border-b-0 md:border-r border-gray-100
+            md:max-h-none md:h-auto md:w-[250px] flex-shrink-0
+            ${selectedRoom ? "hidden md:flex" : "flex max-h-none flex-1 md:flex-none"}
+          `}
+        >
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <span className="text-base font-semibold text-gray-900">채팅 목록</span>
             <button
@@ -240,10 +250,23 @@ export default function ChatOverlay({ onClose }) {
           </div>
         </div>
 
-        {/* 채팅 영역: 모바일은 아래쪽 남은 높이, 데스크톱은 우측 나머지 */}
-        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+        {/* 채팅 영역: 모바일에서 방 선택 전엔 완전히 숨김, 선택하면 풀높이로 표시 */}
+        <div
+          className={`
+            flex-1 flex-col overflow-hidden min-h-0
+            ${selectedRoom ? "flex" : "hidden md:flex"}
+          `}
+        >
           {selectedRoom && (
-            <div className="px-5 py-4 border-b border-gray-100 bg-white flex-shrink-0">
+            <div className="px-5 py-4 border-b border-gray-100 bg-white flex-shrink-0 flex items-center gap-2">
+              {/* 모바일에서만 보이는 뒤로가기 버튼 */}
+              <button
+                type="button"
+                onClick={handleBackToList}
+                className="md:hidden w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 -ml-1"
+              >
+                ←
+              </button>
               <span
                 className="text-sm font-semibold text-gray-900 cursor-pointer hover:text-[#7CBD00]"
                 onClick={() => openProfileModal(selectedRoom.opponentIdx)}
