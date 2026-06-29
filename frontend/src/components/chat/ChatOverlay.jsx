@@ -175,7 +175,6 @@ export default function ChatOverlay({ onClose }) {
     );
   }
 
-  // 모바일 전용: 채팅방에서 목록으로 돌아가기
   function handleBackToList() {
     setSelectedRoom(null);
   }
@@ -204,12 +203,12 @@ export default function ChatOverlay({ onClose }) {
           md:flex-row md:w-[750px] md:h-[500px]
         "
       >
-        {/* 방 목록: 모바일에선 방 선택 시 완전히 숨김(hidden), 선택 전엔 풀높이로 표시 */}
+        {/* 방 목록: base에 "flex" 제거 — display는 조건부 한 군데서만 결정 */}
         <div
           className={`
-            flex flex-col border-b md:border-b-0 md:border-r border-gray-100
+            flex-col border-b md:border-b-0 md:border-r border-gray-100
             md:max-h-none md:h-auto md:w-[250px] flex-shrink-0
-            ${selectedRoom ? "hidden md:flex" : "flex max-h-none flex-1 md:flex-none"}
+            ${selectedRoom ? "hidden md:flex" : "flex md:flex"}
           `}
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -250,7 +249,7 @@ export default function ChatOverlay({ onClose }) {
           </div>
         </div>
 
-        {/* 채팅 영역: 모바일에서 방 선택 전엔 완전히 숨김, 선택하면 풀높이로 표시 */}
+        {/* 채팅 영역: 기존대로 조건부 flex/hidden 그대로 (여긴 문제 없었음) */}
         <div
           className={`
             flex-1 flex-col overflow-hidden min-h-0
@@ -259,7 +258,6 @@ export default function ChatOverlay({ onClose }) {
         >
           {selectedRoom && (
             <div className="px-5 py-4 border-b border-gray-100 bg-white flex-shrink-0 flex items-center gap-2">
-              {/* 모바일에서만 보이는 뒤로가기 버튼 */}
               <button
                 type="button"
                 onClick={handleBackToList}
