@@ -26,9 +26,20 @@ export default function PickyChatOverlay({ onClose, isLoggedIn }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [mobileView, setMobileView] = useState(isLoggedIn ? 'list' : 'chat');
   const bottomRef = useRef(null);
 
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    setMobileView(isLoggedIn ? 'list' : 'chat');
+
     if (isLoggedIn) {
       fetchSessions();
     }
@@ -59,16 +70,22 @@ export default function PickyChatOverlay({ onClose, isLoggedIn }) {
         const data = await res.json();
         setMessages(data.map(m => ({ role: m.role, content: m.content })));
         setCurrentSessionIdx(sessionIdx);
+        setMobileView('chat');
       }
     } catch (e) {}
   };
 
   const startNewChat = () => {
     setCurrentSessionIdx(null);
+    setMobileView('chat');
     setMessages([{
       role: 'assistant',
       content: '안녕하세요! 저는 PickQ의 AI 어시스턴트 피키예요 ☺️\n무엇이든 편하게 물어보세요!',
     }]);
+  };
+
+  const handleBackToList = () => {
+    setMobileView('list');
   };
 
   const deleteSession = async (sessionIdx, e) => {
@@ -144,12 +161,12 @@ export default function PickyChatOverlay({ onClose, isLoggedIn }) {
     <div
       style={{
         position: 'fixed',
-        bottom: '112px',
-        right: '32px',
         zIndex: 50,
-        width: '750px',
-        height: '500px',
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        inset: isMobile ? '80px 16px 16px' : 'auto 32px 112px auto',
+        width: isMobile ? 'auto' : '750px',
+        height: isMobile ? 'auto' : '500px',
         borderRadius: '12px',
         overflow: 'hidden',
         boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
@@ -160,10 +177,11 @@ export default function PickyChatOverlay({ onClose, isLoggedIn }) {
       {/* 좌측 세션 패널 - 로그인 사용자만 표시 */}
       {isLoggedIn && (
         <div style={{
-          width: '200px',
+          width: isMobile ? '100%' : '200px',
+          height: isMobile ? '100%' : 'auto',
           flexShrink: 0,
-          borderRight: '1px solid #e5e5e5',
-          display: 'flex',
+          borderRight: isMobile ? 'none' : '1px solid #e5e5e5',
+          display: isMobile && mobileView === 'chat' ? 'none' : 'flex',
           flexDirection: 'column',
           background: '#fff',
         }}>
@@ -243,7 +261,15 @@ export default function PickyChatOverlay({ onClose, isLoggedIn }) {
       )}
 
       {/* 우측 채팅 영역 */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f4f4f4', minWidth: 0 }}>
+      <div style={{
+        flex: 1,
+        display: isMobile && isLoggedIn && mobileView === 'list' ? 'none' : 'flex',
+        flexDirection: 'column',
+        background: '#f4f4f4',
+        minWidth: 0,
+        minHeight: 0,
+        width: isMobile ? '100%' : 'auto',
+      }}>
 
         {/* 채팅 헤더 */}
         <div style={{
@@ -255,7 +281,42 @@ export default function PickyChatOverlay({ onClose, isLoggedIn }) {
           borderBottom: '1px solid #e5e5e5',
           flexShrink: 0,
         }}>
-          <span style={{ fontSize: '15px', fontWeight: '600', color: '#111' }}>{currentTitle}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+            {isMobile && isLoggedIn && (
+              <button
+                type="button"
+                onClick={handleBackToList}
+                aria-label="채팅 목록으로 돌아가기"
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'none',
+                  border: 'none',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  padding: 0,
+                  color: '#666',
+                  fontSize: '19px',
+                  flexShrink: 0,
+                }}
+              >
+                ←
+              </button>
+            )}
+            <span style={{
+              fontSize: '15px',
+              fontWeight: '600',
+              color: '#111',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {currentTitle}
+            </span>
+          </div>
           {/* 로그인 안 된 경우 닫기 버튼 헤더에 */}
           {!isLoggedIn && (
             <button
